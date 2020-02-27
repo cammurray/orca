@@ -1,5 +1,5 @@
 # ORCA
-The Office 365 ATP Recommended Configuration Analyzer (ORCA)
+The Office 365 ATP Recommended Configuration Analyzer (ORCA).
 
 ## Introduction
 ORCA is a report that you can run in your environment which can highlight known configuration issues and improvements which can impact your experience with Office 365 Advanced Threat Protection (ATP).
