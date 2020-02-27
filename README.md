@@ -53,4 +53,4 @@ There is definitely a lot of value in running your Office 365 environment with A
 * Time of click protection for malicious URLs
 * Advanced anti-phishing controls
 
-However, there are also some checks within ORCA that are non-ATP specific which can impact the operation of ATP and security within an Office 365 tenant. ORCA can still be ran on tenants with no ATP, albeit with reduced qty. of checks.
+However, there are also some checks within ORCA that are non-ATP specific which can impact the operation of ATP and security within an Office 365 tenant. ORCA can still be ran on tenants with no ATP, albeit with reduced qty. of checks..
