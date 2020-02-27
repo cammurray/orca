@@ -14,7 +14,7 @@ class ORCA139 : ORCACheck
         $this.Area="Content Filter Policies"
         $this.Name="Spam Action"
         $this.PassText="Spam action set to move message to junk mail folder"
-        $this.FailRecommendation="Change Spam action to Move message to Junk Email Folder"
+        $this.FailRecommendation="Change Spam action to Move message to Junk Email Folder"
         $this.Importance="It is recommended to configure Spam detection action to Move messages to Junk Email folder."
         $this.ExpandResults=$True
         $this.ItemName="Spam Policy"
