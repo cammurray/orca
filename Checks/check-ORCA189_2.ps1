@@ -27,8 +27,9 @@ class ORCA189_2 : ORCACheck
         $this.FailRecommendation="Remove mail flow rules which bypass Safe Links"
         $this.Importance="Office 365 ATP Safe Links can help protect against phishing attacks by providing time-of-click verification of web addresses (URLs) in email messages and Office documents. The protection can be bypassed using mail flow rules which set the X-MS-Exchange-Organization-SkipSafeLinksProcessing header for email messages."
         $this.ExpandResults=$True
-        $this.ItemName="Transport Rule"
-        $this.DataType="Details"
+        $this.ObjectType="Transport Rule"
+        $this.ItemName="Setting"
+        $this.DataType="Current Value"
         $this.CheckType = [CheckType]::ObjectPropertyValue
     }
 
