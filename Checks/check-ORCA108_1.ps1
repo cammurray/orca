@@ -53,7 +53,7 @@ class ORCA108_1 : ORCACheck
 
                         # Check DKIM Selector Records
                         $Selector1 = $Null
-                        Try { $Selector1 = Resolve-DnsName -Type TXT -Name "selector1._domainkey.$($DkimSigningConfig.Domain)" -ErrorAction:stop } Catch {}
+                        Try { $Selector1 = Resolve-DnsName -Type CNAME -Name "selector1._domainkey.$($DkimSigningConfig.Domain)" -ErrorAction:stop } Catch {}
                         If($Selector1.Type -eq "CNAME" -and $Selector1.NameHost -eq $DkimSigningConfig.Selector1CNAME)
                         {
                             # DKIM Selector1 Correctly Configured
@@ -80,7 +80,7 @@ class ORCA108_1 : ORCACheck
             
                         # Check DKIM Selector Records
                         $Selector2 = $Null
-                        Try { $Selector2 = Resolve-DnsName -Type TXT -Name "selector2._domainkey.$($DkimSigningConfig.Domain)" -ErrorAction:stop } Catch {}
+                        Try { $Selector2 = Resolve-DnsName -Type CNAME -Name "selector2._domainkey.$($DkimSigningConfig.Domain)" -ErrorAction:stop } Catch {}
                         If($Selector2.Type -eq "CNAME" -and $Selector2.NameHost -eq $DkimSigningConfig.Selector2CNAME)
                         {
                             # DKIM Selector2 Correctly Configured
