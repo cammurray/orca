@@ -4,7 +4,7 @@ class ORCA113 : ORCACheck
 {
     <#
     
-        Check if AllowClickThrough is disabled in the organisation wide SafeLinks policy and if AllowClickThrough is False and DoNotAllowClickThrough is True in SafeLink policies
+        Check if AllowClickThrough is disabled in the organisation wide SafeLinks policy and if DoNotAllowClickThrough is True in SafeLink policies
     
     #>
 
@@ -14,7 +14,7 @@ class ORCA113 : ORCACheck
         $this.Services=[ORCAService]::OATP
         $this.Area="Advanced Threat Protection Policies"
         $this.Name="Do not let users click through safe links"
-        $this.PassText="AllowClickThrough is disbaled in Safe Links policies"
+        $this.PassText="DoNotAllowClickThrough is enabled in Safe Links policies"
         $this.FailRecommendation="Do not let users click through safe links to original URL"
         $this.Importance="Office 365 ATP Safe Links can help protect your organization by providing time-of-click verification of  web addresses (URLs) in email messages and Office documents. It is possible to allow users click through Safe Links to the original URL. It is recommended to configure Safe Links policies to not let users click through safe links."
         $this.ExpandResults=$True
@@ -61,14 +61,14 @@ class ORCA113 : ORCACheck
         
         ForEach($Policy in $Config["SafeLinksPolicy"]) 
         {
-            # Determine if AllowClickThrough is False and DoNotAllowClickThrough is True in safelinks policies
-            If($Policy.AllowClickThrough -eq $false -and $Policy.DoNotAllowClickThrough -eq $true)
+            # Determine if DoNotAllowClickThrough is True in safelinks policies
+            If($Policy.DoNotAllowClickThrough -eq $true)
             {
                 $this.Results += New-Object -TypeName psobject -Property @{
                     Result="Pass"
                     Object=$($Policy.Name)
-                    ConfigItem="AllowClickThrough"
-                    ConfigData=$($Policy.AllowClickThrough)
+                    ConfigItem="DoNotAllowClickThrough"
+                    ConfigData=$($Policy.DoNotAllowClickThrough)
                     Control=$this.Control
                 }
             } 
@@ -77,8 +77,8 @@ class ORCA113 : ORCACheck
                 $this.Results += New-Object -TypeName psobject -Property @{
                     Result="Fail"
                     Object=$($Policy.Name)
-                    ConfigItem="AllowClickThrough"
-                    ConfigData=$($Policy.AllowClickThrough)
+                    ConfigItem="DoNotAllowClickThrough"
+                    ConfigData=$($Policy.DoNotAllowClickThrough)
                     Control=$this.Control
                 }
             }
