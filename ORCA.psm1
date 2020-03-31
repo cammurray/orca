@@ -105,6 +105,13 @@ enum ORCAService
     OATP = 2
 }
 
+[Flags()]
+enum ORCAMode
+{
+    Standard
+    Strict
+}
+
 Class ORCACheckResult
 {
     $Result
@@ -113,6 +120,8 @@ Class ORCACheckResult
     $ConfigData
     $Rule
     $Control
+    # Mode is standard by default
+    [ORCAMode]$Mode=[ORCAMode]::Standard
 }
 
 Class ORCACheck
@@ -145,6 +154,7 @@ Class ORCACheck
     [String] $ItemName
     [String] $DataType
     [String] $Importance
+    [Array] $Modes
     [ORCAService]$Services = [ORCAService]::EOP
     [CheckType] $CheckType = [CheckType]::PropertyValue
     $Links
@@ -157,8 +167,21 @@ Class ORCACheck
     # Overridden by check
     GetResults($Config) { }
 
-    SummariseResults()
+    SummariseResults([ORCAMode]$Mode)
     {
+
+        $SummarisedResults = @()
+        ForEach($Result in $this.Results)
+        {
+            # If the mode of this result is the same as this run, or if its blank (in the event the check hasnt got specific modes)
+            if($Result.Mode -eq $Mode -or $null -eq $Result.Mode)
+            {
+                $SummarisedResults += $Result
+            }
+        }
+
+        $this.Results = $SummarisedResults
+
         $FailResults = @($this.Results | Where-Object {$_.Result -eq "Fail"})
         $PassResults = @($this.Results | Where-Object {$_.Result -eq "Pass"})
 
@@ -174,13 +197,30 @@ Class ORCACheck
         }
     }
 
+    LoadModeInfo([ORCAMode]$Mode)
+    {
+        # If mode specific information exists
+        If($this.Modes.Count -gt 0)
+        {
+            # Get matching mode for this run
+            $LoadMode = $this.Modes | Where-Object {$_.Mode -eq $Mode}
+
+            # Set the variables for that mode
+            $this.Importance = $LoadMode.Importance
+            $this.PassText= $LoadMode.PassText
+            $this.FailRecommendation= $LoadMode.FailRecommendation
+            $this.Importance=$LoadMode.Importance
+        }
+    }
+
     # Run
-    Run($Config)
+    Run($Config,[ORCAMode]$Mode)
     {
         Write-Host "$(Get-Date) Analysis - $($this.Area) - $($this.Name)"
         
         $this.GetResults($Config)
-        $this.SummariseResults()
+        $this.LoadModeInfo($Mode)
+        $this.SummariseResults($Mode)
         $this.Completed=$true
     }
 
@@ -275,7 +315,8 @@ Function Get-ORCAHtmlOutput
     Param(
         $Collection,
         $Checks,
-        $VersionCheck
+        $VersionCheck,
+        [ORCAMode]$Mode
     )
 
     Write-Host "$(Get-Date) Generating Output" -ForegroundColor Green
@@ -822,13 +863,24 @@ Function Get-ORCAReport
         [Switch]$NoUpdate,
         [Switch]$NoVersionCheck,
         $Collection,
-        $Output
+        $Output,
+        [Switch]$Strict
     )
 
     # Version check
     If(!$NoVersionCheck)
     {
         $VersionCheck = Invoke-ORCAVersionCheck
+    }
+
+    # Determine mode
+    If($Strict)
+    {
+        $Mode=[ORCAMode]::Strict
+    }
+    else 
+    {
+        $Mode=[ORCAMode]::Standard    
     }
     
     # Unless -NoConnect specified (already connected), connect to Exchange Online
@@ -852,18 +904,18 @@ Function Get-ORCAReport
         # Run EOP checks by default
         if($check.Services -band [ORCAService]::EOP)
         {
-            $Check.Run($Collection)
+            $Check.Run($Collection,$Mode)
         }
 
         # Run ATP checks only when ATP is present
         if($check.Services -band [ORCAService]::OATP -and $Collection["Services"] -band [ORCAService]::OATP)
         {
-            $Check.Run($Collection)
+            $Check.Run($Collection,$Mode)
         }
     }
 
     # Generate HTML Output
-    $HTMLReport = Get-ORCAHtmlOutput -Collection $Collection -Checks $Checks -VersionCheck $VersionCheck
+    $HTMLReport = Get-ORCAHtmlOutput -Collection $Collection -Checks $Checks -VersionCheck $VersionCheck -Mode $Mode
 
     # Write to file
 

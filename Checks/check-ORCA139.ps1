@@ -13,9 +13,20 @@ class ORCA139 : ORCACheck
         $this.Control=139
         $this.Area="Content Filter Policies"
         $this.Name="Spam Action"
-        $this.PassText="Spam action set to move message to junk mail folder"
-        $this.FailRecommendation="Change Spam action to Move message to Junk Email Folder"
-        $this.Importance="It is recommended to configure Spam detection action to Move messages to Junk Email folder."
+        $this.Modes=@(
+            @{
+                Mode=[ORCAMode]::Standard
+                PassText="Spam action set to move message to junk mail folder"
+                FailRecommendation="Change Spam action to Move message to Junk Email Folder"
+                Importance="It is recommended to configure Spam detection action to Move messages to Junk Email folder."
+            },
+            @{
+                Mode=[ORCAMode]::Strict
+                PassText="Spam action set to move message to quarantine"
+                FailRecommendation="Change Spam action to Move message to Quarantine"
+                Importance="It is recommended to configure Spam detection action to Move messages to Junk Email folder. For strict configuration, set the spam action to Quarantine."    
+            }
+        )
         $this.ExpandResults=$True
         $this.ItemName="Spam Policy"
         $this.DataType="Action"
@@ -38,31 +49,49 @@ class ORCA139 : ORCACheck
     
         ForEach($Policy in $Config["HostedContentFilterPolicy"]) 
         {
+
+            # Check objects
+            $StandardResult = New-Object -TypeName ORCACheckResult -Property @{
+                Check=$Check
+                ConfigItem=$($Policy.Name)
+                ConfigData=$($Policy.SpamAction)
+                Mode=[ORCAMode]::Standard
+                Rule="SpamAction set to $($Policy.SpamAction)"
+                Control=$this.Control
+            }
+
+            $StrictResult = New-Object -TypeName ORCACheckResult -Property @{
+                Check=$Check
+                ConfigItem=$($Policy.Name)
+                ConfigData=$($Policy.SpamAction)
+                Mode=[ORCAMode]::Strict
+                Rule="SpamAction set to $($Policy.SpamAction)"
+                Control=$this.Control
+            }
     
-            # Fail if SpamAction is not set to MoveToJmf
-    
+            # For standard, this should be MoveToJmf
             If($Policy.SpamAction -ne "MoveToJmf") 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Check=$Check
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.SpamAction)
-                    Rule="SpamAction set to $($Policy.SpamAction)"
-                    Control=$this.Control
-                } 
+                $StandardResult.Result="Fail"
             } 
             else 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Check=$Check
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.SpamAction)
-                    Rule="SpamAction set to $($Policy.SpamAction)"
-                    Control=$this.Control
-                } 
+                $StandardResult.Result="Pass"
             }
+
+            # For strict, this should be Quarantine
+            If($Policy.SpamAction -ne "Quarantine") 
+            {
+                $StrictResult.Result="Fail"
+            } 
+            else 
+            {
+                $StrictResult.Result="Pass"
+            }
+
+            # Add the result objects
+            $this.Results += $StandardResult
+            $this.Results += $StrictResult
     
         }        
 
