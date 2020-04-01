@@ -923,7 +923,7 @@ Function Get-ORCAReport
     {
         $OutputDirectory = Get-ORCADirectory
         $Tenant = $(($Collection["AcceptedDomains"] | Where-Object {$_.InitialDomain -eq $True}).DomainName -split '\.')[0]
-        $ReportFileName = "ORCA-$($tenant)-$(Get-Date -Format 'MMddyy').html"
+        $ReportFileName = "ORCA-$($tenant)-$(Get-Date -Format 'yyyyMMddHHmm').html"
         $Output = "$OutputDirectory\$ReportFileName"
     }
 
