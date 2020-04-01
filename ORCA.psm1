@@ -116,6 +116,7 @@ Class ORCACheckResult
 {
     $Result
     $Check
+    $Object
     $ConfigItem
     $ConfigData
     $Rule
