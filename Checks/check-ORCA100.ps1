@@ -13,9 +13,20 @@ class ORCA100 : ORCACheck
         $this.Control = "ORCA-100"
         $this.Area = "Content Filter Policies"
         $this.Name="Bulk Complaint Level"
-        $this.PassText="Bulk Complaint Level threshold is between 4 and 6"
-        $this.FailRecommendation="Set the Bulk Complaint Level threshold to be between 4 and 6"
-        $this.Importance="The differentiation between bulk and spam can sometimes be subjective. The bulk complaint level is based on the number of complaints from the sender. Decreasing the threshold can decrease the amount of perceived spam received, however, too low may be considered too strict."
+        $this.Modes=@(
+            @{
+                Mode=[ORCAMode]::Standard
+                PassText="Bulk Complaint Level threshold is between 4 and 6"
+                FailRecommendation="Set the Bulk Complaint Level threshold to be between 4 and 6"
+                Importance="The differentiation between bulk and spam can sometimes be subjective. The bulk complaint level is based on the number of complaints from the sender. Decreasing the threshold can decrease the amount of perceived spam received, however, too low may be considered too strict."
+            },
+            @{
+                Mode=[ORCAMode]::Strict
+                PassText="Spam action set to move message to quarantine"
+                FailRecommendation="Set the Bulk Complaint Level threshold to 4"
+                Importance="The differentiation between bulk and spam can sometimes be subjective. The bulk complaint level is based on the number of complaints from the sender. Decreasing the threshold can decrease the amount of perceived spam received, however, too low may be considered too strict. In strict configuration, we recommend setting this to 4."   
+            }
+        )
         $this.ExpandResults=$True
         $this.ItemName="Content Filter Policy"
         $this.DataType="Bulk Complaint Level Threshold"
@@ -37,25 +48,45 @@ class ORCA100 : ORCACheck
         
         ForEach($Policy in $Config["HostedContentFilterPolicy"])
         {
+
+            # Check objects
+            $StandardResult = New-Object -TypeName ORCACheckResult -Property @{
+                ConfigItem=$($Policy.Name)
+                ConfigData=$Policy.BulkThreshold
+                Mode=[ORCAMode]::Standard
+                Control=$this.Control
+            }
+
+            $StrictResult = New-Object -TypeName ORCACheckResult -Property @{
+                ConfigItem=$($Policy.Name)
+                ConfigData=$Policy.BulkThreshold
+                Mode=[ORCAMode]::Strict
+                Control=$this.Control
+            }
     
+            # Standard check - between 4 and 6
             If($Policy.BulkThreshold -ge 4 -and $Policy.BulkThreshold -le 6)
             {
-                $this.Results += New-Object -TypeName ORCACheckResult -Property @{
-                    Result="Pass"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$Policy.BulkThreshold
-                    Control=$this.Control
-                }                
+                $StandardResult.Result = "Pass"        
             }
             Else 
             {
-                $this.Results += New-Object -TypeName ORCACheckResult -Property @{
-                    Result="Fail"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$Policy.BulkThreshold
-                    Control=$this.Control
-                }                            
+                $StandardResult.Result = "Fail"                      
             }
+
+            # Strict check - is 4
+            If($Policy.BulkThreshold -eq 4)
+            {
+                $StrictResult.Result = "Pass"        
+            }
+            Else 
+            {
+                $StrictResult.Result = "Fail"                      
+            }
+
+            # Add standard and strict results
+            $this.Results += $StandardResult
+            $this.Results += $StrictResult
     
         }
 
