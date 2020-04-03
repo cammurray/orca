@@ -9,11 +9,11 @@
 
 	.NOTES
 		Cam Murray
-		Field Engineer - Microsoft
+		Senior Program Manager - Microsoft
         camurray@microsoft.com
         
         Daniel Mozes
-        Field Engineer - Microsoft
+        Senior Program Manager - Microsoft
         damozes@microsoft.com
 
         Output report uses open source components for HTML formatting
