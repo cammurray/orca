@@ -32,38 +32,33 @@ class ORCA114 : ORCACheck
 
     GetResults($Config)
     {
-        $Check = "IP Allow List Size"
     
         ForEach($HostedConnectionFilterPolicy in $Config["HostedConnectionFilterPolicy"]) 
         {
+
+
             # Check if IPAllowList < 0 and return inconclusive for manual checking of size
             If($HostedConnectionFilterPolicy.IPAllowList.Count -gt 0)
             {
                 # IP Allow list present
                 ForEach($IPAddr in @($HostedConnectionFilterPolicy.IPAllowList)) 
                 {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Check=$Check
-                        ConfigItem=$($HostedConnectionFilterPolicy.Name)
-                        ConfigData=$IPAddr
-                        Rule="IP Allow List contains too many IPs"
-                        Control=$this.Control
-                    }    
+                    # Check objects
+                    $ConfigObject = [ORCACheckConfig]::new()
+                    $ConfigObject.ConfigItem=$($HostedConnectionFilterPolicy.Name)
+                    $ConfigObject.ConfigData=$IPAddr
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                    $this.AddConfig($ConfigObject)  
                 }
     
             } 
             else 
             {
-                # IPAllowList is blank, so pass.
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Check=$Check
-                    ConfigItem=$($HostedConnectionFilterPolicy.Name)
-                    ConfigData="IP Entries $($HostedConnectionFilterPolicy.IPAllowList.Count)"
-                    Rule="IP Allow List empty"
-                    Control=$this.Control
-                }
+                # Check objects
+                $ConfigObject = [ORCACheckConfig]::new()
+                $ConfigObject.ConfigItem=$($HostedConnectionFilterPolicy.Name)
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                $this.AddConfig($ConfigObject) 
             }
         }        
 

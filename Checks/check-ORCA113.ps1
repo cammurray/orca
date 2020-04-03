@@ -37,51 +37,48 @@ class ORCA113 : ORCACheck
 
     GetResults($Config)
     {
+
+        # Check objects
+        $ConfigObject = [ORCACheckConfig]::new()
+        $ConfigObject.Object=$($Config["AtpPolicy"].Name)
+        $ConfigObject.ConfigItem="AllowClickThrough"
+        $ConfigObject.ConfigData=$($Config["AtpPolicy"].AllowClickThrough)
+
         If($Config["AtpPolicy"].AllowClickThrough -eq $True)
         {
             # Determine if AllowClickThrough is enabled in the policy applies to the entire organization
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Fail"
-                Object=$($Config["AtpPolicy"].Name)
-                ConfigItem="AllowClickThrough"
-                ConfigData=$($Config["AtpPolicy"].AllowClickThrough)
-                Control=$this.Control
-            }
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
         }
         Else
         {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Pass"
-                Object=$($Config["AtpPolicy"].Name)
-                ConfigItem="AllowClickThrough"
-                ConfigData=$($Config["AtpPolicy"].AllowClickThrough)
-                Control=$this.Control
-            }            
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")         
         }
+ 
+        # Add config to check
+        $this.AddConfig($ConfigObject)
         
         ForEach($Policy in $Config["SafeLinksPolicy"]) 
         {
+    
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="DoNotAllowClickThrough"
+            $ConfigObject.ConfigData=$($Policy.DoNotAllowClickThrough)
+
             # Determine if DoNotAllowClickThrough is True in safelinks policies
             If($Policy.DoNotAllowClickThrough -eq $true)
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="DoNotAllowClickThrough"
-                    ConfigData=$($Policy.DoNotAllowClickThrough)
-                    Control=$this.Control
-                }
-            } 
-            else 
-            {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="DoNotAllowClickThrough"
-                    ConfigData=$($Policy.DoNotAllowClickThrough)
-                    Control=$this.Control
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
+            Else 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")                       
+            }
+
+            # Add config to check
+            $this.AddConfig($ConfigObject)
+            
         }
 
     }
