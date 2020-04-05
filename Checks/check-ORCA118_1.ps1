@@ -33,7 +33,6 @@ class ORCA118_1 : ORCACheck
 
     GetResults($Config)
     {
-        $Check = "Content Filter AllowedSenderDomains"
 
         ForEach($Policy in $Config["HostedContentFilterPolicy"]) {
     
