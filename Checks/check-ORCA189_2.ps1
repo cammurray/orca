@@ -49,26 +49,16 @@ class ORCA189_2 : ORCACheck
             # Rules exist to bypass
             ForEach($Rule in $BypassRules) 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Rule.Name)
-                    ConfigItem=$($Rule.SetHeaderName)
-                    ConfigData=$($Rule.SetHeaderValue)
-                    Rule="SafeLinks bypassed"
-                    Control=$this.Control
-                }
+                # Check objects
+                $ConfigObject = [ORCACheckConfig]::new()
+                $ConfigObject.Object=$($Rule.Name)
+                $ConfigObject.ConfigItem=$($Rule.SetHeaderName)
+                $ConfigObject.ConfigData=$($Rule.SetHeaderValue)
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                $this.AddConfig($ConfigObject)  
+
             }
-        } 
-        Else 
-        {
-            # Rules do not exist to bypass
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Pass"
-                ConfigItem="Transport Rules"
-                Rule="SafeLinks not bypassed"
-                Control=$this.Control
-            }
-        }        
+        }   
 
     }
 
