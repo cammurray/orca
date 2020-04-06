@@ -189,6 +189,7 @@ Class ORCACheck
     [ORCAService]$Services = [ORCAService]::EOP
     [CheckType] $CheckType = [CheckType]::PropertyValue
     $Links
+    $ORCAParams
 
     [String] $Result="Pass"
     [int] $FailCount=0
@@ -236,6 +237,10 @@ Class ORCACheck
 
 Function Get-ORCACheckDefs
 {
+    Param
+    (
+        $ORCAParams
+    )
 
     $Checks = @()
 
@@ -248,7 +253,12 @@ Function Get-ORCACheckDefs
         {
             Write-Verbose "Importing $($matches[1])"
             . $CheckFile.FullName
-            $Checks += New-Object -TypeName $matches[1]
+            $Check = New-Object -TypeName $matches[1]
+
+            # Set the ORCAParams
+            $Check.ORCAParams = $ORCAParams
+
+            $Checks += $Check
         }
     }
 
@@ -756,7 +766,8 @@ Function Get-ORCAHtmlOutput
 
 function Invoke-ORCAVersionCheck
 {
-    Param(
+    Param
+    (
         $Terminate
     )
 
@@ -861,6 +872,13 @@ Function Get-ORCAReport
         For passing an already established collection object. Can be used for offline collection
         analysis.
 
+        .PARAMETER AlternateDNS
+
+        Optional.
+
+        Allows you to specify a DNS server which will be used in any checks requiring resolving a hostname.
+        This can be useful if you are using split-DNS, and have alternate DNS servers for the public domain.
+
         .EXAMPLE
 
         Get-ORCAReport
@@ -879,6 +897,7 @@ Function Get-ORCAReport
         [Switch]$NoConnect,
         [Switch]$NoUpdate,
         [Switch]$NoVersionCheck,
+        [String[]]$AlternateDNS,
         $Collection,
         $Output
     )
@@ -894,8 +913,13 @@ Function Get-ORCAReport
         Invoke-ORCAConnections
     }
 
+    # Build a param object which can be used to pass params to the underlying classes
+    $ORCAParams = New-Object -TypeName PSObject -Property @{
+        AlternateDNS=$AlternateDNS
+    }
+
     # Get the object of ORCA checks
-    $Checks = Get-ORCACheckDefs
+    $Checks = Get-ORCACheckDefs -ORCAParams $ORCAParams
 
     # Get the collection in to memory. For testing purposes, we support passing the collection as an object
     If($Null -eq $Collection)
