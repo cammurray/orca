@@ -190,7 +190,7 @@ Class ORCACheck
     [CheckType] $CheckType = [CheckType]::PropertyValue
     $Links
 
-    [String] $Result
+    [String] $Result="Pass"
     [int] $FailCount=0
     [int] $PassCount=0
     [Boolean] $Completed=$false
@@ -221,6 +221,14 @@ Class ORCACheck
         Write-Host "$(Get-Date) Analysis - $($this.Area) - $($this.Name)"
         
         $this.GetResults($Config)
+
+        # If there is no results to expand, turn off ExpandResults
+        if($this.Config.Count -eq 0)
+        {
+            $this.ExpandResults = $false
+        }
+
+        # Set check module to completed
         $this.Completed=$true
     }
 
