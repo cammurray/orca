@@ -31,37 +31,28 @@ class ORCA140 : ORCACheck
     #>
     GetResults($Config)
     {
-        $Check = "Content Filter Actions"
-
-        $this.Results = @()
     
         ForEach($Policy in $Config["HostedContentFilterPolicy"]) 
         {
+
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$Policy.Name
+            $ConfigObject.ConfigItem=$($Policy.Name)
+            $ConfigObject.ConfigData=$($Policy.HighConfidenceSpamAction)
     
             # Fail if HighConfidenceSpamAction is not set to Quarantine
     
-            If($Policy.HighConfidenceSpamAction -ne "Quarantine") 
+            If($Policy.HighConfidenceSpamAction -eq "Quarantine") 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Check=$Check
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.HighConfidenceSpamAction)
-                    Rule="HighConfidenceSpamAction set to $($Policy.HighConfidenceSpamAction)"
-                    Control=$this.Control
-                } 
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             } 
             else 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Check=$Check
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.HighConfidenceSpamAction)
-                    Rule="HighConfidenceSpamAction set to $($Policy.HighConfidenceSpamAction)"
-                    Control=$this.Control
-                } 
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
+
+            # Add config to check
+            $this.AddConfig($ConfigObject)
             
         }        
 

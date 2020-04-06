@@ -26,7 +26,6 @@ class ORCA169 : ORCACheck
         $this.PassText="Safe Links is enabled for Office ProPlus, Office for iOS and Android"
         $this.FailRecommendation="Enable Safe Links for Office ProPlus, Office for iOS and Android"
         $this.Importance="Phishing attacks are not limited to email messages. Malicious URLs can be delivered using Office documents as well. Configuring Office 365 ATP Safe Links for Office ProPlus,  Office for iOS and Android can help combat against these attacks via providing time-of-click verification of web addresses (URLs) in Office documents."
-        $this.CheckType = [CheckType]::ObjectPropertyValue
     }
 
     <#
@@ -38,28 +37,17 @@ class ORCA169 : ORCACheck
     GetResults($Config)
     {
 
-        If($Config["AtpPolicy"].EnableSafeLinksForClients -eq $true)
+        If($Config["AtpPolicy"].EnableSafeLinksForClients -eq $false)
         {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Pass"
-                Object="Global Policy"
-                ConfigItem="EnableSafeLinksForClients"
-                ConfigData=$Config["AtpPolicy"].EnableSafeLinksForClients
-                Rule="SafeLinks URL Tracking Enabled for Office Clients"
-                Control=$this.Control
-            }
-        } 
-        Else 
-        {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Fail"
-                Object="Global Policy"
-                ConfigItem="EnableSafeLinksForClients"
-                ConfigData=$Config["AtpPolicy"].EnableSafeLinksForClients
-                Rule="SafeLinks URL Tracking Enabled for Office Clients"
-                Control=$this.Control
-            }
-        }        
+
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.ConfigItem="EnableSafeLinksForClients"
+            $ConfigObject.ConfigData=$Config["AtpPolicy"].EnableSafeLinksForClients
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+            $this.AddConfig($ConfigObject)
+
+        }     
 
     }
 

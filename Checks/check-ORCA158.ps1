@@ -22,8 +22,7 @@ class ORCA158 : ORCACheck
         $this.Name="Safe Attachments SharePoint and Teams"
         $this.PassText="Safe Attachments is enabled for SharePoint and Teams"
         $this.FailRecommendation="Enable Safe Attachments for SharePoint and Teams"
-        $this.Importance="Safe Attachments assists scanning for zero day malware by using behavioural analysis and sandboxing, supplimenting signature definitions."
-        $this.CheckType = [CheckType]::ObjectPropertyValue
+        $this.Importance="Safe Attachments can assist by scanning for zero day malware by using behavioural analysis and sandboxing techniques. These checks suppliment signature definitions."
     }
 
     <#
@@ -36,26 +35,15 @@ class ORCA158 : ORCACheck
     {
 
         # Determine if ATP is enabled or not
-        If($Config["AtpPolicy"].EnableATPForSPOTeamsODB -eq $true) 
+        If($Config["AtpPolicy"].EnableATPForSPOTeamsODB -eq $false) 
         {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Pass"
-                Object="Global Policy"
-                ConfigItem="EnableATPForSPOTeamsODB"
-                ConfigData=$Config["AtpPolicy"].EnableATPForSPOTeamsODB
-                Control=$this.Control
-            }
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.ConfigItem="EnableATPForSPOTeamsODB"
+            $ConfigObject.ConfigData=$Config["AtpPolicy"].EnableATPForSPOTeamsODB
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            $this.AddConfig($ConfigObject)
+
         } 
-        else 
-        {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Fail"
-                Object="Global Policy"
-                ConfigItem="EnableATPForSPOTeamsODB"
-                ConfigData=$Config["AtpPolicy"].EnableATPForSPOTeamsODB
-                Control=$this.Control
-            }
-        }      
 
     }
 
