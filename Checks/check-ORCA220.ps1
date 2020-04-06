@@ -42,26 +42,37 @@ class ORCA220 : ORCACheck
 
         ForEach($Policy in $Config["AntiPhishPolicy"]) 
         {
-            If($Policy.PhishThresholdLevel -eq 1 -or $Policy.PhishThresholdLevel -eq 4)
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.ConfigItem=$($Policy.Name)
+            $ConfigObject.ConfigData=$($Policy.PhishThresholdLevel)
+
+            # Standard
+
+            If($Policy.PhishThresholdLevel -eq 2)
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.PhishThresholdLevel)
-                    Rule="PhishThreshold Level is 1"
-                    Control=$this.Control
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             } 
-            else
+            Else 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.PhishThresholdLevel)
-                    Rule="PhishThreshold Level 2 or higher"
-                    Control=$this.Control
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
+
+            # Strict
+
+            If($Policy.PhishThresholdLevel -eq 3)
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
+            } 
+            Else 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")
+            }
+
+            $this.AddConfig($ConfigObject)
+
+
         }        
 
     }
