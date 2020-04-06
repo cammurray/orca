@@ -43,42 +43,42 @@ class ORCA115 : ORCACheck
     GetResults($Config)
     {
 
+        $PolicyExists = $False
+
         ForEach($Policy in ($Config["AntiPhishPolicy"] | Where-Object {$_.Enabled -eq $true}))
         {
 
-            #Determine if Mailbox Intelligence Protection is enabled
+            $PolicyExists = $True
+
+            # Determine if Mailbox Intelligence Protection is enabled
+
+            $ConfigObject = [ORCACheckConfig]::new()
+
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="EnableMailboxIntelligenceProtection"
+            $ConfigObject.ConfigData=$($Policy.EnableMailboxIntelligenceProtection)
 
             If($Policy.EnableMailboxIntelligenceProtection -eq $false)
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableMailboxIntelligenceProtection"
-                    ConfigData=$($Policy.EnableMailboxIntelligenceProtection)
-                    Control=$this.Control
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
             }
-            Else
+            Else 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableMailboxIntelligenceProtection"
-                    ConfigData=$($Policy.EnableMailboxIntelligenceProtection)
-                    Control=$this.Control
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")                         
             }
+
+            $this.AddConfig($ConfigObject)
+
         }
         
-        If($this.Results.Count -eq 0)
+        If($PolicyExists -eq $False)
         {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Fail"
-                Object="All"
-                ConfigItem="Enabled"
-                ConfigData="False"
-                Control=$this.Control
-            }
+            $ConfigObject = [ORCACheckConfig]::new()
+
+            $ConfigObject.Object="No Enabled Policy"
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
+
+            $this.AddConfig($ConfigObject)
         }
 
     }
