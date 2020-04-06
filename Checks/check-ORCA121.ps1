@@ -35,47 +35,46 @@ class ORCA121 : ORCACheck
 
     GetResults($Config)
     {
-        ForEach($Policy in $Config["HostedContentFilterPolicy"]) {
+        ForEach($Policy in $Config["HostedContentFilterPolicy"]) 
+        {
+            
             # Check requirement of Spam ZAP - MoveToJmf, redirect, delete, quarantine
-            If($Policy.SpamAction -eq "MoveToJmf" -or $Policy.SpamAction -eq "Redirect" -or $Policy.SpamAction -eq "Delete" -or $Policy.SpamAction -eq "Quarantine") {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="SpamAction"
-                    ConfigData=($Policy.SpamAction)
-                    Rule="SpamAction set to an action necessary to move to JMF- ZAP Requirement"
-                    Control=$this.Control
-                } 
-            } else {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="SpamAction"
-                    ConfigData=$($Policy.SpamAction)
-                    SupplementText="Spam Action on policy $($Policy.Name) is set to $($Policy.SpamAction)"
-                    Control=$this.Control
-                }             
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="SpamAction"
+            $ConfigObject.ConfigData=$($Policy.SpamAction)
+
+            If($Policy.SpamAction -eq "MoveToJmf" -or $Policy.SpamAction -eq "Redirect" -or $Policy.SpamAction -eq "Delete" -or $Policy.SpamAction -eq "Quarantine") 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            } 
+            else 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
+            
+            $this.AddConfig($ConfigObject)
+
             # Check requirement of Phish ZAP - MoveToJmf, redirect, delete, quarantine
-            If($Policy.PhishSpamAction -eq "MoveToJmf" -or $Policy.PhishSpamAction -eq "Redirect" -or $Policy.PhishSpamAction -eq "Delete" -or $Policy.PhishSpamAction -eq "Quarantine") {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="PhishSpamAction"
-                    ConfigData=$($Policy.PhishSpamAction)
-                    Rule="PhishSpamAction set to an action necessary to move to JMF - ZAP Requirement"
-                    Control=$this.Control
-                } 
-            } else {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="PhishSpamAction"
-                    ConfigData=$($Policy.PhishSpamAction)
-                    Rule="PhishSpamAction not set to an action necessary to move to JMF- ZAP Requirement"
-                    Control=$this.Control
-                }           
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="PhishSpamAction"
+            $ConfigObject.ConfigData=$($Policy.PhishSpamAction)
+
+            If($Policy.PhishSpamAction -eq "MoveToJmf" -or $Policy.PhishSpamAction -eq "Redirect" -or $Policy.PhishSpamAction -eq "Delete" -or $Policy.PhishSpamAction -eq "Quarantine")
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            } 
+            else 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
+            
+            $this.AddConfig($ConfigObject)
     
         }        
 
