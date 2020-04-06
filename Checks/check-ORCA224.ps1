@@ -41,42 +41,43 @@ class ORCA224 : ORCACheck
 
     GetResults($Config)
     {
+
+        $PolicyExists = $False
+
         ForEach($Policy in ($Config["AntiPhishPolicy"] | Where-Object {$_.Enabled -eq $True}))
         {
 
+            $PolicyExists = $True
+
             #  Determine if tips for user impersonation is on
+
+            $ConfigObject = [ORCACheckConfig]::new()
+
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="EnableSimilarUsersSafetyTips"
+            $ConfigObject.ConfigData=$Policy.EnableSimilarUsersSafetyTips
 
             If($Policy.EnableSimilarUsersSafetyTips -eq $false)
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableSimilarUsersSafetyTips"
-                    ConfigData=$($Policy.EnableSimilarUsersSafetyTips)
-                    Control=$this.Control
-                }  
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
             }
-            else
+            Else 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableSimilarUsersSafetyTips"
-                    ConfigData=$($Policy.EnableSimilarUsersSafetyTips)
-                    Control=$this.Control
-                }                  
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")                         
             }
+
+            $this.AddConfig($ConfigObject)
+
         }
 
-        If($this.Results.Count -eq 0)
+        If($PolicyExists -eq $False)
         {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Fail"
-                Object="All"
-                ConfigItem="Enabled"
-                ConfigData="False"
-                Control=$this.Control
-            }        
+            $ConfigObject = [ORCACheckConfig]::new()
+
+            $ConfigObject.Object="No Policies"
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
+
+            $this.AddConfig($ConfigObject)      
         }             
 
     }

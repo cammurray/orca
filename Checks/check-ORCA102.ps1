@@ -38,166 +38,212 @@ class ORCA102 : ORCACheck
             # Determine if ASF options are off or not
             If($Policy.IncreaseScoreWithImageLinks -eq "On" -or $Policy.IncreaseScoreWithNumericIps -eq "On" -or $Policy.IncreaseScoreWithRedirectToOtherPort -eq "On" -or $Policy.IncreaseScoreWithBizOrInfoUrls -eq "On" -or $Policy.MarkAsSpamEmptyMessages -eq "On" -or $Policy.MarkAsSpamJavaScriptInHtml -eq "On" -or $Policy.MarkAsSpamFramesInHtml -eq "On" -or $Policy.MarkAsSpamObjectTagsInHtml -eq "On" -or $Policy.MarkAsSpamEmbedTagsInHtml -eq "On" -or $Policy.MarkAsSpamFormTagsInHtml -eq "On" -or $Policy.MarkAsSpamWebBugsInHtml -eq "On" -or $Policy.MarkAsSpamSensitiveWordList -eq "On" -or $Policy.MarkAsSpamFromAddressAuthFail -eq "On" -or $Policy.MarkAsSpamNdrBackscatter -eq "On" -or $Policy.MarkAsSpamSpfRecordHardFail -eq "On") {
                 If($Policy.IncreaseScoreWithImageLinks -eq "On") {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Object=$($Policy.Name)
-                        ConfigItem="IncreaseScoreWithImageLinks"
-                        ConfigData=$($Policy.IncreaseScoreWithImageLinks)
-                        Rule="Content Fileter policy ASF options"
-                        Control=$this.Control
-                    }
+
+                    $ConfigObject = [ORCACheckConfig]::new()
+
+                    $ConfigObject.Object=$($Policy.Name)
+                    $ConfigObject.ConfigItem="IncreaseScoreWithImageLinks"
+                    $ConfigObject.ConfigData=$($Policy.IncreaseScoreWithImageLinks)
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                    $this.AddConfig($ConfigObject)
+
                 }
-                If ($Policy.IncreaseScoreWithNumericIps -eq "On") {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Object=$($Policy.Name)
-                        ConfigItem="IncreaseScoreWithNumericIps"
-                        ConfigData=$($Policy.IncreaseScoreWithNumericIps)
-                        Rule="Content Fileter policy ASF options"
-                        Control=$this.Control
-                    }
+                If ($Policy.IncreaseScoreWithNumericIps -eq "On") 
+                {
+
+                    $ConfigObject = [ORCACheckConfig]::new()
+
+                    $ConfigObject.Object=$($Policy.Name)
+                    $ConfigObject.ConfigItem="IncreaseScoreWithNumericIps"
+                    $ConfigObject.ConfigData=$($Policy.IncreaseScoreWithNumericIps)
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                    $this.AddConfig($ConfigObject)
+
                 }
-                If ($Policy.IncreaseScoreWithRedirectToOtherPort -eq "On") {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Object=$($Policy.Name)
-                        ConfigItem="IncreaseScoreWithRedirectToOtherPort"
-                        ConfigData=$($Policy.IncreaseScoreWithRedirectToOtherPort)
-                        Rule="Content Fileter policy ASF options"
-                        Control=$this.Control
-                    }
+                If ($Policy.IncreaseScoreWithRedirectToOtherPort -eq "On") 
+                {
+
+                    $ConfigObject = [ORCACheckConfig]::new()
+
+                    $ConfigObject.Object=$($Policy.Name)
+                    $ConfigObject.ConfigItem="IncreaseScoreWithRedirectToOtherPort"
+                    $ConfigObject.ConfigData=$($Policy.IncreaseScoreWithRedirectToOtherPort)
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                    $this.AddConfig($ConfigObject)
+
                 }
-                If ($Policy.IncreaseScoreWithBizOrInfoUrls -eq "On") {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Object=$($Policy.Name)
-                        ConfigItem="IncreaseScoreWithBizOrInfoUrls"
-                        ConfigData=$($Policy.IncreaseScoreWithBizOrInfoUrls)
-                        Rule="Content Fileter policy ASF options"
-                        Control=$this.Control
-                    }
+                If ($Policy.IncreaseScoreWithBizOrInfoUrls -eq "On") 
+                {
+
+                    $ConfigObject = [ORCACheckConfig]::new()
+                    
+                    $ConfigObject.Object=$($Policy.Name)
+                    $ConfigObject.ConfigItem="IncreaseScoreWithBizOrInfoUrls"
+                    $ConfigObject.ConfigData=$($Policy.IncreaseScoreWithBizOrInfoUrls)
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                    $this.AddConfig($ConfigObject)
+
                 }
-                If ($Policy.MarkAsSpamEmptyMessages -eq "On") {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Object=$($Policy.Name)
-                        ConfigItem="MarkAsSpamEmptyMessages"
-                        ConfigData=$($Policy.MarkAsSpamEmptyMessages)
-                        Rule="Content Fileter policy ASF options"
-                        Control=$this.Control
-                    }
+                If ($Policy.MarkAsSpamEmptyMessages -eq "On") 
+                {
+
+                    $ConfigObject = [ORCACheckConfig]::new()
+                    
+                    $ConfigObject.Object=$($Policy.Name)
+                    $ConfigObject.ConfigItem="MarkAsSpamEmptyMessages"
+                    $ConfigObject.ConfigData=$($Policy.MarkAsSpamEmptyMessages)
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                    $this.AddConfig($ConfigObject)
+
                 }
-                If ($Policy.MarkAsSpamJavaScriptInHtml -eq "On") {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Object=$($Policy.Name)
-                        ConfigItem="MarkAsSpamJavaScriptInHtml"
-                        ConfigData=$($Policy.MarkAsSpamJavaScriptInHtml)
-                        Rule="Content Fileter policy ASF options"
-                        Control=$this.Control
-                    }
+                If ($Policy.MarkAsSpamJavaScriptInHtml -eq "On") 
+                {
+                    
+                    $ConfigObject = [ORCACheckConfig]::new()
+                    
+                    $ConfigObject.Object=$($Policy.Name)
+                    $ConfigObject.ConfigItem="MarkAsSpamJavaScriptInHtml"
+                    $ConfigObject.ConfigData=$($Policy.MarkAsSpamJavaScriptInHtml)
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                    $this.AddConfig($ConfigObject)
+
                 }
                 If ($Policy.MarkAsSpamFramesInHtml -eq "On") {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Object=$($Policy.Name)
-                        ConfigItem="MarkAsSpamFramesInHtml"
-                        ConfigData=$($Policy.MarkAsSpamFramesInHtml)
-                        Rule="Content Fileter policy ASF options"
-                        Control=$this.Control
-                    }
+                                        
+                    $ConfigObject = [ORCACheckConfig]::new()
+                    
+                    $ConfigObject.Object=$($Policy.Name)
+                    $ConfigObject.ConfigItem="MarkAsSpamFramesInHtml"
+                    $ConfigObject.ConfigData=$($Policy.MarkAsSpamFramesInHtml)
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                    $this.AddConfig($ConfigObject)
+
                 }
-                If ($Policy.MarkAsSpamObjectTagsInHtml -eq "On") {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Object=$($Policy.Name)
-                        ConfigItem="MarkAsSpamObjectTagsInHtml"
-                        ConfigData=$($Policy.MarkAsSpamObjectTagsInHtml)
-                        Rule="Content Fileter policy ASF options"
-                        Control=$this.Control
-                    }
+                If ($Policy.MarkAsSpamObjectTagsInHtml -eq "On") 
+                {
+                                                            
+                    $ConfigObject = [ORCACheckConfig]::new()
+                    
+                    $ConfigObject.Object=$($Policy.Name)
+                    $ConfigObject.ConfigItem="MarkAsSpamObjectTagsInHtml"
+                    $ConfigObject.ConfigData=$($Policy.MarkAsSpamObjectTagsInHtml)
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                    $this.AddConfig($ConfigObject)
+
                 }
-                If ($Policy.MarkAsSpamEmbedTagsInHtml -eq "On") {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Object=$($Policy.Name)
-                        ConfigItem="MarkAsSpamEmbedTagsInHtml"
-                        ConfigData=$($Policy.MarkAsSpamEmbedTagsInHtml)
-                        Rule="Content Fileter policy ASF options"
-                        Control=$this.Control
-                    }
+                If ($Policy.MarkAsSpamEmbedTagsInHtml -eq "On") 
+                {
+                                                                                
+                    $ConfigObject = [ORCACheckConfig]::new()
+                    
+                    $ConfigObject.Object=$($Policy.Name)
+                    $ConfigObject.ConfigItem="MarkAsSpamEmbedTagsInHtml"
+                    $ConfigObject.ConfigData=$($Policy.MarkAsSpamEmbedTagsInHtml)
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                    $this.AddConfig($ConfigObject)
+
                 }
-                If ($Policy.MarkAsSpamFormTagsInHtml -eq "On") {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Object=$($Policy.Name)
-                        ConfigItem="MarkAsSpamFormTagsInHtml"
-                        ConfigData=$($Policy.MarkAsSpamFormTagsInHtml)
-                        Rule="Content Fileter policy ASF options"
-                        Control=$this.Control
-                    }
+                If ($Policy.MarkAsSpamFormTagsInHtml -eq "On") 
+                {
+                                                                                                    
+                    $ConfigObject = [ORCACheckConfig]::new()
+                    
+                    $ConfigObject.Object=$($Policy.Name)
+                    $ConfigObject.ConfigItem="MarkAsSpamFormTagsInHtml"
+                    $ConfigObject.ConfigData=$($Policy.MarkAsSpamFormTagsInHtml)
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                    $this.AddConfig($ConfigObject)
+
                 }
-                If ($Policy.MarkAsSpamWebBugsInHtml -eq "On") {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Object=$($Policy.Name)
-                        ConfigItem="MarkAsSpamWebBugsInHtml"
-                        ConfigData=$($Policy.MarkAsSpamWebBugsInHtml)
-                        Rule="Content Fileter policy ASF options"
-                        Control=$this.Control
-                    }
+                If ($Policy.MarkAsSpamWebBugsInHtml -eq "On") 
+                {
+                                                                                                                        
+                    $ConfigObject = [ORCACheckConfig]::new()
+                    
+                    $ConfigObject.Object=$($Policy.Name)
+                    $ConfigObject.ConfigItem="MarkAsSpamWebBugsInHtml"
+                    $ConfigObject.ConfigData=$($Policy.MarkAsSpamWebBugsInHtml)
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                    $this.AddConfig($ConfigObject)
+
                 }
-                If ($Policy.MarkAsSpamSensitiveWordList -eq "On") {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Object=$($Policy.Name)
-                        ConfigItem="MarkAsSpamSensitiveWordList"
-                        ConfigData=$($Policy.MarkAsSpamSensitiveWordList)
-                        Rule="Content Fileter policy ASF options"
-                        Control=$this.Control
-                    }
+                If ($Policy.MarkAsSpamSensitiveWordList -eq "On") 
+                {
+                                                                                                                                      
+                    $ConfigObject = [ORCACheckConfig]::new()
+                    
+                    $ConfigObject.Object=$($Policy.Name)
+                    $ConfigObject.ConfigItem="MarkAsSpamSensitiveWordList"
+                    $ConfigObject.ConfigData=$($Policy.MarkAsSpamSensitiveWordList)
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                    $this.AddConfig($ConfigObject)
+
                 }
-                If ($Policy.MarkAsSpamFromAddressAuthFail -eq "On") {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Object=$($Policy.Name)
-                        ConfigItem="MarkAsSpamFromAddressAuthFail"
-                        ConfigData=$($Policy.MarkAsSpamFromAddressAuthFail)
-                        Rule="Content Fileter policy ASF options"
-                        Control=$this.Control
-                    }
+                If ($Policy.MarkAsSpamFromAddressAuthFail -eq "On") 
+                {
+                                                                                                                                                          
+                    $ConfigObject = [ORCACheckConfig]::new()
+                    
+                    $ConfigObject.Object=$($Policy.Name)
+                    $ConfigObject.ConfigItem="MarkAsSpamFromAddressAuthFail"
+                    $ConfigObject.ConfigData=$($Policy.MarkAsSpamFromAddressAuthFail)
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                    $this.AddConfig($ConfigObject)
+
                 }
-                If ($Policy.MarkAsSpamNdrBackscatter -eq "On") {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Object=$($Policy.Name)
-                        ConfigItem="MarkAsSpamNdrBackscatter"
-                        ConfigData=$($Policy.MarkAsSpamNdrBackscatter)
-                        Rule="Content Fileter policy ASF options"
-                        Control=$this.Control
-                    }
+                If ($Policy.MarkAsSpamNdrBackscatter -eq "On") 
+                {
+                                                                                                                                                                              
+                    $ConfigObject = [ORCACheckConfig]::new()
+                    
+                    $ConfigObject.Object=$($Policy.Name)
+                    $ConfigObject.ConfigItem="MarkAsSpamNdrBackscatter"
+                    $ConfigObject.ConfigData=$($Policy.MarkAsSpamNdrBackscatter)
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                    $this.AddConfig($ConfigObject)
+
                 }
-                If ($Policy.MarkAsSpamSpfRecordHardFail -eq "On") {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Object=$($Policy.Name)
-                        ConfigItem="MarkAsSpamSpfRecordHardFail"
-                        ConfigData=$($Policy.MarkAsSpamSpfRecordHardFail)
-                        Rule="Content Fileter policy ASF options"
-                        Control=$this.Control
-                    }
+                If ($Policy.MarkAsSpamSpfRecordHardFail -eq "On") 
+                {
+                                                                                                                                                                             
+                    $ConfigObject = [ORCACheckConfig]::new()
+                    
+                    $ConfigObject.Object=$($Policy.Name)
+                    $ConfigObject.ConfigItem="MarkAsSpamSpfRecordHardFail"
+                    $ConfigObject.ConfigData=$($Policy.MarkAsSpamSpfRecordHardFail)
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                    $this.AddConfig($ConfigObject)
+
                 }
     
             }
-            else {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="ASF Options"
-                    ConfigData="Disabled"
-                    Rule="Content Fileter policy ASF options"
-                    Control=$this.Control
-                }
+            else 
+            {
+                                                                                                                                                                        
+                $ConfigObject = [ORCACheckConfig]::new()
+                    
+                $ConfigObject.Object=$($Policy.Name)
+                $ConfigObject.ConfigItem="ASF Options"
+                $ConfigObject.ConfigData="Disabled"
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+
+                $this.AddConfig($ConfigObject)
+
             }
         }        
 

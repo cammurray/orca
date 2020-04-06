@@ -38,26 +38,25 @@ class ORCA111 : ORCACheck
     {
         ForEach ($Policy in $Config["AntiPhishPolicy"])
         {
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="EnableUnauthenticatedSender"
+            $ConfigObject.ConfigData=$($Policy.EnableUnauthenticatedSender)
+
             If(($Policy.Enabled -eq $true -and $Policy.EnableUnauthenticatedSender -eq $true) -or ($Policy.Identity -eq "Office365 AntiPhish Default" -and $Policy.EnableUnauthenticatedSender -eq $true))
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableUnauthenticatedSender"
-                    ConfigData=$Policy.EnableUnauthenticatedSender
-                    Control=$this.Control
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
-            Else
+            Else 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableUnauthenticatedSender"
-                    ConfigData=$Policy.EnableUnauthenticatedSender
-                    Control=$this.Control
-                }      
-            }             
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            }
+            
+            # Add config to check
+            $this.AddConfig($ConfigObject)
+
         }        
     }
 

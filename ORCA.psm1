@@ -9,11 +9,11 @@
 
 	.NOTES
 		Cam Murray
-		Field Engineer - Microsoft
+		Senior Program Manager - Microsoft
         camurray@microsoft.com
         
         Daniel Mozes
-        Field Engineer - Microsoft
+        Senior Program Manager - Microsoft
         damozes@microsoft.com
 
         Output report uses open source components for HTML formatting
@@ -105,24 +105,55 @@ enum ORCAService
     OATP = 2
 }
 
-[Flags()]
-enum ORCAMode
+enum ORCAConfigLevel
 {
-    Standard
-    Strict
+    None = 0
+    Standard = 5
+    Strict = 10
 }
 
-Class ORCACheckResult
+Class ORCACheckConfig
 {
-    $Result
+
+    ORCACheckConfig()
+    {
+        # Constructor
+
+        $this.Results += New-Object -TypeName ORCACheckConfigResult -Property @{
+            Level=[ORCAConfigLevel]::Standard
+        }
+
+        $this.Results += New-Object -TypeName ORCACheckConfigResult -Property @{
+            Level=[ORCAConfigLevel]::Strict
+        }
+
+    }
+
+    # Set the result for this mode
+    SetResult([ORCAConfigLevel]$Level,$Result)
+    {
+        ($this.Results | Where-Object {$_.Level -eq $Level}).Value = $Result
+
+        # The level of this configuration should be its strongest result (e.g if its currently standard and we have a strict pass, we should make the level strict)
+        if($Result -eq "Pass" -and ($this.Level -lt $Level -or $this.Level -eq [ORCAConfigLevel]::None))
+        {
+            $this.Level = $Level
+        }
+
+    }
+
     $Check
     $Object
     $ConfigItem
     $ConfigData
-    $Rule
-    $Control
-    # Mode is standard by default
-    [ORCAMode]$Mode=[ORCAMode]::Standard
+    [array]$Results
+    [ORCAConfigLevel]$Level
+}
+
+Class ORCACheckConfigResult
+{
+    [ORCAConfigLevel]$Level=[ORCAConfigLevel]::Standard
+    $Value
 }
 
 Class ORCACheck
@@ -144,7 +175,7 @@ Class ORCACheck
 
     #>
 
-    [Array] $Results=@()
+    [Array] $Config=@()
     [string] $Control
     [String] $Area
     [String] $Name
@@ -155,73 +186,49 @@ Class ORCACheck
     [String] $ItemName
     [String] $DataType
     [String] $Importance
-    [Array] $Modes
     [ORCAService]$Services = [ORCAService]::EOP
     [CheckType] $CheckType = [CheckType]::PropertyValue
     $Links
 
-    [String] $Result
-    [int] $FailCount
-    [int] $PassCount
+    [String] $Result="Pass"
+    [int] $FailCount=0
+    [int] $PassCount=0
     [Boolean] $Completed=$false
     
     # Overridden by check
     GetResults($Config) { }
 
-    SummariseResults([ORCAMode]$Mode)
+    AddConfig([ORCACheckConfig]$Config)
     {
+        $this.Config += $Config
 
-        $SummarisedResults = @()
-        ForEach($Result in $this.Results)
-        {
-            # If the mode of this result is the same as this run, or if its blank (in the event the check hasnt got specific modes)
-            if($Result.Mode -eq $Mode -or $null -eq $Result.Mode)
-            {
-                $SummarisedResults += $Result
-            }
-        }
+        $this.FailCount = @($this.Config | Where-Object {$_.Level -eq [ORCAConfigLevel]::None}).Count
+        $this.PassCount = @($this.Config | Where-Object {$_.Level -ne [ORCAConfigLevel]::None}).Count
 
-        $this.Results = $SummarisedResults
-
-        $FailResults = @($this.Results | Where-Object {$_.Result -eq "Fail"})
-        $PassResults = @($this.Results | Where-Object {$_.Result -eq "Pass"})
-
-        $this.FailCount = $($FailResults.Count)
-        $this.PassCount = $($PassResults.Count)
-
-        If($($FailResults.Count) -eq 0)
+        If($this.FailCount -eq 0)
         {
             $this.Result = "Pass"
         }
-        else {
+        else 
+        {
             $this.Result = "Fail"
         }
     }
 
-    LoadModeInfo([ORCAMode]$Mode)
-    {
-        # If mode specific information exists
-        If($this.Modes.Count -gt 0)
-        {
-            # Get matching mode for this run
-            $LoadMode = $this.Modes | Where-Object {$_.Mode -eq $Mode}
-
-            # Set the variables for that mode
-            $this.Importance = $LoadMode.Importance
-            $this.PassText= $LoadMode.PassText
-            $this.FailRecommendation= $LoadMode.FailRecommendation
-            $this.Importance=$LoadMode.Importance
-        }
-    }
-
     # Run
-    Run($Config,[ORCAMode]$Mode)
+    Run($Config)
     {
         Write-Host "$(Get-Date) Analysis - $($this.Area) - $($this.Name)"
         
         $this.GetResults($Config)
-        $this.LoadModeInfo($Mode)
-        $this.SummariseResults($Mode)
+
+        # If there is no results to expand, turn off ExpandResults
+        if($this.Config.Count -eq 0)
+        {
+            $this.ExpandResults = $false
+        }
+
+        # Set check module to completed
         $this.Completed=$true
     }
 
@@ -316,8 +323,7 @@ Function Get-ORCAHtmlOutput
     Param(
         $Collection,
         $Checks,
-        $VersionCheck,
-        [ORCAMode]$Mode
+        $VersionCheck
     )
 
     Write-Host "$(Get-Date) Generating Output" -ForegroundColor Green
@@ -646,12 +652,17 @@ Function Get-ORCAHtmlOutput
                                     <tbody>
                             "
 
-                            ForEach($o in $Check.Results)
+                            ForEach($o in $Check.Config)
                             {
-                                if($o.Result -eq "Pass") {
+                                if($o.Level -ne [ORCAConfigLevel]::None) 
+                                {
                                     $oicon="fas fa-check-circle text-success"
-                                } Else{
+                                    $LevelText = $o.Level.ToString()
+                                } 
+                                Else
+                                {
                                     $oicon="fas fa-times-circle text-danger"
+                                    $LevelText = "Not Recommended"
                                 }
 
                                 $Output += "
@@ -676,7 +687,12 @@ Function Get-ORCAHtmlOutput
                                 }
 
                                 $Output += "
-                                    <td><i class='$($oicon)'></i></td>
+                                    <td>
+                                        <div class='row badge badge-pill badge-light'>
+                                            <span style='vertical-align: middle;'>$($LevelText)</span>
+                                            <span class='$($oicon)' style='vertical-align: middle;'></span>
+                                        </div>
+                                    </td>
                                 </tr>
                                 "
                             }
@@ -864,24 +880,13 @@ Function Get-ORCAReport
         [Switch]$NoUpdate,
         [Switch]$NoVersionCheck,
         $Collection,
-        $Output,
-        [Switch]$Strict
+        $Output
     )
 
     # Version check
     If(!$NoVersionCheck)
     {
         $VersionCheck = Invoke-ORCAVersionCheck
-    }
-
-    # Determine mode
-    If($Strict)
-    {
-        $Mode=[ORCAMode]::Strict
-    }
-    else 
-    {
-        $Mode=[ORCAMode]::Standard    
     }
     
     # Unless -NoConnect specified (already connected), connect to Exchange Online
@@ -905,13 +910,13 @@ Function Get-ORCAReport
         # Run EOP checks by default
         if($check.Services -band [ORCAService]::EOP)
         {
-            $Check.Run($Collection,$Mode)
+            $Check.Run($Collection)
         }
 
         # Run ATP checks only when ATP is present
         if($check.Services -band [ORCAService]::OATP -and $Collection["Services"] -band [ORCAService]::OATP)
         {
-            $Check.Run($Collection,$Mode)
+            $Check.Run($Collection)
         }
     }
 

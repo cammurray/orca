@@ -23,8 +23,8 @@ class ORCA109 : ORCACheck
         $this.FailRecommendation="Remove whitelisting on senders"
         $this.Importance="Emails coming from whitelisted senders bypass several layers of protection within Exchange Online Protection. If senders are whitelisted, they are open to being spoofed from malicious actors."
         $this.ExpandResults=$True
-        $this.ItemName="Policy"
-        $this.DataType="Setting"
+        $this.ItemName="Content Filter Policy"
+        $this.DataType="Allowed Senders"
         $this.Links= @{
             "Use Anti-Spam Policy Sender/Domain Allow lists"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/create-safe-sender-lists-in-office-365#use-anti-spam-policy-senderdomain-allow-lists"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#anti-spam-anti-malware-and-anti-phishing-protection-in-eop"
@@ -41,24 +41,22 @@ class ORCA109 : ORCACheck
     {
         ForEach($Policy in $Config["HostedContentFilterPolicy"])
         {
-            If(($Policy.AllowedSenders).Count -gt 0)
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.ConfigItem=$($Policy.Name)
+            $ConfigObject.ConfigData=$($Policy.AllowedSenders)
+
+            If(($Policy.AllowedSenders).Count -eq 0)
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.AllowedSenders)
-                    Control=$this.Control
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
-            Else
+            Else 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData="0 Allowed Senders"
-                    Control=$this.Control
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
+
+            # Add config to check
+            $this.AddConfig($ConfigObject)
         }        
     }
 

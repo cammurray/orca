@@ -32,38 +32,39 @@ class ORCA141 : ORCACheck
 
     GetResults($Config)
     {
-        $Check = "Content Filter Actions"
-
-        $this.Results = @()
     
         ForEach($Policy in $Config["HostedContentFilterPolicy"]) 
         {
     
-            # Fail if BulkSpamAction is not set to MoveToJmf
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.ConfigItem=$($Policy.Name)
+            $ConfigObject.ConfigData=$($Policy.BulkSpamAction)
+
+            # For standard Fail if BulkSpamAction is not set to MoveToJmf
     
             If($Policy.BulkSpamAction -ne "MoveToJmf") 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Check=$Check
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.BulkSpamAction)
-                    Rule="BulkSpamAction set to $($Policy.BulkSpamAction)"
-                    Control=$this.Control
-                } 
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             } 
             else 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Check=$Check
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.BulkSpamAction)
-                    Rule="BulkSpamAction set to $($Policy.BulkSpamAction)"
-                    Control=$this.Control
-                } 
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+            }
+
+            # For strict Fail if BulkSpamAction is not set to Quarantine
+
+            If($Policy.BulkSpamAction -ne "Quarantine") 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")
+            } 
+            else 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
             }
             
+            $this.AddConfig($ConfigObject)
+
         }        
 
     }

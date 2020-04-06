@@ -25,7 +25,10 @@ class ORCA179 : ORCACheck
         $this.Name="Intra-organization Safe Links"
         $this.PassText="Safe Links is enabled intra-organization"
         $this.FailRecommendation="Enable Safe Links between internal users"
+        $this.ExpandResults=$True
         $this.Importance="Phishing attacks are not limited from external users. Commonly, when one user is compromised, that user can be used in a process of lateral movement between different accounts in your organization. Configuring Safe Links so that internal messages are also re-written can assist with lateral movement using phishing."
+        $this.ItemName="SafeLinks Policy"
+        $this.DataType="Enabled for Internal"
     }
 
     <#
@@ -37,39 +40,40 @@ class ORCA179 : ORCACheck
     GetResults($Config)
     {
 
+        $Enabled = $False
+
         ForEach($Policy in $Config["SafeLinksPolicy"]) 
         {
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.ConfigItem=$($Policy.Name)
+            $ConfigObject.ConfigData=$Policy.EnableForInternalSenders
+
             # Determine if ATP link tracking is on for this safelinks policy
             If($Policy.EnableForInternalSenders -eq $true) 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$Policy.EnableForInternalSenders
-                    Rule="SafeLinks Enabled for Internal Senders"
-                    Control=$this.Control
-                }
+                $Enabled = $True
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             } 
             Else 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$Policy.EnableForInternalSenders
-                    Rule="SafeLinks Disabled for Internal Senders"
-                    Control=$this.Control
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
+
+            $this.AddConfig($ConfigObject)
         }
 
-        If($this.Results.Count -eq 0)
+        If($Enabled -eq $False)
         {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Fail"
-                ConfigItem="All"
-                ConfigData="Enabled False"
-                Control=$this.Control
-            }
+
+            # No policy enabling
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.ConfigItem="All"
+            $ConfigObject.ConfigData="Enabled False"
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+            $this.AddConfig($ConfigObject)
+
         }    
 
     }

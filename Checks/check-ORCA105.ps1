@@ -40,54 +40,71 @@ class ORCA105 : ORCACheck
         
         ForEach($Policy in ($Config["SafeLinksPolicy"] | Where-Object {$_.IsEnabled -eq $True})) 
         {
-            # Determine if DeliverMessageAfterScan is on for this safelinks policy
-            If($Policy.DeliverMessageAfterScan -eq $true) 
-            {
-                $DeliverMessageAfterScan_Result = "Pass"
-            }
-            Else
-            {
-                $DeliverMessageAfterScan_Result = "Fail"
-            }
 
-            If($Policy.ScanUrls -eq $true)
-            {
-                $ScanURLs_Result = "Pass"
-            }
-            Else 
-            {
-                $ScanURLs_Result = "Fail"
-            }
+            <#
+            
+            DeliverMessageAfterScan
+            
+            #>
 
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result=$DeliverMessageAfterScan_Result
-                Check=$Check
-                Object=$($Policy.Name)
-                ConfigItem="DeliverMessageAfterScan"
-                ConfigData="$($Policy.DeliverMessageAfterScan)"
-                Control=$this.Control
-            }
+                # Check objects
+                $ConfigObject = [ORCACheckConfig]::new()
+                $ConfigObject.Object=$($Policy.Name)
+                $ConfigObject.ConfigItem="DeliverMessageAfterScan"
+                $ConfigObject.ConfigData=$($Policy.DeliverMessageAfterScan)
 
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result=$ScanURLs_Result
-                Check=$Check
-                Object=$($Policy.Name)
-                ConfigItem="ScanUrls"
-                ConfigData="$($Policy.ScanUrls)"
-                Control=$this.Control
-            }    
+                # Determine if DeliverMessageAfterScan is on for this safelinks policy
+                If($Policy.DeliverMessageAfterScan -eq $true) 
+                {
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                }
+                Else 
+                {
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                }
+
+                # Add config to check
+                $this.AddConfig($ConfigObject)
+
+            <#
+            
+            ScanUrls
+            
+            #>
+
+                # Check objects
+                $ConfigObject = [ORCACheckConfig]::new()
+                $ConfigObject.Object=$($Policy.Name)
+                $ConfigObject.ConfigItem="ScanUrls"
+                $ConfigObject.ConfigData=$($Policy.ScanUrls)
+
+                If($Policy.ScanUrls -eq $true)
+                {
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                }
+                Else 
+                {
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                }
+
+                # Add config to check
+                $this.AddConfig($ConfigObject)
+
         }
 
         If($this.Results.Count -eq 0)
         {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Fail"
-                Check=$Check
-                Object="All"
-                ConfigItem="Enabled"
-                ConfigData="False"
-                Control=$this.Control
-            } 
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object="All"
+            $ConfigObject.ConfigItem="Enabled"
+            $ConfigObject.ConfigData="False"
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            
+            # Add config to check
+            $this.AddConfig($ConfigObject)
+
         }    
 
     }

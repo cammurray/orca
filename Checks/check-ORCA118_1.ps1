@@ -33,32 +33,30 @@ class ORCA118_1 : ORCACheck
 
     GetResults($Config)
     {
-        $Check = "Content Filter AllowedSenderDomains"
 
         ForEach($Policy in $Config["HostedContentFilterPolicy"]) {
     
             # Fail if AllowedSenderDomains is not null
     
-            If(($Policy.AllowedSenderDomains).Count -gt 0) {
-                ForEach($Domain in $Policy.AllowedSenderDomains) {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Check=$Check
-                        ConfigItem=$($Policy.Name)
-                        ConfigData="$($Domain.Domain)"
-                        Rule="AllowedSenderDomains is not empty"
-                        Control=$this.Control
-                    } 
+            If(($Policy.AllowedSenderDomains).Count -gt 0) 
+            {
+                ForEach($Domain in $Policy.AllowedSenderDomains) 
+                {
+                    # Check objects
+                    $ConfigObject = [ORCACheckConfig]::new()
+                    $ConfigObject.ConfigItem=$($Policy.Name)
+                    $ConfigObject.ConfigData=$($Domain.Domain)
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                    $this.AddConfig($ConfigObject)  
                 }
-            } else {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Check=$Check
-                    ConfigItem=$($Policy.Name)
-                    ConfigData="0 Allowed Sender Domains"
-                    Rule="AllowedSenderDomains is empty"
-                    Control=$this.Control
-                } 
+            } 
+            else 
+            {
+                # Check objects
+                $ConfigObject = [ORCACheckConfig]::new()
+                $ConfigObject.ConfigItem=$($Policy.Name)
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                $this.AddConfig($ConfigObject)  
             }
         }        
     }

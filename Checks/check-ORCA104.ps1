@@ -34,24 +34,26 @@ class ORCA104 : ORCACheck
     {
         # Fail if HighConfidencePhishAction is not set to Quarantine
 
-        ForEach($Policy in $Config["HostedContentFilterPolicy"]) {
-            If($Policy.HighConfidencePhishAction -ne "Quarantine") {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.HighConfidencePhishAction)
-                    Rule="PhishSpamAction set to $($Policy.PhishSpamAction)"
-                    Control=$this.Control
-                } 
-            } else {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.HighConfidencePhishAction)
-                    Rule="PhishSpamAction set to $($Policy.PhishSpamAction)"
-                    Control=$this.Control
-                } 
+        ForEach($Policy in $Config["HostedContentFilterPolicy"]) 
+        {
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.ConfigItem=$($Policy.Name)
+            $ConfigObject.ConfigData=$($Policy.HighConfidencePhishAction)
+    
+            If($Policy.HighConfidencePhishAction -eq "Quarantine") 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
+            Else 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            }
+
+            # Add config to check
+            $this.AddConfig($ConfigObject)
+
         }        
 
     }

@@ -35,82 +35,100 @@ class ORCA222 : ORCACheck
 
     GetResults($Config)
     {
+
+        $PolicyExists = $False
+
         ForEach($Policy in ($Config["AntiPhishPolicy"] | Where-Object {$_.Enabled -eq $True}))
         {
-    
+
+            $PolicyExists = $True
+
+            <#
+            
+            EnableTargetedDomainsProtection / EnableOrgainizationDomainsProtection
+            
+            #>
+
             If($Policy.EnableTargetedDomainsProtection -eq $False -and $Policy.EnableOrganizationDomainsProtection -eq $False)
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableTargetedDomainsProtection"
-                    ConfigData=$($Policy.EnableTargetedDomainsProtection)
-                    Control=$this.Control
-                }
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableOrganizationDomainsProtection"
-                    ConfigData=$($Policy.EnableOrganizationDomainsProtection)
-                    Control=$this.Control
-                }           
+                # Check objects
+                $ConfigObject = [ORCACheckConfig]::new()
+
+                $ConfigObject.Object=$($Policy.Name)
+                $ConfigObject.ConfigItem="EnableTargetedDomainsProtection"
+                $ConfigObject.ConfigData=$Policy.EnableTargetedDomainsProtection
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                $this.AddConfig($ConfigObject)
+                
+                # Check objects
+                $ConfigObject = [ORCACheckConfig]::new()
+
+                $ConfigObject.Object=$($Policy.Name)
+                $ConfigObject.ConfigItem="EnableOrganizationDomainsProtection"
+                $ConfigObject.ConfigData=$Policy.EnableOrganizationDomainsProtection
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                
+                $this.AddConfig($ConfigObject)       
             }
-    
+            
             If($Policy.EnableTargetedDomainsProtection -eq $True)
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableTargetedDomainsProtection"
-                    ConfigData=$Policy.EnableTargetedDomainsProtection
-                    Control=$this.Control
-                }            
+
+                $ConfigObject = [ORCACheckConfig]::new()
+                $ConfigObject.Object=$($Policy.Name)
+                $ConfigObject.ConfigItem="EnableTargetedDomainsProtection"
+                $ConfigObject.ConfigData=$Policy.EnableTargetedDomainsProtection
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+
+                $this.AddConfig($ConfigObject)
+
             }
     
             If($Policy.EnableOrganizationDomainsProtection -eq $True)
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableOrganizationDomainsProtection"
-                    ConfigData=$Policy.EnableOrganizationDomainsProtection
-                    Control=$this.Control
-                }            
+
+                $ConfigObject = [ORCACheckConfig]::new()
+                $ConfigObject.Object=$($Policy.Name)
+                $ConfigObject.ConfigItem="EnableOrganizationDomainsProtection"
+                $ConfigObject.ConfigData=$Policy.EnableOrganizationDomainsProtection
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+
+                $this.AddConfig($ConfigObject)
+         
             }
+
+            
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="TargetedDomainProtectionAction"
+            $ConfigObject.ConfigData=$Policy.TargetedDomainProtectionAction
     
             If($Policy.TargetedDomainProtectionAction -ne "Quarantine")
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="TargetedDomainProtectionAction"
-                    ConfigData=$($Policy.TargetedDomainProtectionAction)
-                    Control=$this.Control
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
             }
             Else 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="TargetedDomainProtectionAction"
-                    ConfigData=$($Policy.TargetedDomainProtectionAction)
-                    Control=$this.Control
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")                         
             }
+
+            $this.AddConfig($ConfigObject)
     
         }
     
-        If($this.Results.Count -eq 0)
+        If($PolicyExists -eq $False)
         {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Fail"
-                Object="All"
-                ConfigItem="Enabled"
-                ConfigData="False"
-                Rule="No Enabled AntiPhish Policy"
-                Control=$this.Control
-            }            
+
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object="All"
+            $ConfigObject.ConfigItem="Enabled"
+            $ConfigObject.ConfigData="False"
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")  
+
+            $this.AddConfig($ConfigObject)
+     
         }
 
     }

@@ -29,28 +29,25 @@ class ORCA143 : ORCACheck
         ForEach($Policy in $Config["HostedContentFilterPolicy"]) 
         {
 
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$Policy.Name
+            $ConfigObject.ConfigItem=$($Policy.Name)
+            $ConfigObject.ConfigData=$($Policy.InlineSafetyTipsEnabled)
+
             # Fail if InlineSafetyTipsEnabled is not set to true
     
-            If($Policy.InlineSafetyTipsEnabled -eq $false) 
+            If($Policy.InlineSafetyTipsEnabled -eq $true) 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.InlineSafetyTipsEnabled)
-                    Rule="InlineSafetyTipsEnabled is false - Safety Tips Disabled"
-                    Control=$this.Control
-                } 
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             } 
             else 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.InlineSafetyTipsEnabled)
-                    Rule="InlineSafetyTipsEnabled is true - Safety Tips Enabled"
-                    Control=$this.Control
-                } 
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
+
+            # Add config to check
+            $this.AddConfig($ConfigObject)
+            
         }        
 
     }
