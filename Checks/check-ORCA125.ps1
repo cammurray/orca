@@ -46,28 +46,24 @@ class ORCA125 : ORCACheck
         ForEach($Policy in $Config["MalwareFilterPolicy"]) 
         {
 
-            # Fail if EnableExternalSenderNotifications is set to true in the policy
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="EnableExternalSenderNotifications"
+            $ConfigObject.ConfigData=$($Policy.EnableExternalSenderNotifications)
 
+            # Fail if EnableExternalSenderNotifications is set to true in the policy
             If($Policy.EnableExternalSenderNotifications -eq $true) 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableExternalSenderNotifications"
-                    ConfigData=$($Policy.EnableExternalSenderNotifications)
-                    Control=$this.Control
-                } 
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
             Else
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableExternalSenderNotifications"
-                    ConfigData=$($Policy.EnableExternalSenderNotifications)
-                    Control=$this.Control
-                } 
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
+
+            $this.AddConfig($ConfigObject)
+
         }
 
     }
