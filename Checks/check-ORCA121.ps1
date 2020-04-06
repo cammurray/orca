@@ -48,11 +48,11 @@ class ORCA121 : ORCACheck
 
             If($Policy.SpamAction -eq "MoveToJmf" -or $Policy.SpamAction -eq "Redirect" -or $Policy.SpamAction -eq "Delete" -or $Policy.SpamAction -eq "Quarantine") 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             } 
             else 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
             
             $this.AddConfig($ConfigObject)
@@ -67,11 +67,11 @@ class ORCA121 : ORCACheck
 
             If($Policy.PhishSpamAction -eq "MoveToJmf" -or $Policy.PhishSpamAction -eq "Redirect" -or $Policy.PhishSpamAction -eq "Delete" -or $Policy.PhishSpamAction -eq "Quarantine")
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             } 
             else 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
             
             $this.AddConfig($ConfigObject)
