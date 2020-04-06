@@ -45,41 +45,42 @@ class ORCA205 : ORCACheck
         ForEach($Policy in $Config["MalwareFilterPolicy"])
         {
 
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="EnableFileFilter"
+            $ConfigObject.ConfigData=$($Policy.EnableFileFilter)
+
             # Fail if EnableFileFilter is not set to true or FileTypes is empty in the policy
 
             If($Policy.EnableFileFilter -eq $false) 
             {
-                $EnableFileFilter_Result = "Fail"
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
             Else
             {
-                $EnableFileFilter_Result = "Pass"
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
+
+            $this.AddConfig($ConfigObject)
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="FileTypes"
+            $ConfigObject.ConfigData=$(@($Policy.FileTypes).Count)
 
             If(@($Policy.FileTypes).Count -eq 0) 
             {
-                $Filetypes_Result = "Fail"
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
             Else
             {
-                $Filetypes_Result = "Pass"
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
 
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result=$EnableFileFilter_Result
-                Object=$($Policy.Name)
-                ConfigItem="EnableFileFilter"
-                ConfigData=$($Policy.EnableFileFilter)
-                Control=$this.Control
-            }
+            $this.AddConfig($ConfigObject) 
             
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result=$Filetypes_Result
-                Object=$($Policy.Name)
-                ConfigItem="FileTypes"
-                ConfigData=$(@($Policy.FileTypes).Count)
-                Control=$this.Control
-            } 
         }
         
     }
