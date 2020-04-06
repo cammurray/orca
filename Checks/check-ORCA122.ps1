@@ -27,31 +27,18 @@ class ORCA122 : ORCACheck
 
     GetResults($Config)
     {
-        If($Config["AdminAuditLogConfig"].UnifiedAuditLogIngestionEnabled -eq $true) {
+        If($Config["AdminAuditLogConfig"].UnifiedAuditLogIngestionEnabled -eq $false) 
+        {
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.ConfigItem="UnifiedAuditLogIngestionEnabled"
+            $ConfigObject.ConfigData=$Config["AdminAuditLogConfig"].UnifiedAuditLogIngestionEnabled
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+        
+            $this.AddConfig($ConfigObject)
     
-            # Unified audit logging turned on
-    
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Pass"
-                ConfigItem="UnifiedAuditLogIngestionEnabled"
-                ConfigData=$Config["AdminAuditLogConfig"].UnifiedAuditLogIngestionEnabled
-                Rule="UnifiedAuditLogIngestionEnabled is true"
-                Control=$this.Control
-            } 
-    
-        } else {
-    
-            # Unified audit logging turned off
-    
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Fail"
-                ConfigItem="UnifiedAuditLogIngestionEnabled"
-                ConfigData=$Config["AdminAuditLogConfig"].UnifiedAuditLogIngestionEnabled
-                Rule="UnifiedAuditLogIngestionEnabled is false"
-                Control=$this.Control
-            } 
-    
-        }        
+        }   
 
     }
 
