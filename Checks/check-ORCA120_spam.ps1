@@ -34,24 +34,26 @@ class ORCA120_spam : ORCACheck
 
     GetResults($Config)
     {
-        ForEach($Policy in $Config["HostedContentFilterPolicy"]) {
-            if($Policy.SpamZapEnabled -eq $true) {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.SpamZapEnabled)
-                    Rule="ZAP Spam Enabled"
-                    Control=$this.Control
-                } 
-            } else {
-                $this.Results +=  New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.SpamZapEnabled)
-                    Rule="ZAP Spam Disabled"
-                    Control=$this.Control
-                }
+        ForEach($Policy in $Config["HostedContentFilterPolicy"]) 
+        {
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.ConfigItem=$($Policy.Name)
+            $ConfigObject.ConfigData=$($Policy.SpamZapEnabled)
+
+            if($Policy.SpamZapEnabled -eq $true) 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+            } 
+            else
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
+
+            # Add config to check
+            $this.AddConfig($ConfigObject)
+
         }        
 
     }
