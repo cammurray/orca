@@ -52,7 +52,8 @@ class ORCA189 : ORCACheck
 
                 # Check objects
                 $ConfigObject = [ORCACheckConfig]::new()
-                $ConfigObject.ConfigItem=$($Rule.Name)
+                $ConfigObject.Object=$($Rule.Name)
+                $ConfigObject.ConfigItem=$($Rule.SetHeaderName)
                 $ConfigObject.ConfigData=$($Rule.SetHeaderValue)
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
                 $this.AddConfig($ConfigObject)  
