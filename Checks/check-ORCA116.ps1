@@ -20,9 +20,9 @@ class ORCA116 : ORCACheck
         $this.Services=[ORCAService]::OATP
         $this.Area="Advanced Threat Protection Policies"
         $this.Name="Mailbox Intelligence Protection Action"
-        $this.PassText="Mailbox intelligence based impersonation protection action set to move message to junk mail folder or quarantine"
-        $this.FailRecommendation="Change Mailbox intelligence based impersonation protection action to move message to junk mail folder or quarantine."
-        $this.Importance="Mailbox intelligence protection enhances impersonation protection for users based on each user's individual sender graph. Move messages that are caught to junk mail folder or quarantine."
+        $this.PassText="Mailbox intelligence based impersonation protection action set to move message to junk mail folder"
+        $this.FailRecommendation="Change Mailbox intelligence based impersonation protection action to move message to junk mail folder"
+        $this.Importance="Mailbox intelligence protection enhances impersonation protection for users based on each user's individual sender graph. Move messages that are caught to junk mail folder."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Antiphishing Policy"
