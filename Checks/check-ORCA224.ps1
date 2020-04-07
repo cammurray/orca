@@ -1,6 +1,6 @@
 <#
 
-224 - Check ATP Phishing Mailbox Intelligence Action 
+224 - Check ATP Phishing Similar Users Safety Tips 
 
 #>
 
@@ -19,10 +19,10 @@ class ORCA224 : ORCACheck
         $this.Control=224
         $this.Services=[ORCAService]::OATP
         $this.Area="Advanced Threat Protection Policies"
-        $this.Name="Mailbox Intelligence Action"
-        $this.PassText="Your policy is configured to notify users with a tip."
-        $this.FailRecommendation="Enable tips so that users can receive visible indication on incoming messages."
-        $this.Importance="Mailbox Intelligence checks can provide your users with intelligence on suspicious incoming emails that appear to be from users that they normally communicate with based on their graph."
+        $this.Name="Similar Users Safety Tips"
+        $this.PassText="Similar Users Safety Tips is enabled"
+        $this.FailRecommendation="Enable Similar Users Safety Tips so that users can receive visible indication on incoming messages"
+        $this.Importance="Office 365 ATP can show a warning tip to recipients in messages that might be from an impersonated user."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Antiphishing Policy"
