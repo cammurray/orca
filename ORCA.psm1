@@ -601,7 +601,8 @@ Function Get-ORCAHtmlOutput
             <div class='card-body'>"
 
         # Each check
-        ForEach ($Check in $Area.Group) {
+        ForEach ($Check in ($Area.Group | Sort-Object Result)) 
+        {
 
             $Output += "        
                 <h5>$($Check.Name)</h5>"
@@ -707,7 +708,7 @@ Function Get-ORCAHtmlOutput
                                 }
 
                                 $Output += "
-                                    <td>
+                                    <td style='text-align:right'>
                                         <div class='row badge badge-pill badge-light'>
                                             <span style='vertical-align: middle;'>$($LevelText)</span>
                                             <span class='$($oicon)' style='vertical-align: middle;'></span>
