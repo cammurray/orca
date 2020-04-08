@@ -74,16 +74,16 @@ class ORCA226 : ORCACheck
                     }
                 }
 
-                if($DomainPolicyExists -eq $False)
-                {
-                    # No policy is applying to this domain
+            }
 
-                    $ConfigObject.ConfigItem="No Policy Applying"
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
-        
-                    $this.AddConfig($ConfigObject)     
-                }
+            if($DomainPolicyExists -eq $False)
+            {
+                # No policy is applying to this domain
 
+                $ConfigObject.ConfigItem="No Policy Applying"
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
+    
+                $this.AddConfig($ConfigObject)     
             }
 
         }
