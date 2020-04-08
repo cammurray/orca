@@ -13,7 +13,7 @@ class ORCA102 : ORCACheck
         $this.Control="ORCA-102"
         $this.Area="Content Filter Policies"
         $this.Name="Advanced Spam Filter (ASF)"
-        $this.PassText="Advanced Spam filter options are runed off"
+        $this.PassText="Advanced Spam filter options are turned off"
         $this.FailRecommendation="Turn off Advanced Spam filter (ASF) options in Content filter policies"
         $this.Importance="Settings in the Advanced Spam Filter (ASF) are currently being deprecated. It is recommended to disable ASF settings."
         $this.ExpandResults=$True

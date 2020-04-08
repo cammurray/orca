@@ -22,7 +22,7 @@ class ORCA119 : ORCACheck
         $this.Name="Similar Domains Safety Tips"
         $this.PassText="Similar Domains Safety Tips is enabled"
         $this.FailRecommendation="Enable Similar Domains Safety Tips so that users can receive visible indication on incoming messages."
-        $this.Importance="Office 635 ATP can show a warning tip to recipients in messages that might be from an impersonated domain."
+        $this.Importance="Office 365 ATP can show a warning tip to recipients in messages that might be from an impersonated domain."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Antiphishing Policy"
