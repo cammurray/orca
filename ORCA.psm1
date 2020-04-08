@@ -708,7 +708,7 @@ Function Get-ORCAHtmlOutput
                                 }
 
                                 $Output += "
-                                    <td>
+                                    <td style='text-align:right'>
                                         <div class='row badge badge-pill badge-light'>
                                             <span style='vertical-align: middle;'>$($LevelText)</span>
                                             <span class='$($oicon)' style='vertical-align: middle;'></span>
