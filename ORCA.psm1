@@ -601,7 +601,8 @@ Function Get-ORCAHtmlOutput
             <div class='card-body'>"
 
         # Each check
-        ForEach ($Check in $Area.Group) {
+        ForEach ($Check in ($Area.Group | Sort-Object Result)) 
+        {
 
             $Output += "        
                 <h5>$($Check.Name)</h5>"
