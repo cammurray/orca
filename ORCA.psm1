@@ -483,6 +483,16 @@ Function Get-ORCAHtmlOutput
             "
         }
 
+        If($VersionCheck.Preview -eq $True) {
+
+            $Output += "
+            <div class='alert alert-warning pt-2' role='alert'>
+                You are running a preview version of ORCA! Preview versions may contain errors which could result in an incorrect report. Verify the results and any configuration before deploying changes.
+            </div>
+            
+            "
+        }
+
         If(!($Collection["Services"] -band [ORCAService]::OATP))
         {
             $Output += "
@@ -773,8 +783,30 @@ function Invoke-ORCAVersionCheck
 
     Write-Host "$(Get-Date) Performing ORCA Version check..."
 
-    $ORCAVersion = (Get-Module ORCA | Sort-Object Version -Desc)[0].Version
-    $PSGalleryVersion = (Find-Module ORCA -Repository PSGallery -ErrorAction:SilentlyContinue -WarningAction:SilentlyContinue).Version
+    # When detected we are running the preview release
+    $Preview = $False
+
+    try {
+        $ORCAVersion = (Get-Module ORCA | Sort-Object Version -Desc)[0].Version
+    }
+    catch {
+        $ORCAVersion = (Get-Module ORCAPreview | Sort-Object Version -Desc)[0].Version
+
+        if($ORCAVersion)
+        {
+            $Preview = $True
+        }
+    }
+    
+    if($Preview -eq $False)
+    {
+        $PSGalleryVersion = (Find-Module ORCA -Repository PSGallery -ErrorAction:SilentlyContinue -WarningAction:SilentlyContinue).Version
+    }
+    else 
+    {
+        $PSGalleryVersion = (Find-Module ORCAPreview -Repository PSGallery -ErrorAction:SilentlyContinue -WarningAction:SilentlyContinue).Version
+    }
+    
 
     If($PSGalleryVersion -gt $ORCAVersion)
     {
@@ -796,6 +828,7 @@ function Invoke-ORCAVersionCheck
         Updated=$Updated
         Version=$ORCAVersion
         GalleryVersion=$PSGalleryVersion
+        Preview=$Preview
     }
 }
 
