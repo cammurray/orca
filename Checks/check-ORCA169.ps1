@@ -37,12 +37,12 @@ class ORCA169 : ORCACheck
     GetResults($Config)
     {
 
-        If($Config["AtpPolicy"].EnableSafeLinksForClients -eq $false)
+        If($Config["AtpPolicy"].EnableSafeLinksForO365Clients -eq $false)
         {
 
             $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.ConfigItem="EnableSafeLinksForClients"
-            $ConfigObject.ConfigData=$Config["AtpPolicy"].EnableSafeLinksForClients
+            $ConfigObject.ConfigItem="EnableSafeLinksForO365Clients"
+            $ConfigObject.ConfigData=$Config["AtpPolicy"].EnableSafeLinksForO365Clients
             $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
             $this.AddConfig($ConfigObject)
