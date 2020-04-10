@@ -92,7 +92,7 @@ class ORCA105 : ORCACheck
 
         }
 
-        If($this.Results.Count -eq 0)
+        If(@($Config["SafeLinksPolicy"] | Where-Object {$_.IsEnabled -eq $True}).Count -eq 0)
         {
 
             # Check objects
