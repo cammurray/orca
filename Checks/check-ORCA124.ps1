@@ -28,6 +28,10 @@ class ORCA124 : ORCACheck
         $this.ObjectType="Safe Attachments Policy"
         $this.ItemName="Setting"
         $this.DataType="Current Value"
+        $this.Links= @{
+            "Security & Compliance Center - Safe attachments"="https://protection.office.com/safeattachment"
+            "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
+        }
     }
 
     <#
