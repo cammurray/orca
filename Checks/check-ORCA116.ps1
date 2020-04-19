@@ -29,6 +29,7 @@ class ORCA116 : ORCACheck
         $this.ItemName="Setting"
         $this.DataType="Current Value"
         $this.Links=@{
+            "Security & Compliance Center - Anti-phishing"="https://protection.office.com/antiphishing"
             "Set up Office 365 ATP anti-phishing and anti-phishing policies"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/set-up-anti-phishing-policies?view=o365-worldwide"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
         }   

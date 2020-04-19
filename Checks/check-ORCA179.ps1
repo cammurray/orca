@@ -29,6 +29,10 @@ class ORCA179 : ORCACheck
         $this.Importance="Phishing attacks are not limited from external users. Commonly, when one user is compromised, that user can be used in a process of lateral movement between different accounts in your organization. Configuring Safe Links so that internal messages are also re-written can assist with lateral movement using phishing."
         $this.ItemName="SafeLinks Policy"
         $this.DataType="Enabled for Internal"
+        $this.Links= @{
+            "Security & Compliance Center - Safe links"="https://protection.office.com/safelinksconverged"
+            "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
+        }
     }
 
     <#
