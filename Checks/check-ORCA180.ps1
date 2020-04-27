@@ -21,6 +21,7 @@ class ORCA180 : ORCACheck
         $this.ItemName="Anti Phish Policy"
         $this.DataType="Antispoof Enforced"
         $this.Links= @{
+            "Security & Compliance Center - Anti-phishing"="https://protection.office.com/antiphishing"
             "Anti-spoofing protection in Office 365"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/anti-spoofing-protection"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
         }

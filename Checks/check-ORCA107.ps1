@@ -28,6 +28,7 @@ class ORCA107 : ORCACheck
         $this.ItemName="Setting"
         $this.DataType="Current Value"
         $this.Links= @{
+            "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
             "Configure end-user spam notifications in Exchange Online"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/configure-end-user-spam-notifications-in-exchange-online"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#anti-spam-anti-malware-and-anti-phishing-protection-in-eop"
         }

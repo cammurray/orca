@@ -20,6 +20,7 @@ class ORCA118_1 : ORCACheck
         $this.ItemName="Content Filter Policy"
         $this.DataType="Whitelisted Domain"
         $this.Links= @{
+            "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
             "Use Anti-Spam Policy Sender/Domain Allow lists"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/create-safe-sender-lists-in-office-365#use-anti-spam-policy-senderdomain-allow-lists"
         }
     
