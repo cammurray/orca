@@ -108,8 +108,17 @@ enum ORCAService
 enum ORCAConfigLevel
 {
     None = 0
+    Informational = 4
     Standard = 5
     Strict = 10
+    TooStrict = 15
+}
+
+enum ORCAResult
+{
+    Pass = 1
+    Informational = 2
+    Fail = 3
 }
 
 Class ORCACheckConfig
@@ -120,11 +129,19 @@ Class ORCACheckConfig
         # Constructor
 
         $this.Results += New-Object -TypeName ORCACheckConfigResult -Property @{
+            Level=[ORCAConfigLevel]::Informational
+        }
+
+        $this.Results += New-Object -TypeName ORCACheckConfigResult -Property @{
             Level=[ORCAConfigLevel]::Standard
         }
 
         $this.Results += New-Object -TypeName ORCACheckConfigResult -Property @{
             Level=[ORCAConfigLevel]::Strict
+        }
+
+        $this.Results += New-Object -TypeName ORCACheckConfigResult -Property @{
+            Level=[ORCAConfigLevel]::TooStrict
         }
 
     }
@@ -138,6 +155,10 @@ Class ORCACheckConfig
         if($Result -eq "Pass" -and ($this.Level -lt $Level -or $this.Level -eq [ORCAConfigLevel]::None))
         {
             $this.Level = $Level
+        } 
+        elseif ($Result -eq "Fail" -and ($Level -eq [ORCAConfigLevel]::Informational -and $this.Level -eq [ORCAConfigLevel]::None))
+        {
+            $this.Level = $Level
         }
 
     }
@@ -146,6 +167,7 @@ Class ORCACheckConfig
     $Object
     $ConfigItem
     $ConfigData
+    $InfoText
     [array]$Results
     [ORCAConfigLevel]$Level
 }
@@ -191,9 +213,10 @@ Class ORCACheck
     $Links
     $ORCAParams
 
-    [String] $Result="Pass"
+    [ORCAResult] $Result=[ORCAResult]::Pass
     [int] $FailCount=0
     [int] $PassCount=0
+    [int] $InfoCount=0
     [Boolean] $Completed=$false
     
     # Overridden by check
@@ -204,16 +227,22 @@ Class ORCACheck
         $this.Config += $Config
 
         $this.FailCount = @($this.Config | Where-Object {$_.Level -eq [ORCAConfigLevel]::None}).Count
-        $this.PassCount = @($this.Config | Where-Object {$_.Level -ne [ORCAConfigLevel]::None}).Count
+        $this.PassCount = @($this.Config | Where-Object {$_.Level -eq [ORCAConfigLevel]::Standard -or $_.Level -eq [ORCAConfigLevel]::Strict}).Count
+        $this.InfoCount = @($this.Config | Where-Object {$_.Level -eq [ORCAConfigLevel]::Informational}).Count
 
-        If($this.FailCount -eq 0)
+        If($this.FailCount -eq 0 -and $this.InfoCount -eq 0)
         {
-            $this.Result = "Pass"
+            $this.Result = [ORCAResult]::Pass
+        }
+        elseif($this.FailCount -eq 0 -and $this.InfoCount -gt 0)
+        {
+            $this.Result = [ORCAResult]::Informational
         }
         else 
         {
-            $this.Result = "Fail"
+            $this.Result = [ORCAResult]::Fail    
         }
+
     }
 
     # Run
@@ -345,6 +374,7 @@ Function Get-ORCAHtmlOutput
     # Summary
     $RecommendationCount = $($Checks | Where-Object {$_.Result -eq "Fail"}).Count
     $OKCount = $($Checks | Where-Object {$_.Result -eq "Pass"}).Count
+    $InfoCount = $($Checks | Where-Object {$_.Result -eq "Informational"}).Count
 
     # Misc
     $ReportTitle = "Office 365 ATP Recommended Configuration Analyzer Report"
@@ -518,9 +548,25 @@ Function Get-ORCAHtmlOutput
 
     $Output += "
 
-                <div class='row p-3'>
+                <div class='row p-3'>"
 
-                <div class='col d-flex justify-content-center text-center'>
+                if($InfoCount -gt 0)
+                {
+                    $Output += "
+                    
+                            <div class='col d-flex justify-content-center text-center'>
+                                <div class='card text-white bg-secondary mb-3' style='width: 18rem;'>
+                                    <div class='card-header'><h5>Informational</h4></div>
+                                    <div class='card-body'>
+                                    <h2>$($InfoCount)</h5>
+                                    </div>
+                                </div>
+                            </div>
+                    
+                    "
+                }
+
+$Output +=        "<div class='col d-flex justify-content-center text-center'>
                     <div class='card text-white bg-warning mb-3' style='width: 18rem;'>
                         <div class='card-header'><h5>Recommendations</h4></div>
                         <div class='card-body'>
@@ -537,10 +583,7 @@ Function Get-ORCAHtmlOutput
                         </div>
                     </div>
                 </div>
-
-            </div>
-
-    "
+            </div>"
 
     <#
     
@@ -562,7 +605,9 @@ Function Get-ORCAHtmlOutput
     {
 
         $Pass = @($Area.Group | Where-Object {$_.Result -eq "Pass"}).Count
-        $Fail = @($Area.Group | Where-Object {$_.Result -ne "Pass"}).Count
+        $Fail = @($Area.Group | Where-Object {$_.Result -eq "Fail"}).Count
+        $Info = @($Area.Group | Where-Object {$_.Result -eq "Informational"}).Count
+
         $Icon = $AreaIcon[$Area.Name]
         If($Null -eq $Icon) { $Icon = $AreaIcon["Default"]}
 
@@ -571,6 +616,7 @@ Function Get-ORCAHtmlOutput
             <td width='20'><i class='$Icon'></i>
             <td><a href='`#$($Area.Name)'>$($Area.Name)</a></td>
             <td align='right'>
+                <span class='badge badge-secondary' style='padding:15px'>$($Info)</span>
                 <span class='badge badge-warning' style='padding:15px'>$($Fail)</span>
                 <span class='badge badge-success' style='padding:15px'>$($Pass)</span>
             </td>
@@ -607,13 +653,24 @@ Function Get-ORCAHtmlOutput
             $Output += "        
                 <h5>$($Check.Name)</h5>"
 
-                    If($Check.Result -eq "Pass") {
+                    If($Check.Result -eq "Pass") 
+                    {
                         $CalloutType = "bd-callout-success"
                         $BadgeType = "badge-success"
                         $BadgeName = "OK"
                         $Icon = "fas fa-thumbs-up"
                         $Title = $Check.PassText
-                    } Else {
+                    } 
+                    ElseIf($Check.Result -eq "Informational") 
+                    {
+                        $CalloutType = "bd-callout-secondary"
+                        $BadgeType = "badge-secondary"
+                        $BadgeName = "Informational"
+                        $Icon = "fas fa-thumbs-up"
+                        $Title = $Check.FailRecommendation
+                    }
+                    Else 
+                    {
                         $CalloutType = "bd-callout-warning"
                         $BadgeType = "badge-warning"
                         $BadgeName = "Improvement"
@@ -675,11 +732,16 @@ Function Get-ORCAHtmlOutput
 
                             ForEach($o in $Check.Config)
                             {
-                                if($o.Level -ne [ORCAConfigLevel]::None) 
+                                if($o.Level -ne [ORCAConfigLevel]::None -and $o.Level -ne [ORCAConfigLevel]::Informational) 
                                 {
                                     $oicon="fas fa-check-circle text-success"
                                     $LevelText = $o.Level.ToString()
-                                } 
+                                }
+                                ElseIf($o.Level -eq [ORCAConfigLevel]::Informational) 
+                                {
+                                    $oicon="fas fa-info-circle text-muted"
+                                    $LevelText = $o.Level.ToString()
+                                }
                                 Else
                                 {
                                     $oicon="fas fa-times-circle text-danger"
@@ -716,6 +778,33 @@ Function Get-ORCAHtmlOutput
                                     </td>
                                 </tr>
                                 "
+
+                                # Informational segment
+                                if($o.Level -eq [ORCAConfigLevel]::Informational)
+                                {
+                                    $Output += "
+                                    <tr>"
+                                    If($Check.CheckType -eq [CheckType]::ObjectPropertyValue)
+                                    {
+                                        $Output += "<td colspan='4' style='border: 0;'>"
+                                    }
+                                    else
+                                    {
+                                        $Output += "<td colspan='3' style='border: 0;'>"
+                                    }
+
+                                    $Output += "
+                                    <div class='alert alert-light' role='alert' style='text-align: right;'>
+                                    <span class='fas fa-info-circle text-muted' style='vertical-align: middle; padding-right:5px'></span>
+                                    <span style='vertical-align: middle;'>$($o.InfoText)</span>
+                                    </div>
+                                    "
+                                    
+                                    $Output += "</td></tr>
+                                    
+                                    "
+                                }
+
                             }
 
                             $Output +="
