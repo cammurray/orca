@@ -72,7 +72,17 @@ class ORCA118_2 : ORCACheck
                             $ConfigObject.Object=$($TransportRule.Name)
                             $ConfigObject.ConfigItem="From Domain"
                             $ConfigObject.ConfigData=$($RuleDomain)
-                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                            if($TransportRule.State -eq "Disabled")
+                            {
+                                $ConfigObject.InfoText = "This rule is marked as disabled, while this rule will not apply, it is being flagged incase of accidental enablement."
+                                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                            }
+                            else 
+                            {
+                                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                            }
+
                             $this.AddConfig($ConfigObject)  
 
                         }
@@ -84,7 +94,17 @@ class ORCA118_2 : ORCACheck
                             $ConfigObject.Object=$($TransportRule.Name)
                             $ConfigObject.ConfigItem="From Contains"
                             $ConfigObject."$($FromAddressContains)"
-                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                            if($TransportRule.State -eq "Disabled")
+                            {
+                                $ConfigObject.InfoText = "This rule is marked as disabled, while this rule will not apply, it is being flagged incase of accidental enablement."
+                                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                            }
+                            else 
+                            {
+                                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                            }
+
                             $this.AddConfig($ConfigObject)  
 
                         }
@@ -96,7 +116,17 @@ class ORCA118_2 : ORCACheck
                             $ConfigObject.Object=$($TransportRule.Name)
                             $ConfigObject.ConfigItem="From Matches"
                             $ConfigObject."$($FromAddressMatch)"
-                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                            if($TransportRule.State -eq "Disabled")
+                            {
+                                $ConfigObject.InfoText = "This rule is marked as disabled, while this rule will not apply, it is being flagged incase of accidental enablement."
+                                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                            }
+                            else 
+                            {
+                                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                            }
+                            
                             $this.AddConfig($ConfigObject) 
 
                         }
@@ -113,7 +143,17 @@ class ORCA118_2 : ORCACheck
                         $ConfigObject.Object=$($TransportRule.Name)
                         $ConfigObject.ConfigItem="IP Range"
                         $ConfigObject.ConfigData=$SenderIpRange
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+                        if($TransportRule.State -eq "Disabled")
+                        {
+                            $ConfigObject.InfoText = "This rule is marked as disabled, while this rule will not apply, it is being flagged incase of accidental enablement."
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                        }
+                        else 
+                        {
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                        }
+                        
                         $this.AddConfig($ConfigObject) 
                     }
                 }
