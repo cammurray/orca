@@ -29,6 +29,7 @@ class ORCA226 : ORCACheck
         $this.ItemName="Policy"
         $this.DataType="Priority"
         $this.Links= @{
+            "Security & Compliance Center - Safe links"="https://protection.office.com/safelinksconverged"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
         }
     }

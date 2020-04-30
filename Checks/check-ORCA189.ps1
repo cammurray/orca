@@ -31,6 +31,9 @@ class ORCA189 : ORCACheck
         $this.ItemName="Setting"
         $this.DataType="Current Value"
         $this.CheckType = [CheckType]::ObjectPropertyValue
+        $this.Links= @{
+            "Exchange admin center in Exchange Online"="https://outlook.office365.com/ecp/"
+        }
     }
 
     <#

@@ -22,6 +22,7 @@ class ORCA100 : ORCACheck
         $this.Links= @{
             "Bulk Complaint Level values"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/bulk-complaint-level-values"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#anti-spam-anti-malware-and-anti-phishing-protection-in-eop"
+            "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
         }
     
     }
