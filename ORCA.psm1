@@ -616,9 +616,9 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
             <td width='20'><i class='$Icon'></i>
             <td><a href='`#$($Area.Name)'>$($Area.Name)</a></td>
             <td align='right'>
-                <span class='badge badge-secondary' style='padding:15px'>$($Info)</span>
-                <span class='badge badge-warning' style='padding:15px'>$($Fail)</span>
-                <span class='badge badge-success' style='padding:15px'>$($Pass)</span>
+                <span class='badge badge-secondary' style='padding:15px;text-align:center;width:40px;"; if($Info -eq 0) { $output += "opacity: 0.1;" }; $output += "'>$($Info)</span>
+                <span class='badge badge-warning' style='padding:15px;text-align:center;width:40px;"; if($Fail -eq 0) { $output += "opacity: 0.1;" }; $output += "'>$($Fail)</span>
+                <span class='badge badge-success' style='padding:15px;text-align:center;width:40px;"; if($Pass -eq 0) { $output += "opacity: 0.1;" }; $output += "'>$($Pass)</span>
             </td>
         </tr>
         "
