@@ -52,6 +52,14 @@ class ORCA104 : ORCACheck
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
 
+            # For informational Fail if BulkSpamAction is set to Delete
+            
+            If($Policy.HighConfidencePhishAction -eq "Redirect")
+            {
+                $ConfigObject.InfoText = "Sends the message to other recipients instead of the intended recipients."
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+            }
+
             # Add config to check
             $this.AddConfig($ConfigObject)
 
