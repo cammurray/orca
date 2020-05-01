@@ -64,6 +64,14 @@ class ORCA141 : ORCACheck
                 $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
             }
             
+            # For informational Fail if BulkSpamAction is set to Delete
+            
+            If($Policy.BulkSpamAction -eq "Delete")
+            {
+                $ConfigObject.InfoText = "The entire message is silently deleted, including all attachments and not availible in the quarantine."
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+            }
+
             $this.AddConfig($ConfigObject)
 
         }        
