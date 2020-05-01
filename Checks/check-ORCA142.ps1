@@ -54,6 +54,14 @@ class ORCA142 : ORCACheck
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
 
+            # For informational Fail if PhishSpamAction is set to Delete
+            
+            If($Policy.PhishSpamAction -eq "Delete")
+            {
+                $ConfigObject.InfoText = "The entire message is silently deleted, including all attachments and not availible in the quarantine."
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+            }
+
             # Add config to check
             $this.AddConfig($ConfigObject)
             
