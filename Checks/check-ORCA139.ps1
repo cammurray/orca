@@ -61,6 +61,13 @@ class ORCA139 : ORCACheck
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
             }
+
+            # If action is Delete pass as informational
+            If($Policy.SpamAction -eq "Delete")
+            {
+                $ConfigObject.InfoText = "The entire message is silently deleted, including all attachments and not availible in the quarantine."
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+            }
             
             $this.AddConfig($ConfigObject)
             
