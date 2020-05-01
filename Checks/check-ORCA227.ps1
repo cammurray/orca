@@ -45,15 +45,10 @@ class ORCA227 : ORCACheck
 
         ForEach($AcceptedDomain in $Config["AcceptedDomains"]) 
         {
-    
-            #$AcceptedDomain.Name
-
-            $DomainPolicyExists = $False
 
             # Set up the config object
-            $ConfigObject = [ORCACheckConfig]::new()
 
-            $ConfigObject.Object=$($AcceptedDomain.Name)
+            $Rules = @()
 
             # Go through each Safe Links Policy
 
@@ -65,22 +60,53 @@ class ORCA227 : ORCACheck
                     {
                         # Policy applies to this domain
 
-                        $DomainPolicyExists = $True
+                        $Rules += New-Object -TypeName PSObject -Property @{
+                            PolicyName=$($Rule.SafeAttachmentPolicy)
+                            Priority=$($Rule.Priority)
+                        }
 
-                        $ConfigObject.ConfigItem=$($Rule.SafeAttachmentPolicy)
-                        $ConfigObject.ConfigData=$($Rule.Priority)
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-
-                        $this.AddConfig($ConfigObject)
                     }
                 }
 
             }
 
-            if($DomainPolicyExists -eq $False)
+            If($Rules.Count -gt 0)
+            {
+                $Count = 0
+
+                ForEach($r in ($Rules | Sort-Object Priority))
+                {
+
+                    $Count++
+
+                    $ConfigObject = [ORCACheckConfig]::new()
+
+                    $ConfigObject.Object=$($AcceptedDomain.Name)
+                    $ConfigObject.ConfigItem=$($r.PolicyName)
+                    $ConfigObject.ConfigData=$($r.Priority)
+
+                    If($Count -eq 1)
+                    {
+                        # First policy based on priority is a pass
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                    }
+                    else
+                    {
+                        # Additional policies based on the priority should be listed as informational
+                        $ConfigObject.InfoText = "There are multiple policies that apply to this domain, only the policy with the lowest priority will apply. This policy may not apply based on a lower priority."
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                    }    
+
+                    $this.AddConfig($ConfigObject)
+                }
+            } 
+            elseif($Rules.Count -eq 0)
             {
                 # No policy is applying to this domain
 
+                $ConfigObject = [ORCACheckConfig]::new()
+
+                $ConfigObject.Object=$($AcceptedDomain.Name)
                 $ConfigObject.ConfigItem="No Policy Applying"
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
     
