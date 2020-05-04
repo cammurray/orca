@@ -22,7 +22,7 @@ class ORCA227 : ORCACheck
         $this.Name="Safe Attachments Policy Rules"
         $this.PassText="Each domain has a Safe Attachments policy applied to it"
         $this.FailRecommendation="Apply a Safe Attachments policy to every domain"
-        $this.Importance="Office 365 ATP Safe Attachments policies are applied using rules. The recipient domain condition is the most effective way of applying the Safe Attachments policy, ensuring no users are left without protection."
+        $this.Importance="Office 365 ATP Safe Attachments policies are applied using rules. The recipient domain condition is the most effective way of applying the Safe Attachments policy, ensuring no users are left without protection. If polices are applied using group membership make sure you cover all users through this method. Applying polices this way can be challenging, users may left unprotected if group memberships are not accurate and up to date."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Domain"
