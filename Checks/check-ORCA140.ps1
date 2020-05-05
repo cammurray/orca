@@ -52,6 +52,13 @@ class ORCA140 : ORCACheck
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
 
+            # For either Delete or Quarantine we should raise an informational
+            If($Policy.HighConfidenceSpamAction -eq "Delete" -or $Policy.HighConfidenceSpamAction -eq "Redirect")
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.InfoText = "The $($Policy.HighConfidenceSpamAction) option may impact the users ability to release emails and may impact user experience."
+            }
+
             # Add config to check
             $this.AddConfig($ConfigObject)
             
