@@ -64,6 +64,13 @@ class ORCA124 : ORCACheck
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
 
+            If($Policy.Action -eq "Replace" -or $Policy.Action -eq "DynamicDelivery")
+            {
+                $Enabled = $True
+                $ConfigObject.InfoText = "Attachments with detected malware will be blocked, the body of the email message delivered to the recipient."
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+            }
+
             $this.AddConfig($ConfigObject)
         }
 
