@@ -63,6 +63,14 @@ class ORCA141 : ORCACheck
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
             }
+
+            # For either Delete or Quarantine we should raise an informational
+
+            If($Policy.BulkSpamAction -eq "Delete" -or $Policy.BulkSpamAction -eq "Redirect")
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.InfoText = "The $($Policy.BulkSpamAction) option may impact the users ability to release emails and may impact user experience."
+            }
             
             $this.AddConfig($ConfigObject)
 

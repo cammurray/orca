@@ -324,6 +324,7 @@ Function Get-ORCACollection
     {
         Write-Host "$(Get-Date) Getting Anti Phish Settings"
         $Collection["AntiPhishPolicy"] = Get-AntiphishPolicy
+        $Collection["AntiPhishRules"] = Get-AntiPhishRule
     }
 
     Write-Host "$(Get-Date) Getting Anti-Malware Settings"
@@ -647,7 +648,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
             <div class='card-body'>"
 
         # Each check
-        ForEach ($Check in ($Area.Group | Sort-Object Result)) 
+        ForEach ($Check in ($Area.Group | Sort-Object Result -Descending)) 
         {
 
             $Output += "        

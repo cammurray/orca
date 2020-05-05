@@ -48,11 +48,19 @@ class ORCA142 : ORCACheck
             If($Policy.PhishSpamAction -eq "Quarantine") 
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-            } 
+            }
             else 
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
+            
+            If($Policy.PhishSpamAction -eq "Delete" -or $Policy.PhishSpamAction -eq "Redirect")
+            {
+                # For either Delete or Quarantine we should raise an informational
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.InfoText = "The $($Policy.PhishSpamAction) option may impact the users ability to release emails and may impact user experience."
+            }
+
 
             # Add config to check
             $this.AddConfig($ConfigObject)
