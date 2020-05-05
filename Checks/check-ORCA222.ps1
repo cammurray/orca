@@ -106,13 +106,20 @@ class ORCA222 : ORCACheck
             $ConfigObject.ConfigItem="TargetedDomainProtectionAction"
             $ConfigObject.ConfigData=$Policy.TargetedDomainProtectionAction
     
-            If($Policy.TargetedDomainProtectionAction -ne "Quarantine")
+            If($Policy.TargetedDomainProtectionAction -eq "Quarantine")
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")            
             }
             Else 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")                         
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")  
+            }
+
+            If($Policy.TargetedDomainProtectionAction -eq "Delete" -or $Policy.TargetedDomainProtectionAction -eq "Redirect")
+            {
+                # For either Delete or Quarantine we should raise an informational
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.InfoText = "The $($Policy.TargetedDomainProtectionAction) option may impact the users ability to release emails and may impact user experience."
             }
 
             $this.AddConfig($ConfigObject)
