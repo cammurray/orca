@@ -22,8 +22,16 @@ class ORCA158 : ORCACheck
         $this.Name="Safe Attachments SharePoint and Teams"
         $this.PassText="Safe Attachments is enabled for SharePoint and Teams"
         $this.FailRecommendation="Enable Safe Attachments for SharePoint and Teams"
-        $this.Importance="Safe Attachments assists scanning for zero day malware by using behavioural analysis and sandboxing, supplimenting signature definitions."
-        $this.CheckType = [CheckType]::ObjectPropertyValue
+        $this.Importance="Safe Attachments can assist by scanning for zero day malware by using behavioural analysis and sandboxing techniques. These checks suppliment signature definitions."
+        $this.ExpandResults=$True
+        $this.CheckType=[CheckType]::ObjectPropertyValue
+        $this.ObjectType="Safe Attachments Policy"
+        $this.ItemName="Setting"
+        $this.DataType="Current Value"
+        $this.Links= @{
+            "Security & Compliance Center - Safe attachments"="https://protection.office.com/safeattachment"
+            "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
+        }
     }
 
     <#
@@ -35,27 +43,21 @@ class ORCA158 : ORCACheck
     GetResults($Config)
     {
 
+        $ConfigObject = [ORCACheckConfig]::new()
+        $ConfigObject.Object=$Config["AtpPolicy"].Name
+        $ConfigObject.ConfigItem="EnableATPForSPOTeamsODB"
+        $ConfigObject.ConfigData=$Config["AtpPolicy"].EnableATPForSPOTeamsODB
         # Determine if ATP is enabled or not
-        If($Config["AtpPolicy"].EnableATPForSPOTeamsODB -eq $true) 
+        If($Config["AtpPolicy"].EnableATPForSPOTeamsODB -eq $false) 
         {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Pass"
-                Object="Global Policy"
-                ConfigItem="EnableATPForSPOTeamsODB"
-                ConfigData=$Config["AtpPolicy"].EnableATPForSPOTeamsODB
-                Control=$this.Control
-            }
-        } 
-        else 
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")   
+        }
+        Else
         {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Fail"
-                Object="Global Policy"
-                ConfigItem="EnableATPForSPOTeamsODB"
-                ConfigData=$Config["AtpPolicy"].EnableATPForSPOTeamsODB
-                Control=$this.Control
-            }
-        }      
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")     
+        }
+        
+        $this.AddConfig($ConfigObject)
 
     }
 

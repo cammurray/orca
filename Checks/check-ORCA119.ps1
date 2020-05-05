@@ -1,12 +1,12 @@
 <#
 
-224 - Check ATP Phishing Similar Users Safety Tips 
+119 - Check ATP anti-phishing policy EnableSimilarDomainsSafetyTips 
 
 #>
 
 using module "..\ORCA.psm1"
 
-class ORCA224 : ORCACheck
+class ORCA119 : ORCACheck
 {
     <#
     
@@ -14,15 +14,15 @@ class ORCA224 : ORCACheck
     
     #>
 
-    ORCA224()
+    ORCA119()
     {
-        $this.Control=224
+        $this.Control=119
         $this.Services=[ORCAService]::OATP
         $this.Area="Advanced Threat Protection Policies"
-        $this.Name="Similar Users Safety Tips"
-        $this.PassText="Similar Users Safety Tips is enabled"
-        $this.FailRecommendation="Enable Similar Users Safety Tips so that users can receive visible indication on incoming messages"
-        $this.Importance="Office 365 ATP can show a warning tip to recipients in messages that might be from an impersonated user."
+        $this.Name="Similar Domains Safety Tips"
+        $this.PassText="Similar Domains Safety Tips is enabled"
+        $this.FailRecommendation="Enable Similar Domains Safety Tips so that users can receive visible indication on incoming messages."
+        $this.Importance="Office 365 ATP can show a warning tip to recipients in messages that might be from an impersonated domain."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Antiphishing Policy"
@@ -50,15 +50,15 @@ class ORCA224 : ORCACheck
 
             $PolicyExists = $True
 
-            #  Determine if tips for user impersonation is on
+            #  Determine if tips for domain impersonation is on
 
             $ConfigObject = [ORCACheckConfig]::new()
 
             $ConfigObject.Object=$($Policy.Name)
-            $ConfigObject.ConfigItem="EnableSimilarUsersSafetyTips"
-            $ConfigObject.ConfigData=$Policy.EnableSimilarUsersSafetyTips
+            $ConfigObject.ConfigItem="EnableSimilarDomainsSafetyTips"
+            $ConfigObject.ConfigData=$Policy.EnableSimilarDomainsSafetyTips
 
-            If($Policy.EnableSimilarUsersSafetyTips -eq $false)
+            If($Policy.EnableSimilarDomainsSafetyTips -eq $false)
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
             }

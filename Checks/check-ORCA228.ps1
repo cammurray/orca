@@ -1,12 +1,12 @@
 <#
 
-224 - Check ATP Phishing Similar Users Safety Tips 
+ORCA-228 - Check ATP Anti-Phishing trusted senders  
 
 #>
 
 using module "..\ORCA.psm1"
 
-class ORCA224 : ORCACheck
+class ORCA228 : ORCACheck
 {
     <#
     
@@ -14,15 +14,15 @@ class ORCA224 : ORCACheck
     
     #>
 
-    ORCA224()
+    ORCA228()
     {
-        $this.Control=224
+        $this.Control=228
         $this.Services=[ORCAService]::OATP
         $this.Area="Advanced Threat Protection Policies"
-        $this.Name="Similar Users Safety Tips"
-        $this.PassText="Similar Users Safety Tips is enabled"
-        $this.FailRecommendation="Enable Similar Users Safety Tips so that users can receive visible indication on incoming messages"
-        $this.Importance="Office 365 ATP can show a warning tip to recipients in messages that might be from an impersonated user."
+        $this.Name="Anti-phishing trusted senders"
+        $this.PassText="No trusted senders in Anti-phishing policy"
+        $this.FailRecommendation="Remove whitelisting on senders in Anti-phishing policy"
+        $this.Importance="Depends on your organization, but we recommend adding users that incorrectly get marked as phish due to impersonation only and not other filters."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Antiphishing Policy"
@@ -55,16 +55,16 @@ class ORCA224 : ORCACheck
             $ConfigObject = [ORCACheckConfig]::new()
 
             $ConfigObject.Object=$($Policy.Name)
-            $ConfigObject.ConfigItem="EnableSimilarUsersSafetyTips"
-            $ConfigObject.ConfigData=$Policy.EnableSimilarUsersSafetyTips
+            $ConfigObject.ConfigItem="ExcludedSenders"
+            $ConfigObject.ConfigData=$Policy.ExcludedSenders
 
-            If($Policy.EnableSimilarUsersSafetyTips -eq $false)
+            If(($Policy.ExcludedSenders).count -eq 0)
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")            
             }
             Else 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")                         
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")                         
             }
 
             $this.AddConfig($ConfigObject)
@@ -79,7 +79,7 @@ class ORCA224 : ORCACheck
             $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
 
             $this.AddConfig($ConfigObject)      
-        }             
+        }        
 
     }
 

@@ -22,11 +22,19 @@ class ORCA169 : ORCACheck
         $this.Control=169
         $this.Services=[ORCAService]::OATP
         $this.Area="Advanced Threat Protection Policies"
-        $this.Name="Office Enablement"
+        $this.Name="Safe Links Office Enablement"
         $this.PassText="Safe Links is enabled for Office ProPlus, Office for iOS and Android"
         $this.FailRecommendation="Enable Safe Links for Office ProPlus, Office for iOS and Android"
         $this.Importance="Phishing attacks are not limited to email messages. Malicious URLs can be delivered using Office documents as well. Configuring Office 365 ATP Safe Links for Office ProPlus,  Office for iOS and Android can help combat against these attacks via providing time-of-click verification of web addresses (URLs) in Office documents."
-        $this.CheckType = [CheckType]::ObjectPropertyValue
+        $this.ExpandResults=$True
+        $this.CheckType=[CheckType]::ObjectPropertyValue
+        $this.ObjectType="Safe Links Policy"
+        $this.ItemName="Setting"
+        $this.DataType="Current Value"
+        $this.Links= @{
+            "Security & Compliance Center - Safe links"="https://protection.office.com/safelinksconverged"
+            "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
+        }
     }
 
     <#
@@ -38,28 +46,21 @@ class ORCA169 : ORCACheck
     GetResults($Config)
     {
 
-        If($Config["AtpPolicy"].EnableSafeLinksForClients -eq $true)
-        {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Pass"
-                Object="Global Policy"
-                ConfigItem="EnableSafeLinksForClients"
-                ConfigData=$Config["AtpPolicy"].EnableSafeLinksForClients
-                Rule="SafeLinks URL Tracking Enabled for Office Clients"
-                Control=$this.Control
-            }
-        } 
+        $ConfigObject = [ORCACheckConfig]::new()
+        $ConfigObject.Object=$Config["AtpPolicy"].Name
+        $ConfigObject.ConfigItem="EnableSafeLinksForO365Clients"
+        $ConfigObject.ConfigData=$Config["AtpPolicy"].EnableSafeLinksForO365Clients
+
+        If($Config["AtpPolicy"].EnableSafeLinksForO365Clients -eq $false)
+        {   
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+        }
         Else 
         {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Fail"
-                Object="Global Policy"
-                ConfigItem="EnableSafeLinksForClients"
-                ConfigData=$Config["AtpPolicy"].EnableSafeLinksForClients
-                Rule="SafeLinks URL Tracking Enabled for Office Clients"
-                Control=$this.Control
-            }
-        }        
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+        }   
+
+        $this.AddConfig($ConfigObject)
 
     }
 

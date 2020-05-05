@@ -9,11 +9,11 @@
 
 	.NOTES
 		Cam Murray
-		Field Engineer - Microsoft
+		Senior Program Manager - Microsoft
         camurray@microsoft.com
         
         Daniel Mozes
-        Field Engineer - Microsoft
+        Senior Program Manager - Microsoft
         damozes@microsoft.com
 
         Output report uses open source components for HTML formatting
@@ -105,14 +105,77 @@ enum ORCAService
     OATP = 2
 }
 
-Class ORCACheckResult
+enum ORCAConfigLevel
 {
-    $Result
+    None = 0
+    Informational = 4
+    Standard = 5
+    Strict = 10
+    TooStrict = 15
+}
+
+enum ORCAResult
+{
+    Pass = 1
+    Informational = 2
+    Fail = 3
+}
+
+Class ORCACheckConfig
+{
+
+    ORCACheckConfig()
+    {
+        # Constructor
+
+        $this.Results += New-Object -TypeName ORCACheckConfigResult -Property @{
+            Level=[ORCAConfigLevel]::Informational
+        }
+
+        $this.Results += New-Object -TypeName ORCACheckConfigResult -Property @{
+            Level=[ORCAConfigLevel]::Standard
+        }
+
+        $this.Results += New-Object -TypeName ORCACheckConfigResult -Property @{
+            Level=[ORCAConfigLevel]::Strict
+        }
+
+        $this.Results += New-Object -TypeName ORCACheckConfigResult -Property @{
+            Level=[ORCAConfigLevel]::TooStrict
+        }
+
+    }
+
+    # Set the result for this mode
+    SetResult([ORCAConfigLevel]$Level,$Result)
+    {
+        ($this.Results | Where-Object {$_.Level -eq $Level}).Value = $Result
+
+        # The level of this configuration should be its strongest result (e.g if its currently standard and we have a strict pass, we should make the level strict)
+        if($Result -eq "Pass" -and ($this.Level -lt $Level -or $this.Level -eq [ORCAConfigLevel]::None))
+        {
+            $this.Level = $Level
+        } 
+        elseif ($Result -eq "Fail" -and ($Level -eq [ORCAConfigLevel]::Informational -and $this.Level -eq [ORCAConfigLevel]::None))
+        {
+            $this.Level = $Level
+        }
+
+    }
+
     $Check
+    $Object
     $ConfigItem
     $ConfigData
-    $Rule
-    $Control
+    $InfoText
+    [array]$Results
+    [ORCAConfigLevel]$Level
+}
+
+Class ORCACheckConfigResult
+{
+    [ORCAConfigLevel]$Level=[ORCAConfigLevel]::Standard
+    $Value
 }
 
 Class ORCACheck
@@ -134,7 +197,7 @@ Class ORCACheck
 
     #>
 
-    [Array] $Results=@()
+    [Array] $Config=@()
     [string] $Control
     [String] $Area
     [String] $Name
@@ -148,30 +211,38 @@ Class ORCACheck
     [ORCAService]$Services = [ORCAService]::EOP
     [CheckType] $CheckType = [CheckType]::PropertyValue
     $Links
+    $ORCAParams
 
-    [String] $Result
-    [int] $FailCount
-    [int] $PassCount
+    [ORCAResult] $Result=[ORCAResult]::Pass
+    [int] $FailCount=0
+    [int] $PassCount=0
+    [int] $InfoCount=0
     [Boolean] $Completed=$false
     
     # Overridden by check
     GetResults($Config) { }
 
-    SummariseResults()
+    AddConfig([ORCACheckConfig]$Config)
     {
-        $FailResults = @($this.Results | Where-Object {$_.Result -eq "Fail"})
-        $PassResults = @($this.Results | Where-Object {$_.Result -eq "Pass"})
+        $this.Config += $Config
 
-        $this.FailCount = $($FailResults.Count)
-        $this.PassCount = $($PassResults.Count)
+        $this.FailCount = @($this.Config | Where-Object {$_.Level -eq [ORCAConfigLevel]::None}).Count
+        $this.PassCount = @($this.Config | Where-Object {$_.Level -eq [ORCAConfigLevel]::Standard -or $_.Level -eq [ORCAConfigLevel]::Strict}).Count
+        $this.InfoCount = @($this.Config | Where-Object {$_.Level -eq [ORCAConfigLevel]::Informational}).Count
 
-        If($($FailResults.Count) -eq 0)
+        If($this.FailCount -eq 0 -and $this.InfoCount -eq 0)
         {
-            $this.Result = "Pass"
+            $this.Result = [ORCAResult]::Pass
         }
-        else {
-            $this.Result = "Fail"
+        elseif($this.FailCount -eq 0 -and $this.InfoCount -gt 0)
+        {
+            $this.Result = [ORCAResult]::Informational
         }
+        else 
+        {
+            $this.Result = [ORCAResult]::Fail    
+        }
+
     }
 
     # Run
@@ -180,7 +251,14 @@ Class ORCACheck
         Write-Host "$(Get-Date) Analysis - $($this.Area) - $($this.Name)"
         
         $this.GetResults($Config)
-        $this.SummariseResults()
+
+        # If there is no results to expand, turn off ExpandResults
+        if($this.Config.Count -eq 0)
+        {
+            $this.ExpandResults = $false
+        }
+
+        # Set check module to completed
         $this.Completed=$true
     }
 
@@ -188,6 +266,10 @@ Class ORCACheck
 
 Function Get-ORCACheckDefs
 {
+    Param
+    (
+        $ORCAParams
+    )
 
     $Checks = @()
 
@@ -200,7 +282,12 @@ Function Get-ORCACheckDefs
         {
             Write-Verbose "Importing $($matches[1])"
             . $CheckFile.FullName
-            $Checks += New-Object -TypeName $matches[1]
+            $Check = New-Object -TypeName $matches[1]
+
+            # Set the ORCAParams
+            $Check.ORCAParams = $ORCAParams
+
+            $Checks += $Check
         }
     }
 
@@ -237,6 +324,7 @@ Function Get-ORCACollection
     {
         Write-Host "$(Get-Date) Getting Anti Phish Settings"
         $Collection["AntiPhishPolicy"] = Get-AntiphishPolicy
+        $Collection["AntiPhishRules"] = Get-AntiPhishRule
     }
 
     Write-Host "$(Get-Date) Getting Anti-Malware Settings"
@@ -287,6 +375,7 @@ Function Get-ORCAHtmlOutput
     # Summary
     $RecommendationCount = $($Checks | Where-Object {$_.Result -eq "Fail"}).Count
     $OKCount = $($Checks | Where-Object {$_.Result -eq "Pass"}).Count
+    $InfoCount = $($Checks | Where-Object {$_.Result -eq "Informational"}).Count
 
     # Misc
     $ReportTitle = "Office 365 ATP Recommended Configuration Analyzer Report"
@@ -425,6 +514,16 @@ Function Get-ORCAHtmlOutput
             "
         }
 
+        If($VersionCheck.Preview -eq $True) {
+
+            $Output += "
+            <div class='alert alert-warning pt-2' role='alert'>
+                You are running a preview version of ORCA! Preview versions may contain errors which could result in an incorrect report. Verify the results and any configuration before deploying changes.
+            </div>
+            
+            "
+        }
+
         If(!($Collection["Services"] -band [ORCAService]::OATP))
         {
             $Output += "
@@ -450,9 +549,25 @@ Function Get-ORCAHtmlOutput
 
     $Output += "
 
-                <div class='row p-3'>
+                <div class='row p-3'>"
 
-                <div class='col d-flex justify-content-center text-center'>
+                if($InfoCount -gt 0)
+                {
+                    $Output += "
+                    
+                            <div class='col d-flex justify-content-center text-center'>
+                                <div class='card text-white bg-secondary mb-3' style='width: 18rem;'>
+                                    <div class='card-header'><h5>Informational</h4></div>
+                                    <div class='card-body'>
+                                    <h2>$($InfoCount)</h5>
+                                    </div>
+                                </div>
+                            </div>
+                    
+                    "
+                }
+
+$Output +=        "<div class='col d-flex justify-content-center text-center'>
                     <div class='card text-white bg-warning mb-3' style='width: 18rem;'>
                         <div class='card-header'><h5>Recommendations</h4></div>
                         <div class='card-body'>
@@ -469,10 +584,7 @@ Function Get-ORCAHtmlOutput
                         </div>
                     </div>
                 </div>
-
-            </div>
-
-    "
+            </div>"
 
     <#
     
@@ -494,7 +606,9 @@ Function Get-ORCAHtmlOutput
     {
 
         $Pass = @($Area.Group | Where-Object {$_.Result -eq "Pass"}).Count
-        $Fail = @($Area.Group | Where-Object {$_.Result -ne "Pass"}).Count
+        $Fail = @($Area.Group | Where-Object {$_.Result -eq "Fail"}).Count
+        $Info = @($Area.Group | Where-Object {$_.Result -eq "Informational"}).Count
+
         $Icon = $AreaIcon[$Area.Name]
         If($Null -eq $Icon) { $Icon = $AreaIcon["Default"]}
 
@@ -503,8 +617,9 @@ Function Get-ORCAHtmlOutput
             <td width='20'><i class='$Icon'></i>
             <td><a href='`#$($Area.Name)'>$($Area.Name)</a></td>
             <td align='right'>
-                <span class='badge badge-warning' style='padding:15px'>$($Fail)</span>
-                <span class='badge badge-success' style='padding:15px'>$($Pass)</span>
+                <span class='badge badge-secondary' style='padding:15px;text-align:center;width:40px;"; if($Info -eq 0) { $output += "opacity: 0.1;" }; $output += "'>$($Info)</span>
+                <span class='badge badge-warning' style='padding:15px;text-align:center;width:40px;"; if($Fail -eq 0) { $output += "opacity: 0.1;" }; $output += "'>$($Fail)</span>
+                <span class='badge badge-success' style='padding:15px;text-align:center;width:40px;"; if($Pass -eq 0) { $output += "opacity: 0.1;" }; $output += "'>$($Pass)</span>
             </td>
         </tr>
         "
@@ -533,18 +648,30 @@ Function Get-ORCAHtmlOutput
             <div class='card-body'>"
 
         # Each check
-        ForEach ($Check in $Area.Group) {
+        ForEach ($Check in ($Area.Group | Sort-Object Result -Descending)) 
+        {
 
             $Output += "        
                 <h5>$($Check.Name)</h5>"
 
-                    If($Check.Result -eq "Pass") {
+                    If($Check.Result -eq "Pass") 
+                    {
                         $CalloutType = "bd-callout-success"
                         $BadgeType = "badge-success"
                         $BadgeName = "OK"
                         $Icon = "fas fa-thumbs-up"
                         $Title = $Check.PassText
-                    } Else {
+                    } 
+                    ElseIf($Check.Result -eq "Informational") 
+                    {
+                        $CalloutType = "bd-callout-secondary"
+                        $BadgeType = "badge-secondary"
+                        $BadgeName = "Informational"
+                        $Icon = "fas fa-thumbs-up"
+                        $Title = $Check.FailRecommendation
+                    }
+                    Else 
+                    {
                         $CalloutType = "bd-callout-warning"
                         $BadgeType = "badge-warning"
                         $BadgeName = "Improvement"
@@ -604,12 +731,22 @@ Function Get-ORCAHtmlOutput
                                     <tbody>
                             "
 
-                            ForEach($o in $Check.Results)
+                            ForEach($o in $Check.Config)
                             {
-                                if($o.Result -eq "Pass") {
+                                if($o.Level -ne [ORCAConfigLevel]::None -and $o.Level -ne [ORCAConfigLevel]::Informational) 
+                                {
                                     $oicon="fas fa-check-circle text-success"
-                                } Else{
+                                    $LevelText = $o.Level.ToString()
+                                }
+                                ElseIf($o.Level -eq [ORCAConfigLevel]::Informational) 
+                                {
+                                    $oicon="fas fa-info-circle text-muted"
+                                    $LevelText = $o.Level.ToString()
+                                }
+                                Else
+                                {
                                     $oicon="fas fa-times-circle text-danger"
+                                    $LevelText = "Not Recommended"
                                 }
 
                                 $Output += "
@@ -634,9 +771,41 @@ Function Get-ORCAHtmlOutput
                                 }
 
                                 $Output += "
-                                    <td><i class='$($oicon)'></i></td>
+                                    <td style='text-align:right'>
+                                        <div class='row badge badge-pill badge-light'>
+                                            <span style='vertical-align: middle;'>$($LevelText)</span>
+                                            <span class='$($oicon)' style='vertical-align: middle;'></span>
+                                        </div>
+                                    </td>
                                 </tr>
                                 "
+
+                                # Informational segment
+                                if($o.Level -eq [ORCAConfigLevel]::Informational)
+                                {
+                                    $Output += "
+                                    <tr>"
+                                    If($Check.CheckType -eq [CheckType]::ObjectPropertyValue)
+                                    {
+                                        $Output += "<td colspan='4' style='border: 0;'>"
+                                    }
+                                    else
+                                    {
+                                        $Output += "<td colspan='3' style='border: 0;'>"
+                                    }
+
+                                    $Output += "
+                                    <div class='alert alert-light' role='alert' style='text-align: right;'>
+                                    <span class='fas fa-info-circle text-muted' style='vertical-align: middle; padding-right:5px'></span>
+                                    <span style='vertical-align: middle;'>$($o.InfoText)</span>
+                                    </div>
+                                    "
+                                    
+                                    $Output += "</td></tr>
+                                    
+                                    "
+                                }
+
                             }
 
                             $Output +="
@@ -698,14 +867,37 @@ Function Get-ORCAHtmlOutput
 
 function Invoke-ORCAVersionCheck
 {
-    Param(
+    Param
+    (
         $Terminate
     )
 
     Write-Host "$(Get-Date) Performing ORCA Version check..."
 
-    $ORCAVersion = (Get-Module ORCA | Sort-Object Version -Desc)[0].Version
-    $PSGalleryVersion = (Find-Module ORCA -Repository PSGallery -ErrorAction:SilentlyContinue -WarningAction:SilentlyContinue).Version
+    # When detected we are running the preview release
+    $Preview = $False
+
+    try {
+        $ORCAVersion = (Get-Module ORCA | Sort-Object Version -Desc)[0].Version
+    }
+    catch {
+        $ORCAVersion = (Get-Module ORCAPreview | Sort-Object Version -Desc)[0].Version
+
+        if($ORCAVersion)
+        {
+            $Preview = $True
+        }
+    }
+    
+    if($Preview -eq $False)
+    {
+        $PSGalleryVersion = (Find-Module ORCA -Repository PSGallery -ErrorAction:SilentlyContinue -WarningAction:SilentlyContinue).Version
+    }
+    else 
+    {
+        $PSGalleryVersion = (Find-Module ORCAPreview -Repository PSGallery -ErrorAction:SilentlyContinue -WarningAction:SilentlyContinue).Version
+    }
+    
 
     If($PSGalleryVersion -gt $ORCAVersion)
     {
@@ -727,6 +919,7 @@ function Invoke-ORCAVersionCheck
         Updated=$Updated
         Version=$ORCAVersion
         GalleryVersion=$PSGalleryVersion
+        Preview=$Preview
     }
 }
 
@@ -803,6 +996,13 @@ Function Get-ORCAReport
         For passing an already established collection object. Can be used for offline collection
         analysis.
 
+        .PARAMETER AlternateDNS
+
+        Optional.
+
+        Allows you to specify a DNS server which will be used in any checks requiring resolving a hostname.
+        This can be useful if you are using split-DNS, and have alternate DNS servers for the public domain.
+
         .EXAMPLE
 
         Get-ORCAReport
@@ -821,6 +1021,7 @@ Function Get-ORCAReport
         [Switch]$NoConnect,
         [Switch]$NoUpdate,
         [Switch]$NoVersionCheck,
+        [String[]]$AlternateDNS,
         $Collection,
         $Output
     )
@@ -836,8 +1037,13 @@ Function Get-ORCAReport
         Invoke-ORCAConnections
     }
 
+    # Build a param object which can be used to pass params to the underlying classes
+    $ORCAParams = New-Object -TypeName PSObject -Property @{
+        AlternateDNS=$AlternateDNS
+    }
+
     # Get the object of ORCA checks
-    $Checks = Get-ORCACheckDefs
+    $Checks = Get-ORCACheckDefs -ORCAParams $ORCAParams
 
     # Get the collection in to memory. For testing purposes, we support passing the collection as an object
     If($Null -eq $Collection)
@@ -863,7 +1069,7 @@ Function Get-ORCAReport
     }
 
     # Generate HTML Output
-    $HTMLReport = Get-ORCAHtmlOutput -Collection $Collection -Checks $Checks -VersionCheck $VersionCheck
+    $HTMLReport = Get-ORCAHtmlOutput -Collection $Collection -Checks $Checks -VersionCheck $VersionCheck -Mode $Mode
 
     # Write to file
 
@@ -871,7 +1077,7 @@ Function Get-ORCAReport
     {
         $OutputDirectory = Get-ORCADirectory
         $Tenant = $(($Collection["AcceptedDomains"] | Where-Object {$_.InitialDomain -eq $True}).DomainName -split '\.')[0]
-        $ReportFileName = "ORCA-$($tenant)-$(Get-Date -Format 'MMddyy').html"
+        $ReportFileName = "ORCA-$($tenant)-$(Get-Date -Format 'yyyyMMddHHmm').html"
         $Output = "$OutputDirectory\$ReportFileName"
     }
 

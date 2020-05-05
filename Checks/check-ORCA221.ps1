@@ -29,6 +29,7 @@ class ORCA221 : ORCACheck
         $this.ItemName="Setting"
         $this.DataType="Current Value"
         $this.Links= @{
+            "Security & Compliance Center - Anti-phishing"="https://protection.office.com/antiphishing"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
         }
     }
@@ -41,46 +42,46 @@ class ORCA221 : ORCACheck
 
     GetResults($Config)
     {
+        
+        $PolicyExists = $False
 
         ForEach($Policy in ($Config["AntiPhishPolicy"] | Where-Object {$_.Enabled -eq $True}))
         {
+                        
+            $PolicyExists = $True
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="EnableMailboxIntelligence"
+            $ConfigObject.ConfigData=$Policy.EnableMailboxIntelligence
 
             # Determine Mailbox Intelligence is ON
 
             If($Policy.EnableMailboxIntelligence -eq $false)
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableMailboxIntelligence"
-                    ConfigData=$($Policy.EnableMailboxIntelligence)
-                    Rule="Mailbox Intelligence Off"
-                    Control=$this.Control
-                }                
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
             }
             Else 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableMailboxIntelligence"
-                    ConfigData=$($Policy.EnableMailboxIntelligence)
-                    Rule="Mailbox Intelligence On"
-                    Control=$this.Control
-                }                            
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")                         
             }
+            
+            $this.AddConfig($ConfigObject)
 
         }
 
-        If($this.Results.Count -eq 0)
+        If($PolicyExists -eq $False)
         {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Fail"
-                Object="All"
-                ConfigItem="Enabled"
-                ConfigData="False"
-                Control=$this.Control
-            }         
+
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object="All"
+            $ConfigObject.ConfigItem="EnableMailboxIntelligence"
+            $ConfigObject.ConfigData="False"
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")  
+
+            $this.AddConfig($ConfigObject)
+                 
         }        
 
     }

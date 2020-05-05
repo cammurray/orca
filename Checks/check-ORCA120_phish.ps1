@@ -20,6 +20,7 @@ class ORCA120_phish : ORCACheck
         $this.ItemName="Policy"
         $this.DataType="ZapEnabled Setting"
         $this.Links= @{
+            "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
             "Zero-hour auto purge - protection against spam and malware"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/zero-hour-auto-purge"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#anti-spam-anti-malware-and-anti-phishing-protection-in-eop"
         }
@@ -33,24 +34,26 @@ class ORCA120_phish : ORCACheck
 
     GetResults($Config)
     {
-        ForEach($Policy in $Config["HostedContentFilterPolicy"]) {
-            if($Policy.PhishZapEnabled -eq $true) {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.PhishZapEnabled)
-                    Rule="ZAP Phish Enabled"
-                    Control=$this.Control
-                } 
-            } else {
-                $this.Results +=  New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.PhishZapEnabled)
-                    Rule="ZAP Phish Disabled"
-                    Control=$this.Control
-                }
+        ForEach($Policy in $Config["HostedContentFilterPolicy"]) 
+        {
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.ConfigItem=$($Policy.Name)
+            $ConfigObject.ConfigData=$($Policy.PhishZapEnabled)
+
+            if($Policy.PhishZapEnabled -eq $true) 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+            } 
+            else
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
+
+            # Add config to check
+            $this.AddConfig($ConfigObject)
+
         }        
 
     }

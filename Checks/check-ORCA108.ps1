@@ -20,6 +20,7 @@ class ORCA108 : ORCACheck
         $this.ItemName="Domain"
         $this.DataType="Signing Setting"
         $this.Links= @{
+            "Security & Compliance Center - DKIM"="https://protection.office.com/dkim"
             "Use DKIM to validate outbound email sent from your custom domain in Office 365"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/use-dkim-to-validate-outbound-email"
         }
     }
@@ -32,8 +33,7 @@ class ORCA108 : ORCACheck
 
     GetResults($Config)
     {
-        $Check = "DKIM"
-    
+
         # Check DKIM is enabled
     
         ForEach($AcceptedDomain in $Config["AcceptedDomains"]) 
@@ -42,42 +42,34 @@ class ORCA108 : ORCACheck
             If($AcceptedDomain.Name -notlike "*.onmicrosoft.com") 
             {
     
+                # Check objects
+                $ConfigObject = [ORCACheckConfig]::new()
+                $ConfigObject.ConfigItem=$($AcceptedDomain.Name)
+
                 # Get matching DKIM signing configuration
                 $DkimSigningConfig = $Config["DkimSigningConfig"] | Where-Object {$_.Name -eq $AcceptedDomain.Name}
     
                 If($DkimSigningConfig)
                 {
-                    if($DkimSigningConfig.Enabled -eq $false)
+                    $ConfigObject.ConfigData=$($DkimSigningConfig.Enabled)
+
+                    if($DkimSigningConfig.Enabled -eq $true)
                     {
-                        $this.Results += New-Object -TypeName psobject -Property @{
-                            Result="Fail"
-                            Check=$Check
-                            ConfigItem=$($DkimSigningConfig.Domain)
-                            Rule="DKIM Signing Disabled"
-                            Control=$this.Control
-                        }    
-                    } 
-                    else
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                    }
+                    Else 
                     {
-                        $this.Results += New-Object -TypeName psobject -Property @{
-                            Result="Pass"
-                            Check=$Check
-                            ConfigItem=$($DkimSigningConfig.Domain)
-                            Rule="DKIM Signing Enabled"
-                            Control=$this.Control
-                        }         
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
                     }
                 }
                 Else
                 {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Check=$Check
-                        ConfigItem=$($AcceptedDomain.Name)
-                        Rule="No DKIM Signing Config"
-                        Control=$this.Control
-                    } 
+                    $ConfigObject.ConfigData="No Configuration"
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
                 }
+
+                # Add config to check
+                $this.AddConfig($ConfigObject)
     
             }
     

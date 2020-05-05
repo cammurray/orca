@@ -23,6 +23,7 @@ class ORCA223 : ORCACheck
         $this.ItemName="Setting"
         $this.DataType="Action"
         $this.Links= @{
+            "Security & Compliance Center - Anti-phishing"="https://protection.office.com/antiphishing"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
         }
     }
@@ -35,57 +36,74 @@ class ORCA223 : ORCACheck
 
     GetResults($Config)
     {
+
+        $PolicyExists = $False
     
         ForEach($Policy in ($Config["AntiPhishPolicy"] | Where-Object {$_.Enabled -eq $True}))
         {
-    
+
+            $PolicyExists = $True
+
+            # Is enabled
+
+            $ConfigObject = [ORCACheckConfig]::new()
+
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="EnableTargetedUserProtection"
+            $ConfigObject.ConfigData=$Policy.EnableTargetedUserProtection
+
             If($Policy.EnableTargetedUserProtection -eq $False)
             {
-                # Policy Targeted UserProtection is off
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableTargetedUserProtection"
-                    ConfigData=$($Policy.EnableTargetedUserProtection)
-                    Rule="Targeted User Protection Off"
-                    Control=$this.Control
-                }
-            } 
-            Else
-            {
-                # Check for action being MoveToJmf
-                If($Policy.TargetedUserProtectionAction -eq "Quarantine")
-                {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Pass"
-                        Object=$($Policy.Name)
-                        ConfigItem="TargetedUserProtectionAction"
-                        ConfigData=$($Policy.TargetedUserProtectionAction)
-                        Control=$this.Control
-                    }   
-                }
-                Else
-                {
-                    $this.Results += New-Object -TypeName psobject -Property @{
-                        Result="Fail"
-                        Object=$($Policy.Name)
-                        ConfigItem="TargetedUserProtectionAction"
-                        ConfigData=$($Policy.TargetedUserProtectionAction)
-                        Control=$this.Control
-                    }                 
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
+            else 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+            }
+            
+            $this.AddConfig($ConfigObject)
+
+            # Action
+
+            $ConfigObject = [ORCACheckConfig]::new()
+
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="TargetedUserProtectionAction"
+            $ConfigObject.ConfigData=$Policy.TargetedUserProtectionAction
+
+            If($Policy.TargetedUserProtectionAction -eq "Quarantine")
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+            }
+            else 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            }
+
+            If($Policy.TargetedUserProtectionAction -eq "Delete" -or $Policy.TargetedUserProtectionAction -eq "Redirect")
+            {
+                # For either Delete or Quarantine we should raise an informational
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.InfoText = "The $($Policy.TargetedUserProtectionAction) option may impact the users ability to release emails and may impact user experience."
+            }
+
+            
+            $this.AddConfig($ConfigObject)
+
         }
     
-        If($this.Results.Count -eq 0)
+        If($PolicyExists -eq $False)
         {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Fail"
-                Object="All"
-                ConfigItem="Enabled"
-                ConfigData="False"
-                Control=$this.Control
-            }            
+
+            $ConfigObject = [ORCACheckConfig]::new()
+
+            $ConfigObject.Object="All"
+            $ConfigObject.ConfigItem="Enabled"
+            $ConfigObject.ConfigData="False"
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+            $this.AddConfig($ConfigObject)
+         
         }    
 
     }

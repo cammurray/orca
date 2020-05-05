@@ -28,6 +28,7 @@ class ORCA205 : ORCACheck
         $this.ItemName="Setting"
         $this.DataType="Current Value"
         $this.Links= @{
+            "Security & Compliance Center - Anti-malware"="https://protection.office.com/antimalware"
             "Configure anti-malware policies"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/configure-anti-malware-policies"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#anti-spam-anti-malware-and-anti-phishing-protection-in-eop"
         }
@@ -45,41 +46,42 @@ class ORCA205 : ORCACheck
         ForEach($Policy in $Config["MalwareFilterPolicy"])
         {
 
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="EnableFileFilter"
+            $ConfigObject.ConfigData=$($Policy.EnableFileFilter)
+
             # Fail if EnableFileFilter is not set to true or FileTypes is empty in the policy
 
             If($Policy.EnableFileFilter -eq $false) 
             {
-                $EnableFileFilter_Result = "Fail"
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
             Else
             {
-                $EnableFileFilter_Result = "Pass"
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
+
+            $this.AddConfig($ConfigObject)
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="FileTypes"
+            $ConfigObject.ConfigData=$(@($Policy.FileTypes).Count)
 
             If(@($Policy.FileTypes).Count -eq 0) 
             {
-                $Filetypes_Result = "Fail"
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
             Else
             {
-                $Filetypes_Result = "Pass"
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
 
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result=$EnableFileFilter_Result
-                Object=$($Policy.Name)
-                ConfigItem="EnableFileFilter"
-                ConfigData=$($Policy.EnableFileFilter)
-                Control=$this.Control
-            }
+            $this.AddConfig($ConfigObject) 
             
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result=$Filetypes_Result
-                Object=$($Policy.Name)
-                ConfigItem="FileTypes"
-                ConfigData=$(@($Policy.FileTypes).Count)
-                Control=$this.Control
-            } 
         }
         
     }

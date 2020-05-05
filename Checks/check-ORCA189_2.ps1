@@ -27,9 +27,13 @@ class ORCA189_2 : ORCACheck
         $this.FailRecommendation="Remove mail flow rules which bypass Safe Links"
         $this.Importance="Office 365 ATP Safe Links can help protect against phishing attacks by providing time-of-click verification of web addresses (URLs) in email messages and Office documents. The protection can be bypassed using mail flow rules which set the X-MS-Exchange-Organization-SkipSafeLinksProcessing header for email messages."
         $this.ExpandResults=$True
-        $this.ItemName="Transport Rule"
-        $this.DataType="Details"
+        $this.ObjectType="Transport Rule"
+        $this.ItemName="Setting"
+        $this.DataType="Current Value"
         $this.CheckType = [CheckType]::ObjectPropertyValue
+        $this.Links= @{
+            "Exchange admin center in Exchange Online"="https://outlook.office365.com/ecp/"
+        }
     }
 
     <#
@@ -48,26 +52,16 @@ class ORCA189_2 : ORCACheck
             # Rules exist to bypass
             ForEach($Rule in $BypassRules) 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Rule.Name)
-                    ConfigItem=$($Rule.SetHeaderName)
-                    ConfigData=$($Rule.SetHeaderValue)
-                    Rule="SafeLinks bypassed"
-                    Control=$this.Control
-                }
+                # Check objects
+                $ConfigObject = [ORCACheckConfig]::new()
+                $ConfigObject.Object=$($Rule.Name)
+                $ConfigObject.ConfigItem=$($Rule.SetHeaderName)
+                $ConfigObject.ConfigData=$($Rule.SetHeaderValue)
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                $this.AddConfig($ConfigObject)  
+
             }
-        } 
-        Else 
-        {
-            # Rules do not exist to bypass
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Pass"
-                ConfigItem="Transport Rules"
-                Rule="SafeLinks not bypassed"
-                Control=$this.Control
-            }
-        }        
+        }   
 
     }
 

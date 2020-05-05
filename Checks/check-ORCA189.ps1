@@ -22,14 +22,18 @@ class ORCA189 : ORCACheck
         $this.Control=189
         $this.Services=[ORCAService]::OATP
         $this.Area="Advanced Threat Protection Policies"
-        $this.Name="Safe Attachment Whitelisting"
+        $this.Name="Safe Attachments Whitelisting"
         $this.PassText="Safe Attachments is not bypassed"
         $this.FailRecommendation="Remove mail flow rules which bypass Safe Attachments"
         $this.Importance="Office 365 ATP Safe Attachments assists scanning for zero day malware by using behavioural analysis and sandboxing, supplementing signature definitions. The protection can be bypassed using mail flow rules which set the X-MS-Exchange-Organization-SkipSafeAttachmentProcessing header for email messages."
         $this.ExpandResults=$True
-        $this.ItemName="Transport Rule"
-        $this.DataType="Details"
+        $this.ObjectType="Transport Rule"
+        $this.ItemName="Setting"
+        $this.DataType="Current Value"
         $this.CheckType = [CheckType]::ObjectPropertyValue
+        $this.Links= @{
+            "Exchange admin center in Exchange Online"="https://outlook.office365.com/ecp/"
+        }
     }
 
     <#
@@ -48,26 +52,17 @@ class ORCA189 : ORCACheck
             # Rules exist to bypass
             ForEach($Rule in $BypassRules) 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Rule.Name)
-                    ConfigItem="X-MS-Exchange-Organization-SkipSafeAttachmentProcessing"
-                    ConfigData=$($Rule.SetHeaderValue)
-                    Rule="SafeAttachments not bypassed"
-                    Control=$this.Control
-                }
+
+                # Check objects
+                $ConfigObject = [ORCACheckConfig]::new()
+                $ConfigObject.Object=$($Rule.Name)
+                $ConfigObject.ConfigItem=$($Rule.SetHeaderName)
+                $ConfigObject.ConfigData=$($Rule.SetHeaderValue)
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                $this.AddConfig($ConfigObject)  
+
             }
-        } 
-        Else 
-        {
-            # Rules do not exist to bypass
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Pass"
-                ConfigItem="Transport Rules"
-                Rule="SafeAttachments not bypassed"
-                Control=$this.Control
-            }
-        }        
+        }
 
     }
 

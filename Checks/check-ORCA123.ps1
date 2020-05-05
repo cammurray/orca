@@ -1,12 +1,12 @@
 <#
 
-224 - Check ATP Phishing Similar Users Safety Tips 
+123 - Check ATP Phishing Enable Unusual Characters Safety Tips 
 
 #>
 
 using module "..\ORCA.psm1"
 
-class ORCA224 : ORCACheck
+class ORCA123 : ORCACheck
 {
     <#
     
@@ -14,15 +14,15 @@ class ORCA224 : ORCACheck
     
     #>
 
-    ORCA224()
+    ORCA123()
     {
-        $this.Control=224
+        $this.Control=123
         $this.Services=[ORCAService]::OATP
         $this.Area="Advanced Threat Protection Policies"
-        $this.Name="Similar Users Safety Tips"
-        $this.PassText="Similar Users Safety Tips is enabled"
-        $this.FailRecommendation="Enable Similar Users Safety Tips so that users can receive visible indication on incoming messages"
-        $this.Importance="Office 365 ATP can show a warning tip to recipients in messages that might be from an impersonated user."
+        $this.Name="Unusual Characters Safety Tips"
+        $this.PassText="Unusual Characters Safety Tips is enabled"
+        $this.FailRecommendation="Enable Unusual Characters Safety Tips so that users can receive visible indication on incoming messages."
+        $this.Importance="Office 365 ATP can show a warning tip to recipients where the sender name or email address contains character sets that aren't usually used together."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Antiphishing Policy"
@@ -55,10 +55,10 @@ class ORCA224 : ORCACheck
             $ConfigObject = [ORCACheckConfig]::new()
 
             $ConfigObject.Object=$($Policy.Name)
-            $ConfigObject.ConfigItem="EnableSimilarUsersSafetyTips"
-            $ConfigObject.ConfigData=$Policy.EnableSimilarUsersSafetyTips
+            $ConfigObject.ConfigItem="EnableUnusualCharactersSafetyTips"
+            $ConfigObject.ConfigData=$Policy.EnableUnusualCharactersSafetyTips
 
-            If($Policy.EnableSimilarUsersSafetyTips -eq $false)
+            If($Policy.EnableUnusualCharactersSafetyTips -eq $false)
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
             }

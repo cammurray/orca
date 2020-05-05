@@ -20,6 +20,7 @@ class ORCA141 : ORCACheck
         $this.ItemName="Spam Policy"
         $this.DataType="Action"
         $this.Links= @{
+            "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#anti-spam-anti-malware-and-anti-phishing-protection-in-eop"
         }
     }
@@ -32,38 +33,47 @@ class ORCA141 : ORCACheck
 
     GetResults($Config)
     {
-        $Check = "Content Filter Actions"
-
-        $this.Results = @()
     
         ForEach($Policy in $Config["HostedContentFilterPolicy"]) 
         {
     
-            # Fail if BulkSpamAction is not set to MoveToJmf
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.ConfigItem=$($Policy.Name)
+            $ConfigObject.ConfigData=$($Policy.BulkSpamAction)
+
+            # For standard Fail if BulkSpamAction is not set to MoveToJmf
     
             If($Policy.BulkSpamAction -ne "MoveToJmf") 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Check=$Check
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.BulkSpamAction)
-                    Rule="BulkSpamAction set to $($Policy.BulkSpamAction)"
-                    Control=$this.Control
-                } 
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             } 
             else 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Check=$Check
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.BulkSpamAction)
-                    Rule="BulkSpamAction set to $($Policy.BulkSpamAction)"
-                    Control=$this.Control
-                } 
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+            }
+
+            # For strict Fail if BulkSpamAction is not set to Quarantine
+
+            If($Policy.BulkSpamAction -ne "Quarantine") 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")
+            } 
+            else 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
+            }
+
+            # For either Delete or Quarantine we should raise an informational
+
+            If($Policy.BulkSpamAction -eq "Delete" -or $Policy.BulkSpamAction -eq "Redirect")
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.InfoText = "The $($Policy.BulkSpamAction) option may impact the users ability to release emails and may impact user experience."
             }
             
+            $this.AddConfig($ConfigObject)
+
         }        
 
     }

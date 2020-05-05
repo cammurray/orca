@@ -18,11 +18,10 @@ class ORCA180 : ORCACheck
         $this.FailRecommendation="Enable anti-spoofing protection in Anti-phishing policy"
         $this.Importance="When the sender email address is spoofed, the message appears to originate from someone or somewhere other than the actual source. Anti-spoofing protection examines forgery of the 'From: header' which is the one that shows up in an email client like Outlook. It is recommended to enable anti-spoofing protection in Office 365 Anti-phishing policies."
         $this.ExpandResults=$True
-        $this.CheckType=[CheckType]::ObjectPropertyValue
-        $this.ObjectType="Antiphishing Policy"
-        $this.ItemName="Setting"
-        $this.DataType="Current Value"
+        $this.ItemName="Anti Phish Policy"
+        $this.DataType="Antispoof Enforced"
         $this.Links= @{
+            "Security & Compliance Center - Anti-phishing"="https://protection.office.com/antiphishing"
             "Anti-spoofing protection in Office 365"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/anti-spoofing-protection"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
         }
@@ -36,34 +35,40 @@ class ORCA180 : ORCACheck
 
     GetResults($Config)
     {
+
+        $Enabled = $False
   
         ForEach($Policy in $Config["AntiPhishPolicy"]) 
         {
             # Fail if Enabled or EnableAntiSpoofEnforcement is not set to true in any policy
             If(($Policy.Enabled -eq $true -and $Policy.EnableAntiSpoofEnforcement -eq $true) -or ($Policy.Identity -eq "Office365 AntiPhish Default" -and $Policy.EnableAntiSpoofEnforcement -eq $true))
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableAntiSpoofEnforcement"
-                    ConfigData=$Policy.EnableAntiSpoofEnforcement 
-                    Rule="Anti-spoof protection is enabled"
-                    Control=$this.Control
-                } 
+
+                # Check objects
+                $ConfigObject = [ORCACheckConfig]::new()
+                $ConfigObject.ConfigItem=$($Policy.Name)
+                $ConfigObject.ConfigData=$Policy.EnableAntiSpoofEnforcement
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+
+                $this.AddConfig($ConfigObject)
+
+                $Enabled = $True
+
             } 
         }
-    
-        If($this.Results.Count -eq 0)
+
+        If($Enabled -eq $False)
         {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Fail"
-                Object="All"
-                ConfigItem="Enabled"
-                ConfigData="False"
-                Rule="Anti-spoof protection is not enabled"
-                Control=$this.Control
-            } 
-        }        
+
+            # No policy enabling
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.ConfigItem="All"
+            $ConfigObject.ConfigData="False"
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+
+            $this.AddConfig($ConfigObject)
+
+        }       
 
     }
 

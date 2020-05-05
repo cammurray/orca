@@ -23,6 +23,7 @@ class ORCA111 : ORCACheck
         $this.ItemName="Setting"
         $this.DataType="Current Value"
         $this.Links= @{
+            "Security & Compliance Center - Anti-phishing"="https://protection.office.com/antiphishing"
             "Unverified Sender"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/unverified-sender-feature"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#anti-spam-anti-malware-and-anti-phishing-protection-in-eop"
         }
@@ -38,26 +39,25 @@ class ORCA111 : ORCACheck
     {
         ForEach ($Policy in $Config["AntiPhishPolicy"])
         {
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="EnableUnauthenticatedSender"
+            $ConfigObject.ConfigData=$($Policy.EnableUnauthenticatedSender)
+
             If(($Policy.Enabled -eq $true -and $Policy.EnableUnauthenticatedSender -eq $true) -or ($Policy.Identity -eq "Office365 AntiPhish Default" -and $Policy.EnableUnauthenticatedSender -eq $true))
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableUnauthenticatedSender"
-                    ConfigData=$Policy.EnableUnauthenticatedSender
-                    Control=$this.Control
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
-            Else
+            Else 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableUnauthenticatedSender"
-                    ConfigData=$Policy.EnableUnauthenticatedSender
-                    Control=$this.Control
-                }      
-            }             
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            }
+            
+            # Add config to check
+            $this.AddConfig($ConfigObject)
+
         }        
     }
 

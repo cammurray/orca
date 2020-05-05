@@ -28,6 +28,7 @@ class ORCA125 : ORCACheck
         $this.ItemName="Setting"
         $this.DataType="Current Value"
         $this.Links= @{
+            "Security & Compliance Center - Anti-malware"="https://protection.office.com/antimalware"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#anti-spam-anti-malware-and-anti-phishing-protection-in-eop"
             "Configure anti-malware policies"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/configure-anti-malware-policies"
         }
@@ -46,28 +47,24 @@ class ORCA125 : ORCACheck
         ForEach($Policy in $Config["MalwareFilterPolicy"]) 
         {
 
-            # Fail if EnableExternalSenderNotifications is set to true in the policy
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="EnableExternalSenderNotifications"
+            $ConfigObject.ConfigData=$($Policy.EnableExternalSenderNotifications)
 
+            # Fail if EnableExternalSenderNotifications is set to true in the policy
             If($Policy.EnableExternalSenderNotifications -eq $true) 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableExternalSenderNotifications"
-                    ConfigData=$($Policy.EnableExternalSenderNotifications)
-                    Control=$this.Control
-                } 
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
             Else
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="EnableExternalSenderNotifications"
-                    ConfigData=$($Policy.EnableExternalSenderNotifications)
-                    Control=$this.Control
-                } 
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
+
+            $this.AddConfig($ConfigObject)
+
         }
 
     }

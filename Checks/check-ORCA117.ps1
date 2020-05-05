@@ -1,15 +1,14 @@
 <#
 
-179
+ORCA-117
 
-Checks to determine if SafeLinks is re-wring internal to internal emails. Does not however,
-check to determine if there is a rule enforcing this.
+Checks to determine if SafeLinks action for unknown potentially malicious URLs in messages is on.
 
 #>
 
 using module "..\ORCA.psm1"
 
-class ORCA179 : ORCACheck
+class ORCA117 : ORCACheck
 {
     <#
     
@@ -17,18 +16,20 @@ class ORCA179 : ORCACheck
     
     #>
 
-    ORCA179()
+    ORCA117()
     {
-        $this.Control=179
+        $this.Control=117
         $this.Services=[ORCAService]::OATP
         $this.Area="Advanced Threat Protection Policies"
-        $this.Name="Intra-organization Safe Links"
-        $this.PassText="Safe Links is enabled intra-organization"
-        $this.FailRecommendation="Enable Safe Links between internal users"
+        $this.Name="Action for unknown potentially malicious URLs in messages"
+        $this.PassText="Safe Links policy action is enabled"
+        $this.FailRecommendation="Enable Safe Links policy action for unknown potentially malicious URLs in messages"
+        $this.Importance="When Safe Links policy action is eanbled URLs in messages will be rewritten and checked against a list of known malicious links when user clicks on the link."
         $this.ExpandResults=$True
-        $this.Importance="Phishing attacks are not limited from external users. Commonly, when one user is compromised, that user can be used in a process of lateral movement between different accounts in your organization. Configuring Safe Links so that internal messages are also re-written can assist with lateral movement using phishing."
-        $this.ItemName="SafeLinks Policy"
-        $this.DataType="Enabled for Internal"
+        $this.CheckType=[CheckType]::ObjectPropertyValue
+        $this.ObjectType="Safe Links policy"
+        $this.ItemName="Setting"
+        $this.DataType="Current Value"
         $this.Links= @{
             "Security & Compliance Center - Safe links"="https://protection.office.com/safelinksconverged"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
@@ -50,11 +51,12 @@ class ORCA179 : ORCACheck
         {
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.ConfigItem=$($Policy.Name)
-            $ConfigObject.ConfigData=$Policy.EnableForInternalSenders
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="IsEnabled"
+            $ConfigObject.ConfigData=$Policy.IsEnabled
 
-            # Determine if ATP link tracking is on for this safelinks policy
-            If($Policy.EnableForInternalSenders -eq $true) 
+            # Determine if Safe Links policy action for unknown potentially malicious URLs in messages is enabled
+            If($Policy.IsEnabled -eq $true) 
             {
                 $Enabled = $True
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")

@@ -28,6 +28,7 @@ class ORCA107 : ORCACheck
         $this.ItemName="Setting"
         $this.DataType="Current Value"
         $this.Links= @{
+            "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
             "Configure end-user spam notifications in Exchange Online"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/configure-end-user-spam-notifications-in-exchange-online"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#anti-spam-anti-malware-and-anti-phishing-protection-in-eop"
         }
@@ -43,40 +44,56 @@ class ORCA107 : ORCACheck
     {
         ForEach($Policy in $Config["HostedContentFilterPolicy"])
         {
-    
-            If($Policy.EnableEndUserSpamNotifications -eq $true)
-            {
-                $EnableEndUserSpamNotifications_Result = "Pass"               
-            }
-            Else
-            {
-                $EnableEndUserSpamNotifications_Result = "Fail"
-            }
-    
-            If($Policy.EndUserSpamNotificationFrequency -eq 3)
-            {
-                $EndUserSpamNotificationFrequency_Result = "Pass"
-            }
-            Else 
-            {
-                $EndUserSpamNotificationFrequency_Result = "Fail" 
-            }
-    
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result=$EnableEndUserSpamNotifications_Result
-                Object=$($Policy.Name)
-                ConfigItem="EnableEndUserSpamNotifications"
-                ConfigData=$Policy.EnableEndUserSpamNotifications
-                Control=$this.Control
-            }
-    
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result=$EndUserSpamNotificationFrequency_Result
-                Object=$($Policy.Name)
-                ConfigItem="EndUserSpamNotificationFrequency"
-                ConfigData=$Policy.EndUserSpamNotificationFrequency
-                Control=$this.Control
-            }
+
+            <#
+            
+            EnableEndUserSpamNotifications
+            
+            #>
+            
+                # Check objects
+                $ConfigObject = [ORCACheckConfig]::new()
+                $ConfigObject.Object=$($Policy.Name)
+                $ConfigObject.ConfigItem="EnableEndUserSpamNotifications"
+                $ConfigObject.ConfigData=$($Policy.EnableEndUserSpamNotifications)
+        
+                If($Policy.EnableEndUserSpamNotifications -eq $true)
+                {
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                }
+                Else 
+                {
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                }
+                
+                # Add config to check
+                $this.AddConfig($ConfigObject)
+
+            <#
+            
+            EndUserSpamNotificationFrequency
+            
+            #>
+            
+                # Check objects
+                $ConfigObject = [ORCACheckConfig]::new()
+                $ConfigObject.Object=$($Policy.Name)
+                $ConfigObject.ConfigItem="EndUserSpamNotificationFrequency"
+                $ConfigObject.ConfigData=$($Policy.EndUserSpamNotificationFrequency)
+        
+                    
+                If($Policy.EndUserSpamNotificationFrequency -eq 3)
+                {
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                }
+                Else 
+                {
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                }
+
+                # Add config to check
+                $this.AddConfig($ConfigObject)
+
         }            
     }
 

@@ -27,6 +27,7 @@ class ORCA220 : ORCACheck
         $this.ItemName="Antiphishing Policy"
         $this.DataType="Advanced Phishing Threshold Level"
         $this.Links= @{
+            "Security & Compliance Center - Anti-phishing"="https://protection.office.com/antiphishing"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
         }
     }
@@ -42,26 +43,37 @@ class ORCA220 : ORCACheck
 
         ForEach($Policy in $Config["AntiPhishPolicy"]) 
         {
-            If($Policy.PhishThresholdLevel -eq 1 -or $Policy.PhishThresholdLevel -eq 4)
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.ConfigItem=$($Policy.Name)
+            $ConfigObject.ConfigData=$($Policy.PhishThresholdLevel)
+
+            # Standard
+
+            If($Policy.PhishThresholdLevel -eq 2)
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.PhishThresholdLevel)
-                    Rule="PhishThreshold Level is 1"
-                    Control=$this.Control
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             } 
-            else
+            Else 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.PhishThresholdLevel)
-                    Rule="PhishThreshold Level 2 or higher"
-                    Control=$this.Control
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
+
+            # Strict
+
+            If($Policy.PhishThresholdLevel -eq 3)
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
+            } 
+            Else 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")
+            }
+
+            $this.AddConfig($ConfigObject)
+
+
         }        
 
     }

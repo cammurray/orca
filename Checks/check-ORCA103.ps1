@@ -22,6 +22,7 @@ class ORCA103 : ORCACheck
         $this.ItemName="Setting"
         $this.DataType="Current Value"
         $this.Links= @{
+                "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
                 "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#anti-spam-anti-malware-and-anti-phishing-protection-in-eop"
             }
     }
@@ -37,86 +38,121 @@ class ORCA103 : ORCACheck
         ForEach($Policy in $Config["HostedOutboundSpamFilterPolicy"])
         {
 
+            <#
+            
+                RecipientLimitExternalPerHour
+            
+            #>
+            
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$Policy.Name
+            $ConfigObject.ConfigItem="RecipientLimitExternalPerHour"
+            $ConfigObject.ConfigData=$($Policy.RecipientLimitExternalPerHour)
+
+            # Recipient per hour limit for standard is 500
             If($Policy.RecipientLimitExternalPerHour -eq 500)
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="RecipientLimitExternalPerHour"
-                    ConfigData=$($Policy.RecipientLimitExternalPerHour)
-                    Control=$this.Control
-                }                
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
             Else
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="RecipientLimitExternalPerHour"
-                    ConfigData=$($Policy.RecipientLimitExternalPerHour) #the recommended setting is 500
-                    Control=$this.Control
-                }                            
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")               
             }
+
+            # Recipient per hour limit for strict is 400
+            If($Policy.RecipientLimitExternalPerHour -eq 400)
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
+            }
+            Else
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")              
+            }
+
+            # Add config to check
+            $this.AddConfig($ConfigObject)
+
+            <#
+            
+                RecipientLimitInternalPerHour
+            
+            #>
+            
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$Policy.Name
+            $ConfigObject.ConfigItem="RecipientLimitInternalPerHour"
+            $ConfigObject.ConfigData=$($Policy.RecipientLimitInternalPerHour)
+
             If($Policy.RecipientLimitInternalPerHour -eq 1000)
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="RecipientLimitInternalPerHour"
-                    ConfigData=$($Policy.RecipientLimitInternalPerHour)
-                    Control=$this.Control
-                }                
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
             Else
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="RecipientLimitInternalPerHour"
-                    ConfigData=$($Policy.RecipientLimitInternalPerHour) # the recommended setting is 1000"
-                    Control=$this.Control
-                }                            
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")               
             }
+
+            If($Policy.RecipientLimitInternalPerHour -eq 800)
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
+            }
+            Else
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")              
+            }
+
+            # Add config to check
+            $this.AddConfig($ConfigObject)
+
+            <#
+            
+                RecipientLimitPerDay
+            
+            #>
+            
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$Policy.Name
+            $ConfigObject.ConfigItem="RecipientLimitPerDay"
+            $ConfigObject.ConfigData=$($Policy.RecipientLimitPerDay)
+
             If($Policy.RecipientLimitPerDay -eq 1000)
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="RecipientLimitPerDay"
-                    ConfigData=$($Policy.RecipientLimitPerDay)
-                    Control=$this.Control
-                }                
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
             Else
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="RecipientLimitPerDay"
-                    ConfigData=$($Policy.RecipientLimitPerDay) # the recommended setting is 1000"
-                    Control=$this.Control
-                }                            
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")               
             }
+
+            If($Policy.RecipientLimitPerDay -eq 800)
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
+            }
+            Else
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")              
+            }
+
+            # Add config to check
+            $this.AddConfig($ConfigObject)
+
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$Policy.Name
+            $ConfigObject.ConfigItem="ActionWhenThresholdReached"
+            $ConfigObject.ConfigData=$($Policy.ActionWhenThresholdReached)
+
             If($Policy.ActionWhenThresholdReached -like "BlockUser")
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object="$($Policy.Name)"
-                    ConfigItem="ActionWhenThresholdReached"
-                    ConfigData=$($Policy.ActionWhenThresholdReached)
-                    Control=$this.Control
-                }                
-            }     
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+            }
             Else
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="ActionWhenThresholdReached"
-                    ConfigData=$($Policy.ActionWhenThresholdReached) # the recommended setting is BlockUser"
-                    Control=$this.Control
-                }                            
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")               
             }
+
+            # Add config to check
+            $this.AddConfig($ConfigObject)
+
         }
     }
 

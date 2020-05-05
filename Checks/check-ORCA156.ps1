@@ -28,6 +28,10 @@ class ORCA156 : ORCACheck
         $this.ObjectType="Policy"
         $this.ItemName="Setting"
         $this.DataType="Current Value"
+        $this.Links= @{
+            "Security & Compliance Center - Safe links"="https://protection.office.com/safelinksconverged"
+            "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
+        }
     }
 
     <#
@@ -39,53 +43,44 @@ class ORCA156 : ORCACheck
     GetResults($Config)
     {
 
+        # Global ATP Policy
+        $ConfigObject = [ORCACheckConfig]::new()
+        $ConfigObject.Object=$($Config["AtpPolicy"].Name)
+        $ConfigObject.ConfigItem="TrackClicks"
+        $ConfigObject.ConfigData=$($Config["AtpPolicy"].TrackClicks)
+
         If($Config["AtpPolicy"].TrackClicks -eq $False -and $($Config["AtpPolicy"].EnableSafeLinksForClients -eq $True -or $Config["AtpPolicy"].EnableSafeLinksForWebAccessCompanion -eq $True -or $Config["AtpPolicy"].EnableSafeLinksForO365Clients -eq $True))
         {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Fail"
-                Object=$($Config["AtpPolicy"].Name)
-                ConfigItem="TrackClicks"
-                ConfigData=$($Config["AtpPolicy"].TrackClicks)
-                Rule="TrackClicks off and EnableSafeLinksForClients or EnableSafeLinksForWebAccessCompanion or EnableSafeLinksForO365Clients enabled"
-                Control=$this.Control
-            }
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
         }
         ElseIf ($Config["AtpPolicy"].TrackClicks -eq $True)
         {
-            $this.Results += New-Object -TypeName psobject -Property @{
-                Result="Pass"
-                Object=$($Config["AtpPolicy"].Name)
-                ConfigItem="TrackClicks"
-                ConfigData=$($Config["AtpPolicy"].TrackClicks)
-                Rule="TrackClicks in Office 365 Apps, Office for iOS and Android in ATP Policy"
-                Control=$this.Control
-            }            
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")     
         }
+
+        $this.AddConfig($ConfigObject)
 
         ForEach($Policy in $Config["SafeLinksPolicy"]) 
         {
+
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.ConfigItem="DoNotTrackUserClicks"
+            $ConfigObject.ConfigData=$($Policy.DoNotTrackUserClicks)
+
             # Determine if ATP link tracking is on for this safelinks policy
-            If($Policy.DoNotTrackUserClicks -eq $false) {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    Object=$($Policy.Name)
-                    ConfigItem="DoNotTrackUserClicks"
-                    ConfigData=$($Policy.DoNotTrackUserClicks)
-                    Rule="SafeLinks URL Tracking Enabled"
-                    Control=$this.Control
-                }
+            If($Policy.DoNotTrackUserClicks -eq $false)
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             } 
             else 
             {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    Object=$($Policy.Name)
-                    ConfigItem="DoNotTrackUserClicks"
-                    ConfigData=$($Policy.DoNotTrackUserClicks)
-                    Rule="SafeLinks URL Tracking Enabled"
-                    Control=$this.Control
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
+
+            # Add config to check
+            $this.AddConfig($ConfigObject)
+            
         }        
 
     }

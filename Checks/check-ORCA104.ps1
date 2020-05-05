@@ -20,6 +20,7 @@ class ORCA104 : ORCACheck
         $this.ItemName="Spam Policy"
         $this.DataType="Action"
         $this.Links= @{
+            "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#anti-spam-anti-malware-and-anti-phishing-protection-in-eop"
         }
     }
@@ -34,24 +35,33 @@ class ORCA104 : ORCACheck
     {
         # Fail if HighConfidencePhishAction is not set to Quarantine
 
-        ForEach($Policy in $Config["HostedContentFilterPolicy"]) {
-            If($Policy.HighConfidencePhishAction -ne "Quarantine") {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Fail"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.HighConfidencePhishAction)
-                    Rule="PhishSpamAction set to $($Policy.PhishSpamAction)"
-                    Control=$this.Control
-                } 
-            } else {
-                $this.Results += New-Object -TypeName psobject -Property @{
-                    Result="Pass"
-                    ConfigItem=$($Policy.Name)
-                    ConfigData=$($Policy.HighConfidencePhishAction)
-                    Rule="PhishSpamAction set to $($Policy.PhishSpamAction)"
-                    Control=$this.Control
-                } 
+        ForEach($Policy in $Config["HostedContentFilterPolicy"]) 
+        {
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.ConfigItem=$($Policy.Name)
+            $ConfigObject.ConfigData=$($Policy.HighConfidencePhishAction)
+    
+            If($Policy.HighConfidencePhishAction -eq "Quarantine") 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
+            Else 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            }
+
+            If($Policy.HighConfidencePhishAction -eq "Redirect" -or $Policy.HighConfidencePhishAction -eq "Delete")
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.InfoText = "The $($Policy.HighConfidencePhishAction) option may impact the users ability to release emails and may impact user experience. Consider using the Quarantine option for High Confidence Phish."
+            }
+
+
+            # Add config to check
+            $this.AddConfig($ConfigObject)
+
         }        
 
     }
