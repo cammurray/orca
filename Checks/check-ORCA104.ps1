@@ -52,6 +52,13 @@ class ORCA104 : ORCACheck
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
 
+            If($Policy.HighConfidencePhishAction -eq "Redirect" -or $Policy.HighConfidencePhishAction -eq "Delete")
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.InfoText = "The $($Policy.HighConfidencePhishAction) option may impact the users ability to release emails and may impact user experience. Consider using the Quarantine option for High Confidence Phish."
+            }
+
+
             # Add config to check
             $this.AddConfig($ConfigObject)
 
