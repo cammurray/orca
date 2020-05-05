@@ -61,6 +61,13 @@ class ORCA139 : ORCACheck
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
             }
+
+            # For either Delete or Redirect we should raise an informational
+            If($Policy.SpamAction -eq "Delete" -or $Policy.SpamAction -eq "Redirect")
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.InfoText = "The $($Policy.SpamAction) option may impact the users ability to release emails and may impact user experience."
+            }
             
             $this.AddConfig($ConfigObject)
             

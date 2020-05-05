@@ -79,6 +79,13 @@ class ORCA116 : ORCACheck
                 $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")                         
             }
 
+            # For either Delete or Quarantine we should raise an informational
+            If($Policy.MailboxIntelligenceProtectionAction -eq "Delete" -or $Policy.MailboxIntelligenceProtectionAction -eq "Quarantine")
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.InfoText = "The $($Policy.MailboxIntelligenceProtectionAction) option may impact the users ability to release emails and may impact user experience."
+            }
+
             $this.AddConfig($ConfigObject)
 
         }
