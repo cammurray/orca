@@ -264,6 +264,32 @@ Class ORCACheck
 
 }
 
+Class ORCAOutput
+{
+
+    [String]    $Name
+    [Boolean]   $Completed=$False
+    $VersionCheck
+    $DefaultOutputDirectory
+    $Result
+
+    # Function overridden
+    RunOutput($Checks,$Collection)
+    {
+
+    }
+
+    Run($Checks,$Collection)
+    {
+        Write-Host "$(Get-Date) Output - $($this.Name)"
+
+        $this.RunOutput($Checks,$Collection)
+
+        $this.Completed=$True
+    }
+
+}
+
 Function Get-ORCACheckDefs
 {
     Param
@@ -292,6 +318,69 @@ Function Get-ORCACheckDefs
     }
 
     Return $Checks
+}
+
+Function Get-ORCAOutputs
+{
+    Param
+    (
+        $VersionCheck,
+        $Modules,
+        $Options
+    )
+
+    $Outputs = @()
+
+    # Load individual check definitions
+    $OutputFiles = Get-ChildItem "$PSScriptRoot\Outputs"
+
+    ForEach($OutputFile in $OutputFiles)
+    {
+        if($OutputFile.BaseName -match '^output-(.*)$')
+        {
+            # Determine if this type should be loaded
+            If($Modules -contains $matches[1])
+            {
+                Write-Verbose "Importing $($matches[1])"
+                . $OutputFile.FullName
+                $Output = New-Object -TypeName $matches[1]
+
+                # Load any of the options in to the module
+                If($Options)
+                {
+
+                If($Options[$matches[1]].Keys)
+                {
+                    ForEach($Opt in $Options[$matches[1]].Keys)
+                    {
+                        # Ensure this property exists before we try set it and get a null ref error
+                        $ModProperties = $($Output | Get-Member | Where-Object {$_.MemberType -eq "Property"}).Name
+    
+                        If($ModProperties -contains $Opt)
+                        {
+                            $Output.$Opt = $Options[$matches[1]][$Opt]
+                        }
+                        else
+                        {
+                            Throw("There is no option $($Opt) on output module $($matches[1])")
+                        }
+                    }
+                }
+            }
+
+                # For default output directory
+                $Output.DefaultOutputDirectory = Get-ORCADirectory
+
+                # Provide versioncheck
+                $Output.VersionCheck = $VersionCheck
+                
+                $Outputs += $Output
+            }
+
+        }
+    }
+
+    Return $Outputs
 }
 
 Function Get-ORCACollection
@@ -350,520 +439,120 @@ Function Get-ORCACollection
     Write-Host "$(Get-Date) Getting DKIM Configuration"
     $Collection["DkimSigningConfig"] = Get-DkimSigningConfig
 
+
     Return $Collection
 }
 
-Function Get-ORCAHtmlOutput
+Function Get-ORCAReport
 {
-    <#
-
-        OUTPUT GENERATION / Header
-
-    #>
     Param(
-        $Collection,
-        $Checks,
-        $VersionCheck
+        [CmdletBinding()]
+        [Switch]$NoConnect,
+        [Switch]$NoVersionCheck,
+        [String[]]$AlternateDNS,
+        $Collection
     )
 
-    Write-Host "$(Get-Date) Generating Output" -ForegroundColor Green
-
-    # Obtain the tenant domain and date for the report
-    $TenantDomain = ($Collection["AcceptedDomains"] | Where-Object {$_.InitialDomain -eq $True}).DomainName
-    $ReportDate = $(Get-Date -format 'dd-MMM-yyyy HH:mm')
-
-    # Summary
-    $RecommendationCount = $($Checks | Where-Object {$_.Result -eq "Fail"}).Count
-    $OKCount = $($Checks | Where-Object {$_.Result -eq "Pass"}).Count
-    $InfoCount = $($Checks | Where-Object {$_.Result -eq "Informational"}).Count
-
-    # Misc
-    $ReportTitle = "Office 365 ATP Recommended Configuration Analyzer Report"
-
-    # Area icons
-    $AreaIcon = @{}
-    $AreaIcon["Default"] = "fas fa-user-cog"
-    $AreaIcon["Content Filter Policies"] = "fas fa-scroll"
-    $AreaIcon["Malware Filter Policy"] = "fas fa-biohazard"
-    $AreaIcon["Zero Hour Autopurge"] = "fas fa-trash"
-    $AreaIcon["DKIM"] = "fas fa-file-signature"
-    $AreaIcon["Transport Rules"] = "fas fa-list"
-    $AreaIcon["Transport Rules"] = "fas fa-list"
-
-    # Output start
-    $output = "<!doctype html>
-    <html lang='en'>
-    <head>
-        <!-- Required meta tags -->
-        <meta charset='utf-8'>
-        <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
-
-        <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css' crossorigin='anonymous'>
-        <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' integrity='sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T' crossorigin='anonymous'>
-
-
-        <script src='https://code.jquery.com/jquery-3.3.1.slim.min.js' integrity='sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo' crossorigin='anonymous'></script>
-        <script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js' integrity='sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1' crossorigin='anonymous'></script>
-        <script src='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js' integrity='sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM' crossorigin='anonymous'></script>
-        <script src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/js/all.js'></script>
-
-        <style>
-        .table-borderless td,
-        .table-borderless th {
-            border: 0;
-        }
-        .bd-callout {
-            padding: 1.25rem;
-            margin-top: 1.25rem;
-            margin-bottom: 1.25rem;
-            border: 1px solid #eee;
-            border-left-width: .25rem;
-            border-radius: .25rem
-        }
-        
-        .bd-callout h4 {
-            margin-top: 0;
-            margin-bottom: .25rem
-        }
-        
-        .bd-callout p:last-child {
-            margin-bottom: 0
-        }
-        
-        .bd-callout code {
-            border-radius: .25rem
-        }
-        
-        .bd-callout+.bd-callout {
-            margin-top: -.25rem
-        }
-        
-        .bd-callout-info {
-            border-left-color: #5bc0de
-        }
-        
-        .bd-callout-info h4 {
-            color: #5bc0de
-        }
-        
-        .bd-callout-warning {
-            border-left-color: #f0ad4e
-        }
-        
-        .bd-callout-warning h4 {
-            color: #f0ad4e
-        }
-        
-        .bd-callout-danger {
-            border-left-color: #d9534f
-        }
-        
-        .bd-callout-danger h4 {
-            color: #d9534f
-        }
-
-        .bd-callout-success {
-            border-left-color: #00bd19
-        }
-
-        </style>
-
-        <title>$($ReportTitle)</title>
-
-    </head>
-    <body class='app header-fixed bg-light'>
-
-        <nav class='navbar fixed-top navbar-light bg-white p-3 border-bottom'>
-            <div class='container-fluid'>
-                <div class='col-sm' style='text-align:left'>
-                    <div class='row'><div><i class='fas fa-binoculars'></i></div><div class='ml-3'><strong>ORCA</strong></div></div>
-                </div>
-                <div class='col-sm' style='text-align:center'>
-                    <strong>$($TenantDomain)</strong>
-                </div>
-                <div class='col-sm' style='text-align:right'>
-                    $($ReportDate)
-                </div>
-            </div>
-        </nav>  
-
-            <div class='app-body p-3'>
-            <main class='main'>
-                <!-- Main content here -->
-                <div class='container' style='padding-top:50px;'></div>
-                <div class='card'>
-                        
-                        <div class='card-body'>
-                            <h2 class='card-title'>$($ReportTitle)</h5>
-                            <strong>Version $($VersionCheck.Version.ToString())</strong>
-                            <p>This report details any tenant configuration changes recommended within your tenant.</p>"
-
-        <#
-
-                OUTPUT GENERATION / Version Warning
-
-        #>
-                                
-        If($VersionCheck.Updated -eq $False) {
-
-            $Output += "
-            <div class='alert alert-danger pt-2' role='alert'>
-                ORCA is out of date. You're running version $($VersionCheck.Version) but version $($VersionCheck.GalleryVersion) is available! Run Update-Module ORCA to get the latest definitions!
-            </div>
-            
-            "
-        }
-
-        If($VersionCheck.Preview -eq $True) {
-
-            $Output += "
-            <div class='alert alert-warning pt-2' role='alert'>
-                You are running a preview version of ORCA! Preview versions may contain errors which could result in an incorrect report. Verify the results and any configuration before deploying changes.
-            </div>
-            
-            "
-        }
-
-        If(!($Collection["Services"] -band [ORCAService]::OATP))
-        {
-            $Output += "
-            <div class='alert alert-danger pt-2' role='alert'>
-                <p>Office Advanced Threat Protection (ATP) was <strong>NOT</strong> detected on this tenant. <strong>The purpose of ORCA is to check for Office ATP recommended configuration</strong> - <i>however, these checks will be skipped. Other results should be relevant to base EOP configuration.</i></p>
-                <p>Consider Office Advanced Threat Protection for:<ul><li>Automatic incident response capabilities</li><li>Attack simulation capabilities</li><li>Behavioural analysis (sandboxing) of malware</li><li>Time of click protection against URLs</li><li>Advanced anti-phishing controls</li></ul></p>
-            </div>
-            
-            "    
-        }
-
-
-                        $Output += "</div>
-                </div>"
-
-
-
-    <#
-
-        OUTPUT GENERATION / Summary cards
-
-    #>
-
-    $Output += "
-
-                <div class='row p-3'>"
-
-                if($InfoCount -gt 0)
-                {
-                    $Output += "
-                    
-                            <div class='col d-flex justify-content-center text-center'>
-                                <div class='card text-white bg-secondary mb-3' style='width: 18rem;'>
-                                    <div class='card-header'><h5>Informational</h4></div>
-                                    <div class='card-body'>
-                                    <h2>$($InfoCount)</h5>
-                                    </div>
-                                </div>
-                            </div>
-                    
-                    "
-                }
-
-$Output +=        "<div class='col d-flex justify-content-center text-center'>
-                    <div class='card text-white bg-warning mb-3' style='width: 18rem;'>
-                        <div class='card-header'><h5>Recommendations</h4></div>
-                        <div class='card-body'>
-                        <h2>$($RecommendationCount)</h3>
-                        </div>
-                    </div>
-                </div>
-
-                <div class='col d-flex justify-content-center text-center'>
-                    <div class='card text-white bg-success mb-3' style='width: 18rem;'>
-                        <div class='card-header'><h5>OK</h4></div>
-                        <div class='card-body'>
-                        <h2>$($OKCount)</h5>
-                        </div>
-                    </div>
-                </div>
-            </div>"
-
-    <#
-    
-        OUTPUT GENERATION / Summary
-
-    #>
-
-    $Output += "
-    <div class='card m-3'>
-        <div class='card-header'>
-            Summary
-        </div>
-        <div class='card-body'>"
-
-
-    $Output += "<h5>Areas</h1>
-            <table class='table table-borderless'>"
-    ForEach($Area in ($Checks | Where-Object {$_.Completed -eq $true} | Group-Object Area))
+    # Easy to use for quick ORCA report to HTML
+    If($NoVersionCheck)
     {
-
-        $Pass = @($Area.Group | Where-Object {$_.Result -eq "Pass"}).Count
-        $Fail = @($Area.Group | Where-Object {$_.Result -eq "Fail"}).Count
-        $Info = @($Area.Group | Where-Object {$_.Result -eq "Informational"}).Count
-
-        $Icon = $AreaIcon[$Area.Name]
-        If($Null -eq $Icon) { $Icon = $AreaIcon["Default"]}
-
-        $Output += "
-        <tr>
-            <td width='20'><i class='$Icon'></i>
-            <td><a href='`#$($Area.Name)'>$($Area.Name)</a></td>
-            <td align='right'>
-                <span class='badge badge-secondary' style='padding:15px;text-align:center;width:40px;"; if($Info -eq 0) { $output += "opacity: 0.1;" }; $output += "'>$($Info)</span>
-                <span class='badge badge-warning' style='padding:15px;text-align:center;width:40px;"; if($Fail -eq 0) { $output += "opacity: 0.1;" }; $output += "'>$($Fail)</span>
-                <span class='badge badge-success' style='padding:15px;text-align:center;width:40px;"; if($Pass -eq 0) { $output += "opacity: 0.1;" }; $output += "'>$($Pass)</span>
-            </td>
-        </tr>
-        "
+        $PerformVersionCheck = $False
+    }
+    Else
+    {
+        $PerformVersionCheck = $True
     }
 
-    $Output+="</table>
-        </div>
-    </div>
-    "
-
-    <#
-
-        OUTPUT GENERATION / Zones
-
-    #>
-
-    ForEach ($Area in ($Checks | Where-Object {$_.Completed -eq $True} | Group-Object Area)) 
+    If($NoConnect)
     {
-
-        # Write the top of the card
-        $Output += "
-        <div class='card m-3'>
-            <div class='card-header'>
-            <a name='$($Area.Name)'>$($Area.Name)</a>
-            </div>
-            <div class='card-body'>"
-
-        # Each check
-        ForEach ($Check in ($Area.Group | Sort-Object Result -Descending)) 
-        {
-
-            $Output += "        
-                <h5>$($Check.Name)</h5>"
-
-                    If($Check.Result -eq "Pass") 
-                    {
-                        $CalloutType = "bd-callout-success"
-                        $BadgeType = "badge-success"
-                        $BadgeName = "OK"
-                        $Icon = "fas fa-thumbs-up"
-                        $Title = $Check.PassText
-                    } 
-                    ElseIf($Check.Result -eq "Informational") 
-                    {
-                        $CalloutType = "bd-callout-secondary"
-                        $BadgeType = "badge-secondary"
-                        $BadgeName = "Informational"
-                        $Icon = "fas fa-thumbs-up"
-                        $Title = $Check.FailRecommendation
-                    }
-                    Else 
-                    {
-                        $CalloutType = "bd-callout-warning"
-                        $BadgeType = "badge-warning"
-                        $BadgeName = "Improvement"
-                        $Icon = "fas fa-thumbs-down"
-                        $Title = $Check.FailRecommendation
-                    }
-
-                    $Output += "  
-                    
-                        <div class='bd-callout $($CalloutType) b-t-1 b-r-1 b-b-1 p-3'>
-                            <div class='container-fluid'>
-                                <div class='row'>
-                                    <div class='col-1'><i class='$($Icon)'></i></div>
-                                    <div class='col-8'><h5>$($Title)</h5></div>
-                                    <div class='col' style='text-align:right'><h5><span class='badge $($BadgeType)'>$($BadgeName)</span></h5></div>
-                                </div>"
-
-                        if($Check.Importance) {
-
-                                $Output +="
-                                <div class='row p-3'>
-                                    <div><p>$($Check.Importance)</p></div>
-                                </div>"
-
-                        }
-                        
-                        If($Check.ExpandResults -eq $True) {
-
-                            # We should expand the results by showing a table of Config Data and Items
-                            $Output +="<h6>Effected objects</h6>
-                            <div class='row pl-2 pt-3'>
-                                <table class='table'>
-                                    <thead class='border-bottom'>
-                                        <tr>"
-
-                            If($Check.CheckType -eq [CheckType]::ObjectPropertyValue)
-                            {
-                                # Object, property, value checks need three columns
-                                $Output +="
-                                <th>$($Check.ObjectType)</th>
-                                <th>$($Check.ItemName)</th>
-                                <th>$($Check.DataType)</th>
-                                "    
-                            }
-                            Else
-                            {
-                                $Output +="
-                                <th>$($Check.ItemName)</th>
-                                <th>$($Check.DataType)</th>
-                                "     
-                            }
-
-                            $Output +="
-                                            <th style='width:50px'></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                            "
-
-                            ForEach($o in $Check.Config)
-                            {
-                                if($o.Level -ne [ORCAConfigLevel]::None -and $o.Level -ne [ORCAConfigLevel]::Informational) 
-                                {
-                                    $oicon="fas fa-check-circle text-success"
-                                    $LevelText = $o.Level.ToString()
-                                }
-                                ElseIf($o.Level -eq [ORCAConfigLevel]::Informational) 
-                                {
-                                    $oicon="fas fa-info-circle text-muted"
-                                    $LevelText = $o.Level.ToString()
-                                }
-                                Else
-                                {
-                                    $oicon="fas fa-times-circle text-danger"
-                                    $LevelText = "Not Recommended"
-                                }
-
-                                $Output += "
-                                <tr>
-                                "
-
-                                If($Check.CheckType -eq [CheckType]::ObjectPropertyValue)
-                                {
-                                    # Object, property, value checks need three columns
-                                    $Output += "
-                                        <td>$($o.Object)</td>
-                                        <td>$($o.ConfigItem)</td>
-                                        <td>$($o.ConfigData)</td>
-                                    "
-                                }
-                                Else 
-                                {
-                                    $Output += "
-                                        <td>$($o.ConfigItem)</td>
-                                        <td>$($o.ConfigData)</td>
-                                    "
-                                }
-
-                                $Output += "
-                                    <td style='text-align:right'>
-                                        <div class='row badge badge-pill badge-light'>
-                                            <span style='vertical-align: middle;'>$($LevelText)</span>
-                                            <span class='$($oicon)' style='vertical-align: middle;'></span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                "
-
-                                # Informational segment
-                                if($o.Level -eq [ORCAConfigLevel]::Informational)
-                                {
-                                    $Output += "
-                                    <tr>"
-                                    If($Check.CheckType -eq [CheckType]::ObjectPropertyValue)
-                                    {
-                                        $Output += "<td colspan='4' style='border: 0;'>"
-                                    }
-                                    else
-                                    {
-                                        $Output += "<td colspan='3' style='border: 0;'>"
-                                    }
-
-                                    $Output += "
-                                    <div class='alert alert-light' role='alert' style='text-align: right;'>
-                                    <span class='fas fa-info-circle text-muted' style='vertical-align: middle; padding-right:5px'></span>
-                                    <span style='vertical-align: middle;'>$($o.InfoText)</span>
-                                    </div>
-                                    "
-                                    
-                                    $Output += "</td></tr>
-                                    
-                                    "
-                                }
-
-                            }
-
-                            $Output +="
-                                    </tbody>
-                                </table>"
-                                
-                            # If any links exist
-                            If($Check.Links)
-                            {
-                                $Output += "
-                                <table>"
-                                ForEach($Link in $Check.Links.Keys) {
-                                    $Output += "
-                                    <tr>
-                                    <td style='width:40px'><i class='fas fa-external-link-alt'></i></td>
-                                    <td><a href='$($Check.Links[$Link])'>$Link</a></td>
-                                    <tr>
-                                    "
-                                }
-                                $Output += "
-                                </table>
-                                "
-                            }
-
-                            $Output +="
-                            </div>"
-
-                        }
-
-                        $Output += "
-                            </div>
-                        </div>  "
-        }            
-
-        # End the card
-        $Output+=   "
-            </div>
-        </div>"
-
+        $Connect = $False
     }
-    <#
+    Else
+    {
+        $Connect = $True
+    }
 
-        OUTPUT GENERATION / Footer
-
-    #>
-
-    $Output += "
-            </main>
-            </div>
-
-            <footer class='app-footer'>
-            <p><center>Bugs? Issues? Suggestions? <a href='https://github.com/cammurray/orca'>GitHub!</a><center></p>
-            </footer>
-        </body>
-    </html>"
-
-    Return $Output
+    $Result = Invoke-ORCA -Connect $Connect -PerformVersionCheck $PerformVersionCheck -AlternateDNS $AlternateDNS -Collection $Collection -Output @("HTML")
+    Write-Host "$(Get-Date) Complete! Output is in $($Result.Result)"
 }
+
+Function Invoke-ORCA
+{
+    Param(
+        [CmdletBinding()]
+        [Boolean]$Connect=$True,
+        [Boolean]$PerformVersionCheck=$True,
+        [String[]]$AlternateDNS,
+        $Output,
+        $OutputOptions,
+        $Collection
+    )
+
+    # Version check
+    If($PerformVersionCheck)
+    {
+        $VersionCheck = Invoke-ORCAVersionCheck
+    }
+    
+    # Unless -NoConnect specified (already connected), connect to Exchange Online
+    If(!$NoConnect -and (Get-EXConnectionStatus) -eq $False) {
+        Invoke-ORCAConnections
+    }
+
+    # Build a param object which can be used to pass params to the underlying classes
+    $ORCAParams = New-Object -TypeName PSObject -Property @{
+        AlternateDNS=$AlternateDNS
+    }
+
+    # Get the output modules
+    $OutputModules = Get-ORCAOutputs -VersionCheck $VersionCheck -Modules $Output -Options $OutputOptions
+
+    # Get the object of ORCA checks
+    $Checks = Get-ORCACheckDefs -ORCAParams $ORCAParams
+
+    # Get the collection in to memory. For testing purposes, we support passing the collection as an object
+    If($Null -eq $Collection)
+    {
+        $Collection = Get-ORCACollection
+    }
+
+    # Perform checks inside classes/modules
+    ForEach($Check in ($Checks | Sort-Object Area))
+    {
+
+        # Run EOP checks by default
+        if($check.Services -band [ORCAService]::EOP)
+        {
+            $Check.Run($Collection)
+        }
+
+        # Run ATP checks only when ATP is present
+        if($check.Services -band [ORCAService]::OATP -and $Collection["Services"] -band [ORCAService]::OATP)
+        {
+            $Check.Run($Collection)
+        }
+    }
+
+    $OutputResults = @()
+
+    Write-Host "$(Get-Date) Generating Output" -ForegroundColor Green
+    # Perform required outputs
+    ForEach($o in $OutputModules)
+    {
+
+        $o.Run($Checks,$Collection)
+        $OutputResults += New-Object -TypeName PSObject -Property @{
+            Name=$o.name
+            Completed=$o.completed
+            Result=$o.Result
+        }
+
+    }
+
+    Return $OutputResults
+
+}
+
 
 function Invoke-ORCAVersionCheck
 {
@@ -904,7 +593,7 @@ function Invoke-ORCAVersionCheck
         $Updated = $False
         If($Terminate)
         {
-            Throw "ORCA is out of date. Your version is $ORCAVersion and the published version is $PSGalleryVersion. Run Update-Module ORCA or run Get-ORCAReport with -NoUpdate."
+            Throw "ORCA is out of date. Your version is $ORCAVersion and the published version is $PSGalleryVersion. Run Update-Module ORCA or run with -NoUpdate."
         }
         else {
             Write-Host "$(Get-Date) ORCA is out of date. Your version: $($ORCAVersion) published version is $($PSGalleryVersion)"
@@ -935,154 +624,4 @@ function Get-EXConnectionStatus
     {
         Return $False
     }
-}
-
-Function Get-ORCAReport
-{
-    <#
-    	.SYNOPSIS
-		The Office 365 Recommended Configuration Analyzer (ORCA) Report Generator
-
-        .DESCRIPTION
-        Office 365 Recommended Configuration Analyzer (ORCA)
-
-        The Get-ORCAReport command generates a HTML report based on recommended practices based
-        on field experiences working with Exchange Online Protection and Advanced Threat Protection.
-
-        Output report uses open source components for HTML formatting
-        - bootstrap - MIT License - https://getbootstrap.com/docs/4.0/about/license/
-        - fontawesome - CC BY 4.0 License - https://fontawesome.com/license/free
-
-        Engine and report generation
-        Cam Murray
-		Field Engineer - Microsoft
-        camurray@microsoft.com
-
-        With assistance from
-        Daniel Mozes
-        Field Engineer - Microsoft
-        damozes@microsoft.com
-        
-        https://github.com/cammurray/orca
-
-        .PARAMETER Report
-
-        Optional.
-
-        Full path to the report file that you want to generate. If this is not specified,
-        a directory in your current users AppData is created called ORCA. Reports are generated in this
-        directory in the following format:
-
-        ORCA-tenantname-date.html
-
-        .PARAMETER NoUpdate
-
-        Optional.
-
-        Switch that will tell the script not to exit in the event you are running an outdated rule
-        definition. It's always recommended to be running the latest rule definition/module.
-
-        .PARAMETER NoConnect
-
-        Optional.
-
-        Switch that will instruct ORCA not to connect and to use an already established connection
-        to Exchange Online.
-        
-        .PARAMETER Collection
-
-        Optional.
-
-        For passing an already established collection object. Can be used for offline collection
-        analysis.
-
-        .PARAMETER AlternateDNS
-
-        Optional.
-
-        Allows you to specify a DNS server which will be used in any checks requiring resolving a hostname.
-        This can be useful if you are using split-DNS, and have alternate DNS servers for the public domain.
-
-        .EXAMPLE
-
-        Get-ORCAReport
-
-        .EXAMPLE
-
-        Get-ORCAReport -Report myreport.html
-
-        .EXAMPLE
-
-        Get-ORCAReport -Report myreport.html -NoConnect
-        
-    #>
-    Param(
-        [CmdletBinding()]
-        [Switch]$NoConnect,
-        [Switch]$NoUpdate,
-        [Switch]$NoVersionCheck,
-        [String[]]$AlternateDNS,
-        $Collection,
-        $Output
-    )
-
-    # Version check
-    If(!$NoVersionCheck)
-    {
-        $VersionCheck = Invoke-ORCAVersionCheck
-    }
-    
-    # Unless -NoConnect specified (already connected), connect to Exchange Online
-    If(!$NoConnect -and (Get-EXConnectionStatus) -eq $False) {
-        Invoke-ORCAConnections
-    }
-
-    # Build a param object which can be used to pass params to the underlying classes
-    $ORCAParams = New-Object -TypeName PSObject -Property @{
-        AlternateDNS=$AlternateDNS
-    }
-
-    # Get the object of ORCA checks
-    $Checks = Get-ORCACheckDefs -ORCAParams $ORCAParams
-
-    # Get the collection in to memory. For testing purposes, we support passing the collection as an object
-    If($Null -eq $Collection)
-    {
-        $Collection = Get-ORCACollection
-    }
-
-    # Perform checks inside classes/modules
-    ForEach($Check in ($Checks | Sort-Object Area))
-    {
-
-        # Run EOP checks by default
-        if($check.Services -band [ORCAService]::EOP)
-        {
-            $Check.Run($Collection)
-        }
-
-        # Run ATP checks only when ATP is present
-        if($check.Services -band [ORCAService]::OATP -and $Collection["Services"] -band [ORCAService]::OATP)
-        {
-            $Check.Run($Collection)
-        }
-    }
-
-    # Generate HTML Output
-    $HTMLReport = Get-ORCAHtmlOutput -Collection $Collection -Checks $Checks -VersionCheck $VersionCheck -Mode $Mode
-
-    # Write to file
-
-    If(!$Output)
-    {
-        $OutputDirectory = Get-ORCADirectory
-        $Tenant = $(($Collection["AcceptedDomains"] | Where-Object {$_.InitialDomain -eq $True}).DomainName -split '\.')[0]
-        $ReportFileName = "ORCA-$($tenant)-$(Get-Date -Format 'yyyyMMddHHmm').html"
-        $Output = "$OutputDirectory\$ReportFileName"
-    }
-
-    $HTMLReport | Out-File -FilePath $Output
-    Write-Host "$(Get-Date) Complete! Output is in $Output"
-    Invoke-Expression $Output
-
 }
