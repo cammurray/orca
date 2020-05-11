@@ -4,7 +4,6 @@ class json : ORCAOutput
 {
 
     $OutputDirectory=$null
-    $DisplayReport=$True
 
     json()
     {
