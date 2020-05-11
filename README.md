@@ -54,3 +54,71 @@ There is definitely a lot of value in running your Office 365 environment with A
 * Advanced anti-phishing controls
 
 However, there are also some checks within ORCA that are non-ATP specific which can impact the operation of ATP and security within an Office 365 tenant. ORCA can still be ran on tenants with no ATP, albeit with reduced qty. of checks..
+
+# Outputs
+
+We now support outputting to different formats (which can be useful for different purposes, such as tracking trending over time).
+
+If the following isn't good enough for your purpose, don't despair, the output is fully modular. You can create your own output type by creating your own "output-name.ps1" file in the outputs directory. You'll need to create a class that extends the "ORCAOutput" class, and you'll need to implement an override for the RunOutput function. Easiest way is just to copy one of the exsting ps1's to make your own (if you need to, that is..)
+
+## Running specifying an alternative output
+
+To run specifying an alternative output module, instead of using the Get-ORCAReport command, use the Invoke-ORCA command.
+
+Example outputting to JSON
+
+`Invoke-ORCA -Output JSON`
+
+## Supported outputs
+
+### HTML
+
+HTML is the output format that you'll get when you run Get-ORCAReport.
+
+Example 1 - this is the equivelant of running Get-ORCAReport:
+
+`Invoke-ORCA -Output HTML`
+
+Example 2 - output to HTML but don't load the HTML
+
+`Invoke-ORCA -Output HTML -OutputOptions @{HTML=@{DisplayReport=$False}}`
+
+#### Supported Params
+
+* DisplayReport, Optional, Boolean - load the report at the conclusion of running ORCA
+* OutputDirectory, Optional, String - path to store the outputted html file, default is an appdata directory created automatically
+
+### JSON
+
+File with JSON formatted results.
+
+Example:
+
+`Invoke-ORCA -Output JSON`
+
+#### Supported Params
+
+* OutputDirectory, Optional, String - path to store the outputted json file, default is an appdata directory created automatically
+
+### CosmosDB
+
+Useful for storing your results, trending, or displaying in a interface (PowerBI example coming soon)
+
+We **require** the **unofficial** CosmosDB module 'CosmosDB' for this. You can find this on the PowerShell Gallery
+
+The key that we will use is 'id' in the CosmosDB. Make sure you specify this as your key when you create your collection.
+
+Example - To output in to MyCosmosAccount database MyCosmosDB, the default collection will be ORCA
+
+`Invoke-ORCA -Output Cosmos -OutputOptions @{Cosmos=@{Account='MyCosmosAccount';Database='MyCosmosDB';Key='GFJqJesi2Rq910E0G7P4WoZkzowzbj23Sm9DUWFX0l0P8o16mYyuaZBN00Nbtj9F1QQnumzZKSGZwknXGERrlA=='}}`
+
+Example - To output in to MyCosmosAccount database MyCosmosDB, in to a collection called MyORCA
+
+`Invoke-ORCA -Output Cosmos -OutputOptions @{Cosmos=@{Account='MyCosmosAccount';Database='MyCosmosDB';Key='GFJqJesi2Rq910E0G7P4WoZkzowzbj23Sm9DUWFX0l0P8o16mYyuaZBN00Nbtj9F1QQnumzZKSGZwknXGERrlA==';Collection='MyORCA'}}`
+
+#### Supported Params
+
+* Account, Required, String - The Cosmos DB account that the database is found in
+* Database, Required, String - The Cosmos DB name
+* Key, Required, String - One of the keys for this Cosmos DB account
+* Collection, Optional, String - The collection to output in to, by default this will be ORCA
