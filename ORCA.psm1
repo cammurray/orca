@@ -445,6 +445,51 @@ Function Get-ORCACollection
 
 Function Get-ORCAReport
 {
+
+    <#
+    
+        .SYNOPSIS
+            The Office 365 Recommended Configuration Analyzer (ORCA)
+
+        .DESCRIPTION
+            Office 365 Recommended Configuration Analyzer (ORCA)
+
+            The Get-ORCAReport command generates a HTML report based on the Office 365 ATP recommended practices article:
+            https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp
+
+            Output report uses open source components for HTML formatting:
+            - Bootstrap - MIT License https://getbootstrap.com/docs/4.0/about/license/
+            - Fontawesome - CC BY 4.0 License - https://fontawesome.com/license/free
+
+        .PARAMETER NoConnect
+            Prevents ORCA from connecting automatically to Exchange Online. In most circumstances you will not want to do this, we will
+            detect if you're connected or not connected as part of running ORCA. Connection will only occur if we detect you are not
+            connected.
+        
+        .PARAMETER NoVersionCheck
+            Prevents ORCA from determining if it's running the latest version. It's always very important to be running the latest
+            version of ORCA. We will change guidelines as the product and the recommended practices article changes. Not running the
+            latest version might provide recommendations that are no longer valid.
+
+        .PARAMETER AlternateDNS
+            Will perform DNS checks using an alternate DNS server. This is really important if your organisation uses split DNS. Checks
+            for your DKIM deployment for instance might fail if your DNS resolver is resolving your domains to the internal zone. This is
+            because your internal zone doesn't require to have the DKIM selector records published. In these instances use the AlternateDNS
+            flag to use different resolvers (ones that will provide the external DNS records for your domains).
+
+
+        .PARAMETER Collection
+            Internal only.
+
+        .EXAMPLE
+            Get-ORCAReport
+
+        .EXAMPLE
+            Get-ORCAReport -AlternateDNS @("10.20.30.40","40.20.30.10")
+
+    
+    #>
+
     Param(
         [CmdletBinding()]
         [Switch]$NoConnect,
@@ -478,6 +523,87 @@ Function Get-ORCAReport
 
 Function Invoke-ORCA
 {
+
+    <#
+    
+        .SYNOPSIS
+            The Office 365 Recommended Configuration Analyzer (ORCA)
+
+        .DESCRIPTION
+            Office 365 Recommended Configuration Analyzer (ORCA)
+
+            Unless you are wanting to automate ORCA, do not use Invoke-ORCA, run Get-ORCAReport instead!!
+
+            The Invoke-ORCA command allows you to output different formats based on the Office 365 ATP recommended practices article:
+            https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp
+
+            HTML Output report uses open source components for HTML formatting:
+            - Bootstrap - MIT License https://getbootstrap.com/docs/4.0/about/license/
+            - Fontawesome - CC BY 4.0 License - https://fontawesome.com/license/free
+
+        .PARAMETER Output
+            Array of output modules you would like to invoke. You can specify multiple different outputs. Outputs are modular, and
+            additional outputs can be written and placed in the modules Outputs directory if required.
+
+            Out of the box, the following outputs are included
+            - HTML
+            - JSON (File)
+            - Cosmos DB (Requires CosmosDB third-party module)
+
+            As this is an array, you can specify different outputs
+            
+            -Output "HTML"
+                Will output just HTML
+            -Output @("HTML","JSON")
+                Will output the HTML report and the JSON report
+        
+        .PARAMETER OutputOptions
+            Array of options for the output modules.
+
+            Example if running a Cosmos output, you'll need to tell it which account, database and key to use like this:
+
+            -OutputOptions @{Cosmos=@{Account='MyCosmosAccount';Database='MyCosmosDB';Key='GFJqJesi2Rq910E0G7P4WoZkzowzbj23Sm9DUWFX0l0P8o16mYyuaZBN00Nbtj9F1QQnumzZKSGZwknXGERrlA==';Collection='MyORCA'}}
+
+            If you're running multiple different outputs, just use a different key for that output module, for instance this will provide the Cosmos details to the Cosmos module
+            and HTML details to the HTML module.
+
+            -OutputOptions @{HTML=@{DisplayReport=$False};Cosmos=@{Account='MyCosmosAccount';Database='MyCosmosDB';Key='GFJqJesi2Rq910E0G7P4WoZkzowzbj23Sm9DUWFX0l0P8o16mYyuaZBN00Nbtj9F1QQnumzZKSGZwknXGERrlA==';Collection='MyORCA'}}
+        
+        .PARAMETER PerformVersionCheck
+            Prevents ORCA from determining if it's running the latest version if set to $False. It's always very important to be running the latest
+            version of ORCA. We will change guidelines as the product and the recommended practices article changes. Not running the
+            latest version might provide recommendations that are no longer valid.
+
+        .PARAMETER Connect
+            Prevents ORCA from connecting automatically to Exchange Online if set to $False. In most circumstances you will not want to do this, we will
+            detect if you're connected or not connected as part of running ORCA. Connection will only occur if we detect you are not
+            connected.
+
+        .PARAMETER AlternateDNS
+            Will perform DNS checks using an alternate DNS server. This is really important if your organisation uses split DNS. Checks
+            for your DKIM deployment for instance might fail if your DNS resolver is resolving your domains to the internal zone. This is
+            because your internal zone doesn't require to have the DKIM selector records published. In these instances use the AlternateDNS
+            flag to use different resolvers (ones that will provide the external DNS records for your domains).
+
+
+        .PARAMETER Collection
+            Internal only.
+
+        .EXAMPLE
+            Invoke-ORCA -Output "HTML"
+
+        .EXAMPLE
+            Invoke-ORCA -Output @("HTML","JSON")
+
+        .EXAMPLE
+            Invoke-ORCA -Output @("HTML","JSON") -OutputOptions @{HTML=@{DisplayReport=$False}}
+
+        .EXAMPLE
+            Invoke-ORCA -Output "COSMOS" -OutputOptions @{HTML=@{DisplayReport=$False};Cosmos=@{Account='MyCosmosAccount';Database='MyCosmosDB';Key='GFJqJesi2Rq910E0G7P4WoZkzowzbj23Sm9DUWFX0l0P8o16mYyuaZBN00Nbtj9F1QQnumzZKSGZwknXGERrlA==';Collection='MyORCA'}}
+
+    
+    #>
+
     Param(
         [CmdletBinding()]
         [Boolean]$Connect=$True,
