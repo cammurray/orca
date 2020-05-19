@@ -12,7 +12,17 @@ ORCA is a report that you can run in your environment which can highlight known 
 
 ## Sounds good! How do I run it?
 
-You will need the Exchange Online Management Shell first up, so get it at http://aka.ms/exopsmodule - we use this to connect to Exchange Online and look at your configuration.
+You will need the Exchange Online Management Shell first.
+
+* Exchange Online PowerShell V2 module is availible via the PowerShell gallery:
+
+ `Install-Module -Name ExchangeOnlineManagement`
+
+**or** 
+
+* Exchange Online PowerShell module http://aka.ms/exopsmodule 
+
+We use these modules to connect to Exchange Online and look at your configuration.
 
 Then, you'll need ORCA. We publish ORCA via the PowerShell gallery to make it easy and accessible for everyone.
 
@@ -23,6 +33,13 @@ To install, run PowerShell as an administrator and run the following command
 Connect to Exchange Online and then run
 
 `Get-ORCAReport`
+
+To Run ORCA you need to have necessary permissions. 
+The "View-Only Configuration" Exchange Online role is needed to run the tool.
+
+For example you can use the following:
+* Global Reader - Azure Active Directory role
+* View-Only Organization Management - built in role group in Exchange Online
 
 It's that simple! At the conclusion, your default browser will open with a report detailing the recommendations.
 
