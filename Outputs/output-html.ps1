@@ -146,7 +146,9 @@ class html : ORCAOutput
                         
                         <div class='card-body'>
                             <h2 class='card-title'>$($ReportTitle)</h5>
+
                             <strong>Version $($this.VersionCheck.Version.ToString())</strong>
+                            
                             <p>This report details any tenant configuration changes recommended within your tenant.</p>"
 
         <#
@@ -154,12 +156,25 @@ class html : ORCAOutput
                 OUTPUT GENERATION / Version Warning
 
         #>
-                                
-        If($this.VersionCheck.Updated -eq $False) {
+        
+        if($this.VersionCheck.GalleryCheck)
+        {
+            If($this.VersionCheck.Updated -eq $False) 
+            {
 
+                $Output += "
+                <div class='alert alert-danger pt-2' role='alert'>
+                    ORCA is out of date. You're running version $($this.VersionCheck.Version) but version $($this.VersionCheck.GalleryVersion) is available! Run Update-Module ORCA to get the latest definitions!
+                </div>
+                
+                "
+            }
+        }
+        else
+        {
             $Output += "
-            <div class='alert alert-danger pt-2' role='alert'>
-                ORCA is out of date. You're running version $($this.VersionCheck.Version) but version $($this.VersionCheck.GalleryVersion) is available! Run Update-Module ORCA to get the latest definitions!
+            <div class='alert alert-info pt-2' role='alert'>
+                VersionChecks were disabled when running ORCA. Ensure that you're periodically running Update-Module ORCA to get the latest definitions!
             </div>
             
             "

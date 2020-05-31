@@ -295,10 +295,10 @@ Class ORCAOutput
 {
 
     [String]    $Name
-    [Boolean]   $Completed=$False
-    $VersionCheck
-    $DefaultOutputDirectory
-    $Result
+    [Boolean]   $Completed              =   $False
+                $VersionCheck           =   $null
+                $DefaultOutputDirectory
+                $Result
 
     # Function overridden
     RunOutput($Checks,$Collection)
@@ -645,10 +645,7 @@ Function Invoke-ORCA
     )
 
     # Version check
-    If($PerformVersionCheck)
-    {
-        $VersionCheck = Invoke-ORCAVersionCheck
-    }
+    $VersionCheck = Invoke-ORCAVersionCheck -GalleryCheck $PerformVersionCheck
     
     # Unless -NoConnect specified (already connected), connect to Exchange Online
     If(!$NoConnect -and (Get-EXConnectionStatus) -eq $False) 
@@ -715,7 +712,8 @@ function Invoke-ORCAVersionCheck
 {
     Param
     (
-        $Terminate
+        $Terminate,
+        [Boolean] $GalleryCheck
     )
 
     Write-Host "$(Get-Date) Performing ORCA Version check..."
@@ -723,10 +721,12 @@ function Invoke-ORCAVersionCheck
     # When detected we are running the preview release
     $Preview = $False
 
-    try {
+    try 
+    {
         $ORCAVersion = (Get-Module ORCA | Sort-Object Version -Desc)[0].Version
     }
-    catch {
+    catch 
+    {
         $ORCAVersion = (Get-Module ORCAPreview | Sort-Object Version -Desc)[0].Version
 
         if($ORCAVersion)
@@ -734,36 +734,40 @@ function Invoke-ORCAVersionCheck
             $Preview = $True
         }
     }
-    
-    if($Preview -eq $False)
-    {
-        $PSGalleryVersion = (Find-Module ORCA -Repository PSGallery -ErrorAction:SilentlyContinue -WarningAction:SilentlyContinue).Version
-    }
-    else 
-    {
-        $PSGalleryVersion = (Find-Module ORCAPreview -Repository PSGallery -ErrorAction:SilentlyContinue -WarningAction:SilentlyContinue).Version
-    }
-    
 
-    If($PSGalleryVersion -gt $ORCAVersion)
+    if($GalleryCheck)
     {
-        $Updated = $False
-        If($Terminate)
+        if($Preview -eq $False)
         {
-            Throw "ORCA is out of date. Your version is $ORCAVersion and the published version is $PSGalleryVersion. Run Update-Module ORCA or run with -NoUpdate."
+            $PSGalleryVersion = (Find-Module ORCA -Repository PSGallery -ErrorAction:SilentlyContinue -WarningAction:SilentlyContinue).Version
         }
-        else {
-            Write-Host "$(Get-Date) ORCA is out of date. Your version: $($ORCAVersion) published version is $($PSGalleryVersion)"
+        else 
+        {
+            $PSGalleryVersion = (Find-Module ORCAPreview -Repository PSGallery -ErrorAction:SilentlyContinue -WarningAction:SilentlyContinue).Version
         }
-    }
-    else
-    {
-        $Updated = $True
+        
+    
+        If($PSGalleryVersion -gt $ORCAVersion)
+        {
+            $Updated = $False
+            If($Terminate)
+            {
+                Throw "ORCA is out of date. Your version is $ORCAVersion and the published version is $PSGalleryVersion. Run Update-Module ORCA or run with -NoUpdate."
+            }
+            else {
+                Write-Host "$(Get-Date) ORCA is out of date. Your version: $($ORCAVersion) published version is $($PSGalleryVersion)"
+            }
+        }
+        else
+        {
+            $Updated = $True
+        }
     }
 
     Return New-Object -TypeName PSObject -Property @{
         Updated=$Updated
         Version=$ORCAVersion
+        GalleryCheck=$GalleryCheck
         GalleryVersion=$PSGalleryVersion
         Preview=$Preview
     }
