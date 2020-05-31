@@ -64,6 +64,10 @@ function Get-ORCADirectory
 
 Function Invoke-ORCAConnections
 {
+    Param
+    (
+        [Boolean]$Install
+    )
     <#
     
     Check which module is loaded and then run the respective connection
@@ -82,7 +86,30 @@ Function Invoke-ORCAConnections
     }
     Else 
     {
-        Throw "ORCA requires either the Exchange Online PowerShell Module (aka.ms/exopsmodule) loaded or the Exchange Online PowerShell module from the PowerShell Gallery installed."
+        If($Install)
+        {
+            Try
+            {
+                #  Try installing ExchangeOnlineManagement module in to CurrentUser scope
+                Write-Host "$(Get-Date) Exchange Online Management module is missing - attempting to install in to CurrentUser scope.. (You may be asked to trust the PS Gallery)"
+                Install-Module ExchangeOnlineManagement -ErrorAction:SilentlyContinue -Scope CurrentUser
+
+                # Then connect..
+                Connect-ExchangeOnline -WarningAction:SilentlyContinue | Out-Null
+
+                $Installed = $True
+            }
+            catch
+            {
+                $Installed = $False
+            }
+        }
+
+        if(!$Installed)
+        {
+            # Error if not installed
+            Throw "ORCA requires either the Exchange Online PowerShell Module (aka.ms/exopsmodule) loaded or the Exchange Online PowerShell module from the PowerShell Gallery installed."
+        }
     }
 
     # Perform check for Exchange Connection Status
@@ -585,6 +612,8 @@ Function Invoke-ORCA
             because your internal zone doesn't require to have the DKIM selector records published. In these instances use the AlternateDNS
             flag to use different resolvers (ones that will provide the external DNS records for your domains).
 
+        .PARAMETER InstallModules
+            Attempts to install missing modules (such as Exchange Online Management) in to the CurrentUser scope if they are missing. Defaults to $True
 
         .PARAMETER Collection
             Internal only.
@@ -608,6 +637,7 @@ Function Invoke-ORCA
         [CmdletBinding()]
         [Boolean]$Connect=$True,
         [Boolean]$PerformVersionCheck=$True,
+        [Boolean]$InstallModules=$True,
         [String[]]$AlternateDNS,
         $Output,
         $OutputOptions,
@@ -621,8 +651,9 @@ Function Invoke-ORCA
     }
     
     # Unless -NoConnect specified (already connected), connect to Exchange Online
-    If(!$NoConnect -and (Get-EXConnectionStatus) -eq $False) {
-        Invoke-ORCAConnections
+    If(!$NoConnect -and (Get-EXConnectionStatus) -eq $False) 
+    {
+        Invoke-ORCAConnections -Install $InstallModules
     }
 
     # Build a param object which can be used to pass params to the underlying classes
