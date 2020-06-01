@@ -34,6 +34,7 @@ class html : ORCAOutput
     # Area icons
     $AreaIcon = @{}
     $AreaIcon["Default"] = "fas fa-user-cog"
+    $AreaIcon["Connectors"] = "fas fa-plug"
     $AreaIcon["Anti-Spam Policies"] = "fas fa-trash"
     $AreaIcon["Malware Filter Policy"] = "fas fa-biohazard"
     $AreaIcon["Zero Hour Autopurge"] = "fas fa-trash"
@@ -419,20 +420,38 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                 <tr>
                                 "
 
+                                # Multi line ConfigItem or ConfigData
+                                If($o.ConfigItem -is [array] -or $o.ConfigItem -is [System.Collections.ArrayList])
+                                {
+                                    $ConfigItem = $o.ConfigItem -join "<br>"
+                                }
+                                else 
+                                {
+                                    $ConfigItem = $o.ConfigItem
+                                }
+                                If($o.ConfigData -is [array] -or $o.ConfigData -is [System.Collections.ArrayList])
+                                {
+                                    $ConfigData = $o.ConfigData -join "<br>"
+                                }
+                                else 
+                                {
+                                    $ConfigData = $o.ConfigData
+                                }
+
                                 If($Check.CheckType -eq [CheckType]::ObjectPropertyValue)
                                 {
                                     # Object, property, value checks need three columns
                                     $Output += "
                                         <td>$($o.Object)</td>
-                                        <td>$($o.ConfigItem)</td>
-                                        <td>$($o.ConfigData)</td>
+                                        <td>$($ConfigItem)</td>
+                                        <td>$($ConfigData)</td>
                                     "
                                 }
                                 Else 
                                 {
                                     $Output += "
-                                        <td>$($o.ConfigItem)</td>
-                                        <td>$($o.ConfigData)</td>
+                                        <td>$($ConfigItem)</td>
+                                        <td>$($ConfigData)</td>
                                     "
                                 }
 
