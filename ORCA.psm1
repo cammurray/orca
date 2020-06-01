@@ -466,6 +466,25 @@ Function Get-ORCACollection
     Write-Host "$(Get-Date) Getting DKIM Configuration"
     $Collection["DkimSigningConfig"] = Get-DkimSigningConfig
 
+    Write-Host "$(Get-Date) Getting Connectors"
+    $Collection["InboundConnector"] = Get-InboundConnector
+
+    # Required for Enhanced Filtering checks
+    Write-Host "$(Get-Date) Getting MX Reports for all domains"
+    ForEach($d in $Collection["AcceptedDomains"])
+    {
+        $Collection["MXReports"] = @()
+        Try
+        {
+            $Collection["MXReports"] += Get-MxRecordReport -Domain $($d.DomainName) -ErrorAction:SilentlyContinue
+        }
+        Catch
+        {
+            Write-Verbose "$(Get-Date) Failed to get MX report for domain $($d.DomainName)"
+        }
+        
+    }
+
 
     Return $Collection
 }
