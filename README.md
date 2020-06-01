@@ -113,6 +113,14 @@ Example:
 
 `Invoke-ORCA -Output JSON`
 
+### CSV
+
+Output flatted in to two CSV files, one for an overview, one for detail on each config item.
+
+Example:
+
+`Invoke-ORCA -Output CSV`
+
 #### Supported Params
 
 * OutputDirectory, Optional, String - path to store the outputted json file, default is an appdata directory created automatically
