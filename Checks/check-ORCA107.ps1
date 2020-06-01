@@ -17,14 +17,14 @@ class ORCA107 : ORCACheck
     ORCA107()
     {
         $this.Control="ORCA-107"
-        $this.Area="Content Filter Policies"
+        $this.Area="Anti-Spam Policies"
         $this.Name="End-user Spam notifications"
         $this.PassText="End-user Spam notification is enabled and the frequency is set to 3 days"
         $this.FailRecommendation="Enable End-user Spam notification and set the frequency to 3 days"
         $this.Importance="Enable End-user Spam notifications to let users manage their own spam-quarantined messages (Release, Block sender, Review). End-user spam notifications contain a list of all spam-quarantined messages that the end-user has received during a time period."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
-        $this.ObjectType="Content Filter Policy"
+        $this.ObjectType="Anti-Spam Policy"
         $this.ItemName="Setting"
         $this.DataType="Current Value"
         $this.Links= @{

@@ -11,14 +11,14 @@ class ORCA143 : ORCACheck
     ORCA143()
     {
         $this.Control=143
-        $this.Area="Content Filter Policies"
+        $this.Area="Anti-Spam Policies"
         $this.Name="Safety Tips"
         $this.PassText="Safety Tips are enabled"
         $this.FailRecommendation="Safety Tips should be enabled"
         $this.Importance="By default, safety tips can provide useful security information when reading an email."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
-        $this.ObjectType="Content Filter Policy"
+        $this.ObjectType="Anti-Spam Policy"
         $this.ItemName="Setting"
         $this.DataType="Current Value"
         $this.Links= @{

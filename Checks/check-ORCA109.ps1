@@ -17,13 +17,13 @@ class ORCA109 : ORCACheck
     ORCA109()
     {
         $this.Control="ORCA-109"
-        $this.Area="Content Filter Policies"
+        $this.Area="Anti-Spam Policies"
         $this.Name="Allowed Senders"
         $this.PassText="Senders are not being whitelisted in an unsafe manner"
         $this.FailRecommendation="Remove whitelisting on senders"
         $this.Importance="Emails coming from whitelisted senders bypass several layers of protection within Exchange Online Protection. If senders are whitelisted, they are open to being spoofed from malicious actors."
         $this.ExpandResults=$True
-        $this.ItemName="Content Filter Policy"
+        $this.ItemName="Anti-Spam Policy"
         $this.DataType="Allowed Senders"
         $this.Links= @{
             "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"

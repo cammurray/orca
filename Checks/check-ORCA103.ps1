@@ -11,7 +11,7 @@ class ORCA103 : ORCACheck
     ORCA103()
     {
         $this.Control="ORCA-103"
-        $this.Area="Content Filter Policies"
+        $this.Area="Anti-Spam Policies"
         $this.Name="Outbound spam filter policy settings"
         $this.PassText="Outbound spam filter policy settings configured"
         $this.FailRecommendation="Set RecipientLimitExternalPerHour to 500, RecipientLimitInternalPerHour to 1000, and ActionWhenThresholdReached to block."

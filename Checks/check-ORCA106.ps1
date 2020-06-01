@@ -1,6 +1,6 @@
 <#
 
-ORCA-106 Checks if the Content Filter Policy quarantine retention period is configured to 30 days.
+ORCA-106 Checks if the Anti-Spam Filter Policy quarantine retention period is configured to 30 days.
 
 #>
 
@@ -17,13 +17,13 @@ class ORCA106 : ORCACheck
     ORCA106()
     {
         $this.Control="ORCA-106"
-        $this.Area="Content Filter Policies"
+        $this.Area="Anti-Spam Policies"
         $this.Name="Quarantine retention period"
         $this.PassText="Quarantine retention period is 30 days"
         $this.FailRecommendation="Configure the Quarantine retention period to 30 days"
         $this.Importance="You can view, release, download, delete and report false positive quarantined email messages or files captured by Advance Threat Protection (ATP) for SharePoint Online, OneDrive for Business, and Microsoft Teams in Office 365. Keep messages in the quarantine for 30 days to allow enough time for further investigation. This is the default value and also the maximum."
         $this.ExpandResults=$True
-        $this.ItemName="Content Filter Policy"
+        $this.ItemName="Anti-Spam Filter Policy"
         $this.DataType="Quarantine Retention Period"
         $this.Links= @{
             "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"

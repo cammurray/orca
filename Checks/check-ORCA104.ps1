@@ -11,7 +11,7 @@ class ORCA104 : ORCACheck
     ORCA104()
     {
         $this.Control="ORCA-104"
-        $this.Area="Content Filter Policies"
+        $this.Area="Anti-Spam Policies"
         $this.Name="High Confidence Phish Action"
         $this.PassText="High Confidence Phish action set to Quarantine message"
         $this.FailRecommendation="Change High Confidence Phish action to Quarantine message"

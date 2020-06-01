@@ -11,13 +11,13 @@ class ORCA140 : ORCACheck
     ORCA140()
     {
         $this.Control=140
-        $this.Area="Content Filter Policies"
+        $this.Area="Anti-Spam Policies"
         $this.Name="High Confidence Spam Action"
         $this.PassText="High Confidence Spam action set to Quarantine message"
         $this.FailRecommendation="Change High Confidence Spam action to Quarantine message"
         $this.Importance="It is recommended to configure High Confidence Spam detection action to Quarantine message."
         $this.ExpandResults=$True
-        $this.ItemName="Spam Policy"
+        $this.ItemName="Anti-Spam Policy"
         $this.DataType="Action"
         $this.Links= @{
             "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"

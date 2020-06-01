@@ -11,13 +11,13 @@ class ORCA101 : ORCACheck
     ORCA101()
     {
         $this.Control="ORCA-101"
-        $this.Area="Content Filter Policies"
+        $this.Area="Anti-Spam Policies"
         $this.Name="Mark Bulk as Spam"
         $this.PassText="Bulk is marked as spam"
-        $this.FailRecommendation="Set the content filter policy to mark bulk mail as spam"
+        $this.FailRecommendation="Set the anti-spam policy to mark bulk mail as spam"
         $this.Importance="The differentiation between bulk and spam can sometimes be subjective. The bulk complaint level is based on the number of complaints from the sender. Marking bulk as spam can decrease the amount of perceived spam received. This setting is only available in PowerShell."
         $this.ExpandResults=$True
-        $this.ItemName="Content Filter Policy"
+        $this.ItemName="Anti-Spam Policy"
         $this.DataType="Mark as Spam Bulk Mail Setting (MarkAsSpamBulkMail)"
         $this.Links= @{
             "Set-HostedContentFilterPolicy"="https://docs.microsoft.com/en-us/powershell/module/exchange/antispam-antimalware/set-hostedcontentfilterpolicy?view=exchange-ps"

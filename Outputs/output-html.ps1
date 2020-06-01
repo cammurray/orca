@@ -34,7 +34,7 @@ class html : ORCAOutput
     # Area icons
     $AreaIcon = @{}
     $AreaIcon["Default"] = "fas fa-user-cog"
-    $AreaIcon["Content Filter Policies"] = "fas fa-scroll"
+    $AreaIcon["Anti-Spam Policies"] = "fas fa-trash"
     $AreaIcon["Malware Filter Policy"] = "fas fa-biohazard"
     $AreaIcon["Zero Hour Autopurge"] = "fas fa-trash"
     $AreaIcon["DKIM"] = "fas fa-file-signature"
