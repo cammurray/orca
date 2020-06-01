@@ -11,13 +11,13 @@ class ORCA142 : ORCACheck
     ORCA142()
     {
         $this.Control=142
-        $this.Area="Content Filter Policies"
+        $this.Area="Anti-Spam Policies"
         $this.Name="Phish Action"
         $this.PassText="Phish action set to Quarantine message"
         $this.FailRecommendation="Change Phish action to Quarantine message"
         $this.Importance="It is recommended to configure the Phish detection action to Quarantine so that these emails are not visible to the end user from within Outlook. As Phishing emails are designed to look legitimate, users may mistakenly think that a phishing email in Junk is false-positive."
         $this.ExpandResults=$True
-        $this.ItemName="Spam Policy"
+        $this.ItemName="Anti-Spam Policy"
         $this.DataType="Action"
         $this.Links= @{
             "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"

@@ -11,13 +11,13 @@ class ORCA141 : ORCACheck
     ORCA141()
     {
         $this.Control=141
-        $this.Area="Content Filter Policies"
+        $this.Area="Anti-Spam Policies"
         $this.Name="Bulk Action"
         $this.PassText="Bulk action set to Move message to Junk Email Folder"
         $this.FailRecommendation="Change bulk action to move messages to junk mail folder"
         $this.Importance="It is recommended to configure Bulk detection action to Move messages to Junk Email folder."
         $this.ExpandResults=$True
-        $this.ItemName="Spam Policy"
+        $this.ItemName="Anti-Spam Policy"
         $this.DataType="Action"
         $this.Links= @{
             "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"

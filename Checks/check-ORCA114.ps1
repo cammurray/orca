@@ -11,13 +11,13 @@ class ORCA114 : ORCACheck
     ORCA114()
     {
         $this.Control=114
-        $this.Area="Content Filter Policies"
+        $this.Area="Anti-Spam Policies"
         $this.Name="IP Allow Lists"
         $this.PassText="No IP Allow Lists have been configured"
         $this.FailRecommendation="Remove IP addresses from IP allow list"
         $this.Importance="IP addresses contained in the IP allow list are able to bypass spam, phishing and spoofing checks, potentially resulting in more spam. Ensure that the IP list is kept to a minimum."
         $this.ExpandResults=$True
-        $this.ItemName="Content Filter Policy"
+        $this.ItemName="Anti-Spam Policy"
         $this.DataType="Allowed IP"
         $this.Links= @{
             "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
