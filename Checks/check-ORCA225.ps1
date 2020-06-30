@@ -1,6 +1,6 @@
 <#
 
-158 Checks to determine if ATP SafeDocs is enabled in the ATP configuration.
+225 Checks to determine if ATP SafeDocs is enabled in the ATP configuration.
 
 #>
 
