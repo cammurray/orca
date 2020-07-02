@@ -30,6 +30,7 @@ class ORCA230 : ORCACheck
         $this.DataType="Priority"
         $this.Links= @{
             "Security & Compliance Center - Antiphishing policies"="https://protection.office.com/antiphishing"
+            "Order and precedence of email protection"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/how-policies-and-protections-are-combined?view=o365-worldwide"
             "Setting up antiphishing policies"="https://docs.microsoft.com/en-gb/microsoft-365/security/office-365-security/set-up-anti-phishing-policies"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
         }
