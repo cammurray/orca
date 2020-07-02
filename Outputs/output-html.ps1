@@ -146,7 +146,7 @@ class html : ORCAOutput
                 <div class='card'>
                         
                         <div class='card-body'>
-                            <h2 class='card-title'>$($ReportTitle)</h5>
+                            <h2 class='card-title'>$($ReportTitle)</h2>
 
                             <strong>Version $($this.VersionCheck.Version.ToString())</strong>
                             
@@ -224,9 +224,9 @@ class html : ORCAOutput
                     
                             <div class='col d-flex justify-content-center text-center'>
                                 <div class='card text-white bg-secondary mb-3' style='width: 18rem;'>
-                                    <div class='card-header'><h5>Informational</h4></div>
+                                    <div class='card-header'><h5>Informational</h5></div>
                                     <div class='card-body'>
-                                    <h2>$($InfoCount)</h5>
+                                    <h2>$($InfoCount)</h2>
                                     </div>
                                 </div>
                             </div>
@@ -236,18 +236,18 @@ class html : ORCAOutput
 
 $Output +=        "<div class='col d-flex justify-content-center text-center'>
                     <div class='card text-white bg-warning mb-3' style='width: 18rem;'>
-                        <div class='card-header'><h5>Recommendations</h4></div>
+                        <div class='card-header'><h5>Recommendations</h5></div>
                         <div class='card-body'>
-                        <h2>$($RecommendationCount)</h3>
+                        <h2>$($RecommendationCount)</h2>
                         </div>
                     </div>
                 </div>
 
                 <div class='col d-flex justify-content-center text-center'>
                     <div class='card text-white bg-success mb-3' style='width: 18rem;'>
-                        <div class='card-header'><h5>OK</h4></div>
+                        <div class='card-header'><h5>OK</h5></div>
                         <div class='card-body'>
-                        <h2>$($OKCount)</h5>
+                        <h2>$($OKCount)</h2>
                         </div>
                     </div>
                 </div>
