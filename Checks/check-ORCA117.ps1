@@ -74,8 +74,9 @@ class ORCA117 : ORCACheck
 
             # No policy enabling
             $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.ConfigItem="All"
-            $ConfigObject.ConfigData="Enabled False"
+            $ConfigObject.Object ="All"
+            $ConfigObject.ConfigItem="IsEnabled"
+            $ConfigObject.ConfigData="False"
             $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
             $this.AddConfig($ConfigObject)
