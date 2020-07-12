@@ -115,7 +115,7 @@ Function Invoke-ORCAConnections
     # Perform check for Exchange Connection Status
     If($(Get-EXConnectionStatus) -eq $False)
     {
-        Throw "ORCA was unable to connect to Exchange Online."
+        Throw "ORCA was unable to connect to Exchange Online, or you do not have sufficient permissions to check ORCA related configuration."
     }
 }
 
@@ -797,7 +797,7 @@ function Get-EXConnectionStatus
     # Perform check to determine if we are connected
     Try
     {
-        Get-Mailbox -ResultSize:1 -WarningAction:SilentlyContinue | Out-Null
+        Get-HostedConnectionFilterPolicy -WarningAction:SilentlyContinue | Out-Null
         Return $True
     }
     Catch
