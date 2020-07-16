@@ -471,9 +471,9 @@ Function Get-ORCACollection
 
     # Required for Enhanced Filtering checks
     Write-Host "$(Get-Date) Getting MX Reports for all domains"
+    $Collection["MXReports"] = @()
     ForEach($d in $Collection["AcceptedDomains"])
     {
-        $Collection["MXReports"] = @()
         Try
         {
             $Collection["MXReports"] += Get-MxRecordReport -Domain $($d.DomainName) -ErrorAction:SilentlyContinue
