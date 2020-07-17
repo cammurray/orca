@@ -48,13 +48,18 @@ function Get-ORCADirectory
         
     #>
 
-    $Directory = "$($env:LOCALAPPDATA)\Microsoft\ORCA"
-    
-    # Unix hosts like cloud shell won't have a LOCALAPPDATA, fail back to using env:HOME
-    If($null -eq $($env:LOCALAPPDATA))
+    If($IsWindows)
+    {
+        $Directory = "$($env:LOCALAPPDATA)\Microsoft\ORCA"
+    }
+    elseif($IsLinux -or $IsMac)
     {
         $Directory = "$($env:HOME)/ORCA"
-    } 
+    }
+    else 
+    {
+        $Directory = "$($env:LOCALAPPDATA)\Microsoft\ORCA"
+    }
 
     If(Test-Path $Directory) 
     {
