@@ -48,13 +48,18 @@ function Get-ORCADirectory
         
     #>
 
-    $Directory = "$($env:LOCALAPPDATA)\Microsoft\ORCA"
-    
-    # Unix hosts like cloud shell won't have a LOCALAPPDATA, fail back to using env:HOME
-    If($null -eq $($env:LOCALAPPDATA))
+    If($IsWindows)
+    {
+        $Directory = "$($env:LOCALAPPDATA)\Microsoft\ORCA"
+    }
+    elseif($IsLinux -or $IsMac)
     {
         $Directory = "$($env:HOME)/ORCA"
-    } 
+    }
+    else 
+    {
+        $Directory = "$($env:LOCALAPPDATA)\Microsoft\ORCA"
+    }
 
     If(Test-Path $Directory) 
     {
@@ -80,16 +85,16 @@ Function Invoke-ORCAConnections
     
     #>
 
-    If(Get-Command "Connect-EXOPSSession" -ErrorAction:SilentlyContinue)
-    {
-        Write-Host "$(Get-Date) Connecting to Exchange Online.."
-        Connect-EXOPSSession -PSSessionOption $ProxySetting -WarningAction:SilentlyContinue | Out-Null    
-    } 
-    ElseIf(Get-Command "Connect-ExchangeOnline" -ErrorAction:SilentlyContinue)
+    If(Get-Command "Connect-ExchangeOnline" -ErrorAction:SilentlyContinue)
     {
         Write-Host "$(Get-Date) Connecting to Exchange Online (Modern Module).."
         Connect-ExchangeOnline -WarningAction:SilentlyContinue | Out-Null
     }
+    ElseIf(Get-Command "Connect-EXOPSSession" -ErrorAction:SilentlyContinue)
+    {
+        Write-Host "$(Get-Date) Connecting to Exchange Online.."
+        Connect-EXOPSSession -PSSessionOption $ProxySetting -WarningAction:SilentlyContinue | Out-Null    
+    } 
     Else 
     {
         If($Install)
