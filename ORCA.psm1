@@ -85,16 +85,16 @@ Function Invoke-ORCAConnections
     
     #>
 
-    If(Get-Command "Connect-EXOPSSession" -ErrorAction:SilentlyContinue)
-    {
-        Write-Host "$(Get-Date) Connecting to Exchange Online.."
-        Connect-EXOPSSession -PSSessionOption $ProxySetting -WarningAction:SilentlyContinue | Out-Null    
-    } 
-    ElseIf(Get-Command "Connect-ExchangeOnline" -ErrorAction:SilentlyContinue)
+    If(Get-Command "Connect-ExchangeOnline" -ErrorAction:SilentlyContinue)
     {
         Write-Host "$(Get-Date) Connecting to Exchange Online (Modern Module).."
         Connect-ExchangeOnline -WarningAction:SilentlyContinue | Out-Null
     }
+    ElseIf(Get-Command "Connect-EXOPSSession" -ErrorAction:SilentlyContinue)
+    {
+        Write-Host "$(Get-Date) Connecting to Exchange Online.."
+        Connect-EXOPSSession -PSSessionOption $ProxySetting -WarningAction:SilentlyContinue | Out-Null    
+    } 
     Else 
     {
         If($Install)
