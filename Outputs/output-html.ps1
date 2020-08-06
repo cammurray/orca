@@ -398,7 +398,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     <tbody>
                             "
 
-                            ForEach($o in $Check.Config)
+                            ForEach($o in $($Check.Config | Sort-Object Level))
                             {
                                 if($o.Level -ne [ORCAConfigLevel]::None -and $o.Level -ne [ORCAConfigLevel]::Informational) 
                                 {
