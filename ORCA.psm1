@@ -159,6 +159,15 @@ enum ORCAResult
     Fail = 3
 }
 
+enum ORCACHI
+{
+    NotRated = 0
+    Low = 5
+    Medium = 10
+    High = 15
+    VeryHigh = 20
+}
+
 Class ORCACheckConfig
 {
 
@@ -246,6 +255,7 @@ Class ORCACheck
     [String] $ItemName
     [String] $DataType
     [String] $Importance
+    [ORCACHI] $ChiValue = [ORCACHI]::NotRated
     [ORCAService]$Services = [ORCAService]::EOP
     [CheckType] $CheckType = [CheckType]::PropertyValue
     $Links
@@ -716,6 +726,31 @@ Function Invoke-ORCA
             $Check.Run($Collection)
         }
     }
+
+    <#
+    
+        The Configuration Health Index
+
+        Each configuration has a score, the CHISum below is a summary of the score based on each check.
+        To gain the points in the score, the check must pass or be informational, fail checks do not count.
+
+        The Configuration Health Index is the percentage of CHISum and the total points that are available.
+    
+    #>
+
+    # Generate the CHI value
+    $CHITotal = 0
+    $CHISum = 0
+
+    ForEach($Check in ($Checks))
+    {
+        $CHITotal += $($Check.Config.Count) * $($Check.ChiValue)
+        $CHISum += $($Check.InfoCount + $Check.PassCount) * $($Check.ChiValue)
+    }
+
+    $CHI = [Math]::Round($($CHISum / $CHITotal) * 100)
+
+    $Collection["CHI"] = $($CHI)
 
     $OutputResults = @()
 

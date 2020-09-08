@@ -19,6 +19,7 @@ class ORCA101 : ORCACheck
         $this.ExpandResults=$True
         $this.ItemName="Anti-Spam Policy"
         $this.DataType="Mark as Spam Bulk Mail Setting (MarkAsSpamBulkMail)"
+        $this.ChiValue = [ORCACHI]::Low
         $this.Links= @{
             "Set-HostedContentFilterPolicy"="https://docs.microsoft.com/en-us/powershell/module/exchange/antispam-antimalware/set-hostedcontentfilterpolicy?view=exchange-ps"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#anti-spam-anti-malware-and-anti-phishing-protection-in-eop"

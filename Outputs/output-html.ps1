@@ -251,6 +251,15 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                         </div>
                     </div>
                 </div>
+
+                <div class='col d-flex justify-content-center text-center'>
+                    <div class='card bg-primary mb-3 text-white' style='width: 18rem;'>
+                        <div class='card-header'><h5>Config Health Index</h5></div>
+                        <div class='card-body'>
+                        <h2>$($Collection["CHI"]) %</h2>
+                        </div>
+                    </div>
+                </div>
             </div>"
 
     <#
@@ -392,7 +401,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                             }
 
                             $Output +="
-                                            <th style='width:50px'></th>
+                                            <th style='width:100px'></th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -400,10 +409,20 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
 
                             ForEach($o in $($Check.Config | Sort-Object Level))
                             {
+
+                                $chiicon = ""
+                                $chipts = [int]$($Check.ChiValue)
+                                
                                 if($o.Level -ne [ORCAConfigLevel]::None -and $o.Level -ne [ORCAConfigLevel]::Informational) 
                                 {
                                     $oicon="fas fa-check-circle text-success"
+                                    
                                     $LevelText = $o.Level.ToString()
+
+                                    if($Check.ChiValue -ne [ORCACHI]::NotRated)
+                                    {
+                                        $chiicon = "fas fa-plus"
+                                    }
                                 }
                                 ElseIf($o.Level -eq [ORCAConfigLevel]::Informational) 
                                 {
@@ -455,12 +474,34 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     "
                                 }
 
+  
                                 $Output += "
                                     <td style='text-align:right'>
+
+                                    <div class='d-flex flex-nowrap justify-content-end'>
+                                "
+
+                                if($Check.ChiValue -ne [ORCACHI]::NotRated -and ($o.Level -ne [ORCAConfigLevel]::None -and $o.Level -ne [ORCAConfigLevel]::Informational))
+                                {
+                                    $Output += "
+                                    <div class='p-2 pr-4'>
                                         <div class='row badge badge-pill badge-light'>
-                                            <span style='vertical-align: middle;'>$($LevelText)</span>
-                                            <span class='$($oicon)' style='vertical-align: middle;'></span>
+                                            <span class='$($chiicon)' style='vertical-align: middle;'></span>
+                                            <span style='vertical-align: middle;'>$($chipts)</span>     
                                         </div>
+                                    </div>"
+                                }
+
+                                $Output += "
+                                        <div class='p-2'>
+                                            <div class='row badge badge-pill badge-light'>
+                                                <span style='vertical-align: middle;'>$($LevelText)</span>
+                                                <span class='$($oicon)' style='vertical-align: middle;'></span>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
                                     </td>
                                 </tr>
                                 "

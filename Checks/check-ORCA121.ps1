@@ -18,6 +18,7 @@ class ORCA121 : ORCACheck
         $this.Importance="Zero Hour Autopurge can assist removing false-negatives post detection from mailboxes. It requires a supported action in the spam filter policy."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
+        $this.ChiValue=[ORCACHI]::VeryHigh
         $this.ObjectType="Policy"
         $this.ItemName="Setting"
         $this.DataType="Action"
