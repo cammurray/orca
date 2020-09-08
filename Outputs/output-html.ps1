@@ -251,16 +251,38 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                         </div>
                     </div>
                 </div>
-
-                <div class='col d-flex justify-content-center text-center'>
-                    <div class='card bg-primary mb-3 text-white' style='width: 18rem;'>
-                        <div class='card-header'><h5>Config Health Index</h5></div>
-                        <div class='card-body'>
-                        <h2>$($Collection["CHI"]) %</h2>
-                        </div>
-                    </div>
-                </div>
             </div>"
+
+    <#
+    
+                OUTPUT GENERATION / Config Health Index
+
+    #>
+
+    $Output += "
+    <div class='card m-3'>
+
+        <div class='card-body'>
+            <div class='row'>
+                <div class='col-sm-4 text-center align-self-center'>
+
+                    <div class='progress' style='height: 80px'>
+                        <div class='progress-bar progress-bar-striped bg-info' role='progressbar' style='width: $($Collection["CHI"])%;' aria-valuenow='$($Collection["CHI"])' aria-valuemin='0' aria-valuemax='100'><h1>$($Collection["CHI"]) %</h1></div>
+                    </div>
+                
+                </div>
+                <div class='col-sm-8'>
+                    <h4>Configuration Health Index</h4>
+                    
+                    <p>The configuration health index is a weighted value representing your configuration. Not all configuration is considered and some configuration is weighted higher than others. The index is represented as a percentage. How the configuration impacts the configuration health index is shown next to the recommendation in the report below as a positive or negative number. The impact to your security posture is a large consideration factor when rating the configuration.</p>
+
+                </div>
+            </div>
+        </div>
+                    
+    </div>
+    
+    "
 
     <#
     
@@ -411,6 +433,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                             {
 
                                 $chiicon = ""
+                                $chipill = ""
                                 $chipts = [int]$($Check.ChiValue)
                                 
                                 if($o.Level -ne [ORCAConfigLevel]::None -and $o.Level -ne [ORCAConfigLevel]::Informational) 
@@ -422,6 +445,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     if($Check.ChiValue -ne [ORCACHI]::NotRated)
                                     {
                                         $chiicon = "fas fa-plus"
+                                        $chipill = "badge-success"
                                     }
                                 }
                                 ElseIf($o.Level -eq [ORCAConfigLevel]::Informational) 
@@ -433,6 +457,12 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                 {
                                     $oicon="fas fa-times-circle text-danger"
                                     $LevelText = "Not Recommended"
+
+                                    if($Check.ChiValue -ne [ORCACHI]::NotRated)
+                                    {
+                                        $chiicon = "fas fa-minus"
+                                        $chipill = "badge-danger"
+                                    }
                                 }
 
                                 $Output += "
@@ -478,27 +508,26 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                 $Output += "
                                     <td style='text-align:right'>
 
-                                    <div class='d-flex flex-nowrap justify-content-end'>
+                                    <div class='d-flex justify-content-end'>
                                 "
 
-                                if($Check.ChiValue -ne [ORCACHI]::NotRated -and ($o.Level -ne [ORCAConfigLevel]::None -and $o.Level -ne [ORCAConfigLevel]::Informational))
+                                $Output += "
+                                                <div class='flex-row badge badge-pill badge-light'>
+                                                    <span style='vertical-align: middle;'>$($LevelText)</span>
+                                                    <span class='$($oicon)' style='vertical-align: middle;'></span>
+                                                </div>"
+
+                                if($Check.ChiValue -ne [ORCACHI]::NotRated -and $o.Level -ne [ORCAConfigLevel]::Informational)
                                 {
                                     $Output += "
-                                    <div class='p-2 pr-4'>
-                                        <div class='row badge badge-pill badge-light'>
-                                            <span class='$($chiicon)' style='vertical-align: middle;'></span>
-                                            <span style='vertical-align: middle;'>$($chipts)</span>     
-                                        </div>
-                                    </div>"
-                                }
+                                                <div class='flex-row badge badge-pill $($chipill)'>
+                                                    <span class='$($chiicon)' style='vertical-align: middle;'></span>
+                                                    <span style='vertical-align: middle;'>$($chipts)</span>     
+                                                </div>
+                                    "
+                                }            
 
                                 $Output += "
-                                        <div class='p-2'>
-                                            <div class='row badge badge-pill badge-light'>
-                                                <span style='vertical-align: middle;'>$($LevelText)</span>
-                                                <span class='$($oicon)' style='vertical-align: middle;'></span>
-                                            </div>
-                                        </div>
 
                                     </div>
 
