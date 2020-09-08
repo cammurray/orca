@@ -16,7 +16,7 @@ class ORCA122 : ORCACheck
         $this.PassText="Unified Audit Log is enabled"
         $this.FailRecommendation="Enable the Unified Audit Log"
         $this.Importance="The Unified Audit Log collects logs from most Office 365 services and provides one central place to correlate and pull logs from Office 365."
-    
+        $this.ChiValue=[ORCACHI]::VeryHigh
     }
 
     <#

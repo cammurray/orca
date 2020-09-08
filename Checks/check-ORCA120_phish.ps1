@@ -19,6 +19,7 @@ class ORCA120_phish : ORCACheck
         $this.ExpandResults=$True
         $this.ItemName="Policy"
         $this.DataType="ZapEnabled Setting"
+        $this.ChiValue=[ORCACHI]::VeryHigh
         $this.Links= @{
             "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
             "Zero-hour auto purge - protection against spam and malware"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/zero-hour-auto-purge"
