@@ -26,6 +26,7 @@ class ORCA220 : ORCACheck
         $this.ExpandResults=$True
         $this.ItemName="Antiphishing Policy"
         $this.DataType="Advanced Phishing Threshold Level"
+        $this.ChiValue=[ORCACHI]::Medium
         $this.Links= @{
             "Security & Compliance Center - Anti-phishing"="https://protection.office.com/antiphishing"
             "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"

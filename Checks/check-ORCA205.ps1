@@ -27,6 +27,7 @@ class ORCA205 : ORCACheck
         $this.ObjectType="Policy"
         $this.ItemName="Setting"
         $this.DataType="Current Value"
+        $this.ChiValue=[ORCACHI]::Low
         $this.Links= @{
             "Security & Compliance Center - Anti-malware"="https://protection.office.com/antimalware"
             "Configure anti-malware policies"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/configure-anti-malware-policies"

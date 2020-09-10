@@ -31,6 +31,7 @@ class ORCA189_2 : ORCACheck
         $this.ItemName="Setting"
         $this.DataType="Current Value"
         $this.CheckType = [CheckType]::ObjectPropertyValue
+        $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
             "Exchange admin center in Exchange Online"="https://outlook.office365.com/ecp/"
         }

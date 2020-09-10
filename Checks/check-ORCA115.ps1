@@ -28,6 +28,7 @@ class ORCA115 : ORCACheck
         $this.ObjectType="Antiphishing Policy"
         $this.ItemName="Setting"
         $this.DataType="Current Value"
+        $this.ChiValue=[ORCACHI]::Low
         $this.Links=@{
             "Security & Compliance Center - Anti-phishing"="https://protection.office.com/antiphishing"
             "Set up Office 365 ATP anti-phishing and anti-phishing policies"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/set-up-anti-phishing-policies?view=o365-worldwide"
