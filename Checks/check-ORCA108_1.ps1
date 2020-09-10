@@ -19,6 +19,7 @@ class ORCA108_1 : ORCACheck
         $this.ExpandResults=$True
         $this.ItemName="Domain"
         $this.DataType="DNS Record"
+        $this.ChiValue=[ORCACHI]::Low
         $this.Links= @{
             "Use DKIM to validate outbound email sent from your custom domain in Office 365"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/use-dkim-to-validate-outbound-email"
         }

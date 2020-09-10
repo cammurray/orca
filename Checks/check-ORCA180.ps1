@@ -20,6 +20,7 @@ class ORCA180 : ORCACheck
         $this.ExpandResults=$True
         $this.ItemName="Anti Phish Policy"
         $this.DataType="Antispoof Enforced"
+        $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
             "Security & Compliance Center - Anti-phishing"="https://protection.office.com/antiphishing"
             "Anti-spoofing protection in Office 365"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/anti-spoofing-protection"

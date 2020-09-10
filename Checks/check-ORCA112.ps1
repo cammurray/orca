@@ -22,6 +22,7 @@ class ORCA112 : ORCACheck
         $this.ObjectType="Antiphishing Policy"
         $this.ItemName="Setting"
         $this.DataType="Current Value"
+        $this.ChiValue=[ORCACHI]::Medium
         $this.Links= @{
             "Security & Compliance Center - Anti-phishing"="https://protection.office.com/antiphishing"
             "Configuring the anti-spoofing policy"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/learn-about-spoof-intelligence?view=o365-worldwide#configuring-the-anti-spoofing-policy"

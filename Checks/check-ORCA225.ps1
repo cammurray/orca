@@ -26,6 +26,7 @@ class ORCA225 : ORCACheck
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Safe Attachments Policy"
+        $this.ChiValue=[ORCACHI]::High
         $this.ItemName="Setting"
         $this.DataType="Current Value"
         $this.Links= @{

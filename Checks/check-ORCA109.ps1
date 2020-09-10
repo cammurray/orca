@@ -25,6 +25,7 @@ class ORCA109 : ORCACheck
         $this.ExpandResults=$True
         $this.ItemName="Anti-Spam Policy"
         $this.DataType="Allowed Senders"
+        $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
             "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
             "Use Anti-Spam Policy Sender/Domain Allow lists"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/create-safe-sender-lists-in-office-365#use-anti-spam-policy-senderdomain-allow-lists"

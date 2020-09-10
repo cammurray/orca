@@ -22,6 +22,7 @@ class ORCA105 : ORCACheck
         $this.ObjectType="Policy"
         $this.ItemName="Setting"
         $this.DataType="Current Value"
+        $this.ChiValue=[ORCACHI]::Medium
         $this.Links= @{
             "Security & Compliance Center - Safe links"="https://protection.office.com/safelinksconverged"
             "Set up Office 365 ATP Safe Links policies"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/set-up-atp-safe-links-policies#step-4-learn-about-atp-safe-links-policy-options"
