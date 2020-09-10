@@ -28,6 +28,7 @@ class ORCA234 : ORCACheck
         $this.ObjectType="Safe Attachments Policy"
         $this.ItemName="Setting"
         $this.DataType="Current Value"
+        $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
             "Security & Compliance Center - Safe attachments"="https://protection.office.com/safeattachment"
             "Safe Documents in Microsoft 365 E5"="https://docs.microsoft.com/en-gb/microsoft-365/security/office-365-security/safe-docs?view=o365-worldwide"

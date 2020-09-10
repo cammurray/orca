@@ -28,6 +28,7 @@ class ORCA117 : ORCACheck
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Safe Links policy"
+        $this.ChiValue=[ORCACHI]::Medium
         $this.ItemName="Setting"
         $this.DataType="Current Value"
         $this.Links= @{

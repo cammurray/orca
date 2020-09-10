@@ -28,6 +28,7 @@ class ORCA226 : ORCACheck
         $this.ObjectType="Domain"
         $this.ItemName="Policy"
         $this.DataType="Priority"
+        $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
             "Security & Compliance Center - Safe links"="https://protection.office.com/safelinksconverged"
             "Order and precedence of email protection"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/how-policies-and-protections-are-combined?view=o365-worldwide"

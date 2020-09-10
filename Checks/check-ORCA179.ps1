@@ -26,6 +26,7 @@ class ORCA179 : ORCACheck
         $this.PassText="Safe Links is enabled intra-organization"
         $this.FailRecommendation="Enable Safe Links between internal users"
         $this.ExpandResults=$True
+        $this.ChiValue=[ORCACHI]::High
         $this.Importance="Phishing attacks are not limited from external users. Commonly, when one user is compromised, that user can be used in a process of lateral movement between different accounts in your organization. Configuring Safe Links so that internal messages are also re-written can assist with lateral movement using phishing."
         $this.ItemName="SafeLinks Policy"
         $this.DataType="Enabled for Internal"
