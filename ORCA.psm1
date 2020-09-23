@@ -166,6 +166,7 @@ enum ORCACHI
     Medium = 10
     High = 15
     VeryHigh = 20
+    Critical = 100
 }
 
 Class ORCACheckConfig
@@ -445,7 +446,7 @@ Function Get-ORCACollection
 
     If(!$Collection["Services"] -band [ORCAService]::OATP)
     {
-        Write-Host "$(Get-Date) Office ATP is not detected - these checks will be skipped!" -ForegroundColor Red
+        Write-Host "$(Get-Date) Microsoft Defender for Office 365 is not detected - these checks will be skipped!" -ForegroundColor Red
     }
 
     Write-Host "$(Get-Date) Getting Anti-Spam Settings"
@@ -521,7 +522,7 @@ Function Get-ORCAReport
         .DESCRIPTION
             Office 365 Recommended Configuration Analyzer (ORCA)
 
-            The Get-ORCAReport command generates a HTML report based on the Office 365 ATP recommended practices article:
+            The Get-ORCAReport command generates a HTML report based on the Microsoft Defender for Office 365 recommended practices article:
             https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp
 
             Output report uses open source components for HTML formatting:
@@ -601,7 +602,7 @@ Function Invoke-ORCA
 
             Unless you are wanting to automate ORCA, do not use Invoke-ORCA, run Get-ORCAReport instead!!
 
-            The Invoke-ORCA command allows you to output different formats based on the Office 365 ATP recommended practices article:
+            The Invoke-ORCA command allows you to output different formats based on the Microsoft Defender for Office 365 recommended practices article:
             https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp
 
             HTML Output report uses open source components for HTML formatting:

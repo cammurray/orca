@@ -29,7 +29,7 @@ class html : ORCAOutput
     $InfoCount = $($Checks | Where-Object {$_.Result -eq "Informational"}).Count
 
     # Misc
-    $ReportTitle = "Office 365 ATP Recommended Configuration Analyzer Report"
+    $ReportTitle = "Microsoft Defender for Office 365 Recommended Configuration Analyzer Report"
 
     # Area icons
     $AreaIcon = @{}
@@ -195,7 +195,7 @@ class html : ORCAOutput
         {
             $Output += "
             <div class='alert alert-danger pt-2' role='alert'>
-                <p>Office Advanced Threat Protection (ATP) was <strong>NOT</strong> detected on this tenant. <strong>The purpose of ORCA is to check for Office ATP recommended configuration</strong> - <i>however, these checks will be skipped. Other results should be relevant to base EOP configuration.</i></p>
+                <p>Microsoft Defender for Office 365 was <strong>NOT</strong> detected on this tenant. <strong>The purpose of ORCA is to check for Microsoft Defender for Office 365 recommended configuration</strong> - <i>however, these checks will be skipped. Other results should be relevant to base EOP configuration.</i></p>
                 <p>Consider Office Advanced Threat Protection for:<ul><li>Automatic incident response capabilities</li><li>Attack simulation capabilities</li><li>Behavioural analysis (sandboxing) of malware</li><li>Time of click protection against URLs</li><li>Advanced anti-phishing controls</li></ul></p>
             </div>
             
