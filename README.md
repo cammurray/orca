@@ -1,8 +1,8 @@
 # ORCA
-The Office 365 ATP Recommended Configuration Analyzer (ORCA)
+The Microsoft Defender for Office 365 Recommended Configuration Analyzer (ORCA)
 
 ## Introduction
-ORCA is a report that you can run in your environment which can highlight known configuration issues and improvements which can impact your experience with Office 365 Advanced Threat Protection (ATP).
+ORCA is a report that you can run in your environment which can highlight known configuration issues and improvements which can impact your experience with Microsoft Defender for Office 365 (formerly Office 365 Advanced Threat Protection).
 
 ## What's in scope
 * Configuration in EOP which can impact ATP
@@ -61,16 +61,16 @@ We use the following components in order to generate the report
 
 Yes! We will push new rule definitions out by releasing a new version. Every time you run Get-ORCAReport, we check to see if you have the latest version and if not; we will prompt you to update via the console and also in the report.
 
-### What if I don't have Advanced Threat Protection (ATP)?
+### What if I don't have Microsoft Defender for Office 365?
 
-There is definitely a lot of value in running your Office 365 environment with Advanced Threat Protection, for instance:
+There is definitely a lot of value in running your Office 365 environment with Microsoft Defender for Office 365, for instance:
 * Automatic incident response capabilities
 * Attack simulation capabilities
 * Behavioural analysis (sandboxing) of malware
 * Time of click protection for malicious URLs
 * Advanced anti-phishing controls
 
-However, there are also some checks within ORCA that are non-ATP specific which can impact the operation of ATP and security within an Office 365 tenant. ORCA can still be ran on tenants with no ATP, albeit with reduced qty. of checks..
+However, there are also some checks within ORCA that are not Microsoft Defender for Office 365 specific which can impact the operation of Microsoft Defender for Office 365 and security within an Office 365 tenant. ORCA can still be ran on tenants without Microsoft Defender for Office 365, albeit with reduced qty. of checks..
 
 # Outputs
 
