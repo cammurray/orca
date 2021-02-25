@@ -638,7 +638,8 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
 
         If($this.DisplayReport)
         {
-            Invoke-Expression $OutputFile
+            
+            Invoke-Expression "&'$OutputFile'"
         }
 
         $this.Completed = $True
