@@ -23,8 +23,8 @@ class ORCA121 : ORCACheck
         $this.ItemName="Setting"
         $this.DataType="Action"
         $this.Links= @{
-            "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
-            "Zero-hour auto purge - protection against spam and malware"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/zero-hour-auto-purge"
+            "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
+            "Zero-hour auto purge - protection against spam and malware"="https://aka.ms/orca-zha-docs-2"
         }
     
     }

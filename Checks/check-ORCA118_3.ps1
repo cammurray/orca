@@ -21,8 +21,8 @@ class ORCA118_3 : ORCACheck
         $this.DataType="Organisation Domain Allow Listed"
         $this.ChiValue=[ORCACHI]::Critical
         $this.Links= @{
-            "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
-            "Use Anti-Spam Policy Sender/Domain Allow lists"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/create-safe-sender-lists-in-office-365#use-anti-spam-policy-senderdomain-allow-lists"
+            "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
+            "Use Anti-Spam Policy Sender/Domain Allow lists"="http:s://aka.ms/orca-antispam-docs-4"
         }
     
     }

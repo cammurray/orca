@@ -26,9 +26,9 @@ class ORCA106 : ORCACheck
         $this.ItemName="Anti-Spam Filter Policy"
         $this.DataType="Quarantine Retention Period"
         $this.Links= @{
-            "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
-            "Manage quarantined messages and files as an administrator in Office 365"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/manage-quarantined-messages-and-files"
-            "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#anti-spam-anti-malware-and-anti-phishing-protection-in-eop"
+            "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
+            "Manage quarantined messages and files as an administrator in Office 365"="https://aka.ms/orca-antispam-docs-6"
+            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-6"
         }
     
     }

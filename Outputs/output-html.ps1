@@ -65,9 +65,9 @@ class html : ORCAOutput
             border: 0;
         }
         .bd-callout {
-            padding: 1.25rem;
-            margin-top: 1.25rem;
-            margin-bottom: 1.25rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
             border: 1px solid #eee;
             border-left-width: .25rem;
             border-radius: .25rem
@@ -118,6 +118,23 @@ class html : ORCAOutput
             border-left-color: #00bd19
         }
 
+        .navbar-custom { 
+            background-color: #005494;
+            color: white; 
+            padding-bottom: 10px;
+
+            
+        } 
+        /* Modify brand and text color */ 
+          
+        .navbar-custom .navbar-brand, 
+        .navbar-custom .navbar-text { 
+            color: white; 
+            padding-top: 70px;
+            padding-bottom: 10px;
+
+        } 
+
         </style>
 
         <title>$($ReportTitle)</title>
@@ -125,7 +142,7 @@ class html : ORCAOutput
     </head>
     <body class='app header-fixed bg-light'>
 
-        <nav class='navbar fixed-top navbar-light bg-white p-3 border-bottom'>
+        <nav class='navbar  fixed-top navbar-custom p-3 border-bottom'>
             <div class='container-fluid'>
                 <div class='col-sm' style='text-align:left'>
                     <div class='row'><div><i class='fas fa-binoculars'></i></div><div class='ml-3'><strong>ORCA</strong></div></div>
@@ -223,10 +240,10 @@ class html : ORCAOutput
                     $Output += "
                     
                             <div class='col d-flex justify-content-center text-center'>
-                                <div class='card text-white bg-secondary mb-3' style='width: 18rem;'>
-                                    <div class='card-header'><h5>Informational</h5></div>
+                                <div class='card text-white bg-secondary mb-3' style='width: 18em;'>
+                                    <div class='card-header'><h6>Informational</h6></div>
                                     <div class='card-body'>
-                                    <h2>$($InfoCount)</h2>
+                                    <h3>$($InfoCount)</h3>
                                     </div>
                                 </div>
                             </div>
@@ -236,18 +253,18 @@ class html : ORCAOutput
 
 $Output +=        "<div class='col d-flex justify-content-center text-center'>
                     <div class='card text-white bg-warning mb-3' style='width: 18rem;'>
-                        <div class='card-header'><h5>Recommendations</h5></div>
+                        <div class='card-header'><h6>Recommendations</h6></div>
                         <div class='card-body'>
-                        <h2>$($RecommendationCount)</h2>
+                        <h3>$($RecommendationCount)</h3>
                         </div>
                     </div>
                 </div>
 
                 <div class='col d-flex justify-content-center text-center'>
                     <div class='card text-white bg-success mb-3' style='width: 18rem;'>
-                        <div class='card-header'><h5>OK</h5></div>
+                        <div class='card-header'><h6>OK</h6></div>
                         <div class='card-body'>
-                        <h2>$($OKCount)</h2>
+                        <h3>$($OKCount)</h3>
                         </div>
                     </div>
                 </div>
@@ -266,21 +283,25 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
             <div class='row'>
                 <div class='col-sm-4 text-center align-self-center'>
 
-                    <div class='progress' style='height: 80px'>
-                        <div class='progress-bar progress-bar-striped bg-info' role='progressbar' style='width: $($Collection["CHI"])%;' aria-valuenow='$($Collection["CHI"])' aria-valuemin='0' aria-valuemax='100'><h1>$($Collection["CHI"]) %</h1></div>
+                    <div class='progress' style='height: 40px'>
+                        <div class='progress-bar progress-bar-striped bg-info' role='progressbar' style='width: $($Collection["CHI"])%;' aria-valuenow='$($Collection["CHI"])' aria-valuemin='0' aria-valuemax='100'><h2>$($Collection["CHI"]) %</h2></div>
                     </div>
                 
                 </div>
                 <div class='col-sm-8'>
-                    <h4>Configuration Health Index</h4>
-                    
-                    <p>The configuration health index is a weighted value representing your configuration. Not all configuration is considered and some configuration is weighted higher than others. The index is represented as a percentage. How the configuration impacts the configuration health index is shown next to the recommendation in the report below as a positive or negative number. The impact to your security posture is a large consideration factor when rating the configuration.</p>
+                    <h6>Configuration Health Index</h6>                  
+                    <p>The configuration health index is a weighted value representing your configuration. Not all configuration is 
+                    considered and some configuration is weighted higher than others.<a href='aka.ms/orca-github' target='_blank'> See More </a></p>
 
                 </div>
             </div>
-        </div>
+
+            <div class='alert alert-success pt-2' >
+            Like this report? Try similar reporting for Microsoft's Compliance solutions. Download <a href='https://aka.ms/orca-mcca-github' target='_blank'> Microsoft Compliance Config Analyzer (MCCA)</a>
+             </div>
                     
     </div>
+  
     
     "
 
@@ -612,7 +633,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
             </div>
 
             <footer class='app-footer'>
-            <p><center>Bugs? Issues? Suggestions? <a href='https://github.com/cammurray/orca'>GitHub!</a><center></p>
+            <p><center>Bugs? Issues? Suggestions? <a href='aka.ms/orca-github'>GitHub!</a><center></p>
             </footer>
         </body>
     </html>"

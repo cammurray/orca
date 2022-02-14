@@ -28,8 +28,8 @@ class ORCA233_1 : ORCACheck
         $this.ItemName="EF Mode"
         $this.DataType="SkipListed IPs"
         $this.Links= @{
-            "Security & Compliance Center - Enhanced Filtering"="https://protection.office.com/skiplisting"
-            "Enhanced Filtering for Connectors"="https://docs.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/enhanced-filtering-for-connectors"
+            "Security & Compliance Center - Enhanced Filtering"="https://aka.ms/orca-connectors-action-skiplisting"
+            "Enhanced Filtering for Connectors"="https://aka.ms/orca-connectors-docs-1"
         }
     }
 

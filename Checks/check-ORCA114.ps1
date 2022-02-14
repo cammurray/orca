@@ -21,8 +21,8 @@ class ORCA114 : ORCACheck
         $this.DataType="Allowed IP"
         $this.ChiValue=[ORCACHI]::Medium
         $this.Links= @{
-            "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
-            "Use Anti-Spam Policy IP Allow lists"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/create-safe-sender-lists-in-office-365#use-anti-spam-policy-ip-allow-lists"
+            "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
+            "Use Anti-Spam Policy IP Allow lists"="https://aka.ms/orca-antispam-docs-3"
         }
     }
 

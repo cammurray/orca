@@ -29,8 +29,8 @@ class ORCA231 : ORCACheck
         $this.DataType="Priority"
         $this.ChiValue=[ORCACHI]::Medium
         $this.Links= @{
-            "Security & Compliance Center - Anti-spam policies"="https://protection.office.com/antispam"
-            "Order and precedence of email protection"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/how-policies-and-protections-are-combined?view=o365-worldwide"
+            "Security & Compliance Center - Anti-spam policies"="https://aka.ms/orca-antispam-action-antispam"
+            "Order and precedence of email protection"="https://aka.ms/orca-antispam-docs-5"
         }
     }
 

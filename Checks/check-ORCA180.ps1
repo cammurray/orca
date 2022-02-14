@@ -22,9 +22,9 @@ class ORCA180 : ORCACheck
         $this.DataType="Antispoof Enforced"
         $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
-            "Security & Compliance Center - Anti-phishing"="https://protection.office.com/antiphishing"
-            "Anti-spoofing protection in Office 365"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/anti-spoofing-protection"
-            "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
+            "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
+            "Anti-spoofing protection in Office 365"="https:/aka.ms/orca-atpp-docs-3"
+            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 
