@@ -22,7 +22,7 @@ class ORCA118_1 : ORCACheck
         $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
             "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
-            "Use Anti-Spam Policy Sender/Domain Allow lists"="http:s://aka.ms/orca-antispam-docs-4"
+            "Use Anti-Spam Policy Sender/Domain Allow lists"="https://aka.ms/orca-antispam-docs-4"
         }
     
     }
