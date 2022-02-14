@@ -291,7 +291,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                 <div class='col-sm-8'>
                     <h6>Configuration Health Index</h6>                  
                     <p>The configuration health index is a weighted value representing your configuration. Not all configuration is 
-                    considered and some configuration is weighted higher than others.<a href='aka.ms/orca-github' target='_blank'> See More </a></p>
+                    considered and some configuration is weighted higher than others.<a href='https://aka.ms/orca-github' target='_blank'> See More </a></p>
 
                 </div>
             </div>
@@ -633,7 +633,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
             </div>
 
             <footer class='app-footer'>
-            <p><center>Bugs? Issues? Suggestions? <a href='aka.ms/orca-github'>GitHub!</a><center></p>
+            <p><center>Bugs? Issues? Suggestions? <a href='https://aka.ms/orca-github'>GitHub!</a><center></p>
             </footer>
         </body>
     </html>"

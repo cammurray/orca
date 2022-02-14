@@ -30,7 +30,7 @@ class ORCA124 : ORCACheck
         $this.DataType="Current Value"
         $this.ChiValue=[ORCACHI]::Medium
         $this.Links= @{
-            "Security & Compliance Center - Safe attachments"="aka.ms/orca-atpp-action-safeattachment"
+            "Security & Compliance Center - Safe attachments"="https://aka.ms/orca-atpp-action-safeattachment"
             "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
         }
     }

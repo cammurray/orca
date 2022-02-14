@@ -20,7 +20,7 @@ class ORCA100 : ORCACheck
         $this.ItemName="Anti-Spam Policy"
         $this.DataType="Bulk Complaint Level Threshold"
         $this.Links= @{
-            "Bulk Complaint Level values"="aka.ms/orca-antispam-docs-1"
+            "Bulk Complaint Level values"="https://aka.ms/orca-antispam-docs-1"
             "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-6"
             "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
         }
