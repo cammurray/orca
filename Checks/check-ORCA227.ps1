@@ -56,9 +56,9 @@ class ORCA227 : ORCACheck
 
             ForEach($Rule in ($Config["SafeAttachmentsRules"] | Sort-Object Priority)) 
             {
-                if($null -eq $Rule.SentTo -and $null -eq $Rule.SentToMemberOf -and $Rule.State -eq "Enabled")
+                if($Rule.State -eq "Enabled")
                 {
-                    if($Rule.RecipientDomainIs -contains $AcceptedDomain.Name -and $Rule.ExceptIfRecipientDomainIs -notcontains $AcceptedDomain.Name)
+                    if($Rule.RecipientDomainIs -contains $AcceptedDomain.Name -and ($Rule.ExceptIfRecipientDomainIs -notcontains $AcceptedDomain.Name) -and ($null -eq $Rule.ExceptIfSentToMemberOf ) -and ($null -eq $Rule.ExceptIfSentTo) )
                     {
                         # Policy applies to this domain
 
@@ -70,6 +70,25 @@ class ORCA227 : ORCACheck
                     }
                 }
 
+            }
+            ForEach($Rule in ($Config["ATPProtectionPolicyRule"] | Sort-Object Priority)) 
+            {
+                if(($Rule.SafeAttachmentPolicy -ne "") -and ($null -ne $Rule.SafeAttachmentPolicy ))
+                { 
+                   if($Rule.State -eq "Enabled")
+                   {
+                    if($Rule.RecipientDomainIs -contains $AcceptedDomain.Name -and ($Rule.ExceptIfRecipientDomainIs -notcontains $AcceptedDomain.Name) -and ($null -eq $Rule.ExceptIfSentToMemberOf ) -and ($null -eq $Rule.ExceptIfSentTo) )
+                        {
+                            # Policy applies to this domain
+
+                            $Rules += New-Object -TypeName PSObject -Property @{
+                            PolicyName=$($Rule.SafeAttachmentPolicy)
+                            Priority=$($Rule.Priority)
+                            }
+
+                        }   
+                    }
+                }
             }
 
             If($Rules.Count -gt 0)

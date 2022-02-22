@@ -1,6 +1,6 @@
 <#
 
-ORCA-107 Check if End-user Spam notification is enabled and the notification frequency is 3 days
+ORCA-107 Check if End-user Spam notification is enabled and the notification frequency is less than equal to 3 days
 
 #>
 
@@ -19,8 +19,8 @@ class ORCA107 : ORCACheck
         $this.Control="ORCA-107"
         $this.Area="Anti-Spam Policies"
         $this.Name="End-user Spam notifications"
-        $this.PassText="End-user Spam notification is enabled and the frequency is set to 3 days"
-        $this.FailRecommendation="Enable End-user Spam notification and set the frequency to 3 days"
+        $this.PassText="End-user Spam notification is enabled and the frequency is set to less than or equal to 3 days"
+        $this.FailRecommendation="Enable End-user Spam notification and set the frequency to less than or equal to 3 days"
         $this.Importance="Enable End-user Spam notifications to let users manage their own spam-quarantined messages (Release, Block sender, Review). End-user spam notifications contain a list of all spam-quarantined messages that the end-user has received during a time period."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
@@ -54,46 +54,54 @@ class ORCA107 : ORCACheck
                 # Check objects
                 $ConfigObject = [ORCACheckConfig]::new()
                 $ConfigObject.Object=$($Policy.Name)
-                $ConfigObject.ConfigItem="EnableEndUserSpamNotifications"
-                $ConfigObject.ConfigData=$($Policy.EnableEndUserSpamNotifications)
-        
-                If($Policy.EnableEndUserSpamNotifications -eq $true)
+                $QuarantineTag = $($Policy.SpamQuarantineTag)
+                $status = $false 
+                $frequency =0
+                ForEach($Tag in $Config["QuarantineTag"])
                 {
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                }
-                Else 
-                {
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                }
-                
-                # Add config to check
-                $this.AddConfig($ConfigObject)
+                    if($($Tag.Name) -eq $QuarantineTag)
+                    {
+                        $status = $Tag.ESNEnabled
+                        $frequency = $Tag.AdminNotificationFrequencyInDays
 
-            <#
+                        $ConfigObject.ConfigItem="EnableEndUserSpamNotifications"
+                        $ConfigObject.ConfigData = $status
+        
+                        If($status -eq $false )
+                        {
+                             $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                        }
+                        Else 
+                        {
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                        }
+                
+                        # Add config to check
+                        $this.AddConfig($ConfigObject)
+
+                        <#           
+                            EndUserSpamNotificationFrequency           
+                        #>
             
-            EndUserSpamNotificationFrequency
-            
-            #>
-            
-                # Check objects
-                $ConfigObject = [ORCACheckConfig]::new()
-                $ConfigObject.Object=$($Policy.Name)
-                $ConfigObject.ConfigItem="EndUserSpamNotificationFrequency"
-                $ConfigObject.ConfigData=$($Policy.EndUserSpamNotificationFrequency)
+                        # Check objects
+                        $ConfigObject = [ORCACheckConfig]::new()
+                        $ConfigObject.Object=$($Policy.Name)
+                        $ConfigObject.ConfigItem="EndUserSpamNotificationFrequency"
+                        $ConfigObject.ConfigData=$frequency
         
                     
-                If($Policy.EndUserSpamNotificationFrequency -eq 3)
-                {
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                        If($frequency -le 3)
+                        {
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                        }
+                        Else 
+                        {
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                        }
+                        # Add config to check
+                        $this.AddConfig($ConfigObject)
+                    }
                 }
-                Else 
-                {
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                }
-
-                # Add config to check
-                $this.AddConfig($ConfigObject)
-
         }            
     }
 

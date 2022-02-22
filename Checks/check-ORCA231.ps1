@@ -54,9 +54,9 @@ class ORCA231 : ORCACheck
 
             ForEach($Rule in ($Config["HostedContentFilterRule"] | Sort-Object Priority)) 
             {
-                if($null -eq $Rule.SentTo -and $null -eq $Rule.SentToMemberOf -and $Rule.State -eq "Enabled")
+                if( $Rule.State -eq "Enabled")
                 {
-                    if($Rule.RecipientDomainIs -contains $AcceptedDomain.Name -and $Rule.ExceptIfRecipientDomainIs -notcontains $AcceptedDomain.Name)
+                    if($Rule.RecipientDomainIs -contains $AcceptedDomain.Name -and ($Rule.ExceptIfRecipientDomainIs -notcontains $AcceptedDomain.Name) -and ($null -eq $Rule.ExceptIfSentToMemberOf ) -and ($null -eq $Rule.ExceptIfSentTo) )
                     {
                         # Policy applies to this domain
 
@@ -70,6 +70,26 @@ class ORCA231 : ORCACheck
 
             }
 
+
+            ForEach($Rule in ($Config["EOPProtectionPolicyRule"] | Sort-Object Priority)) 
+            {
+                if(($Rule.HostedContentFilterPolicy -ne "") -and ($null -ne $Rule.HostedContentFilterPolicy ))
+                { 
+                   if($Rule.State -eq "Enabled")
+                   {
+                    if($Rule.RecipientDomainIs -contains $AcceptedDomain.Name -and ($Rule.ExceptIfRecipientDomainIs -notcontains $AcceptedDomain.Name) -and ($null -eq $Rule.ExceptIfSentToMemberOf ) -and ($null -eq $Rule.ExceptIfSentTo) )
+                    {
+                            # Policy applies to this domain
+
+                            $Rules += New-Object -TypeName PSObject -Property @{
+                            PolicyName=$($Rule.HostedContentFilterPolicy)
+                            Priority=$($Rule.Priority)
+                            }
+
+                        }   
+                    }
+                }
+            }
             If($Rules.Count -gt 0)
             {
                 $Count = 0

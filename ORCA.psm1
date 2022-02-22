@@ -77,6 +77,7 @@ Function Invoke-ORCAConnections
 {
     Param
     (
+        [String]$ExchangeEnvironmentName,
         [Boolean]$Install
     )
     <#
@@ -88,7 +89,7 @@ Function Invoke-ORCAConnections
     If(Get-Command "Connect-ExchangeOnline" -ErrorAction:SilentlyContinue)
     {
         Write-Host "$(Get-Date) Connecting to Exchange Online (Modern Module).."
-        Connect-ExchangeOnline -WarningAction:SilentlyContinue | Out-Null
+        Connect-ExchangeOnline -ExchangeEnvironmentName $ExchangeEnvironmentName -WarningAction:SilentlyContinue | Out-Null
     }
     ElseIf(Get-Command "Connect-EXOPSSession" -ErrorAction:SilentlyContinue)
     {
@@ -106,7 +107,7 @@ Function Invoke-ORCAConnections
                 Install-Module ExchangeOnlineManagement -ErrorAction:SilentlyContinue -Scope CurrentUser
 
                 # Then connect..
-                Connect-ExchangeOnline -WarningAction:SilentlyContinue | Out-Null
+                Connect-ExchangeOnline -ExchangeEnvironmentName $ExchangeEnvironmentName -WarningAction:SilentlyContinue  | Out-Null
 
                 $Installed = $True
             }
@@ -458,6 +459,15 @@ Function Get-ORCACollection
     Write-Host "$(Get-Date) Getting Tenant Settings"
     $Collection["AdminAuditLogConfig"] = Get-AdminAuditLogConfig
 
+    Write-Host "$(Get-Date) Getting ATP Preset Policy Settings"
+    $Collection["ATPProtectionPolicyRule"] = Get-ATPProtectionPolicyRule
+
+    Write-Host "$(Get-Date) Getting EOP Preset Policy Settings"
+    $Collection["EOPProtectionPolicyRule"] = Get-EOPProtectionPolicyRule
+
+    Write-Host "$(Get-Date) Getting Ouarantine Policy Settings"
+    $Collection["QuarantineTag"] =  Get-QuarantinePolicy
+
     If($Collection["Services"] -band [ORCAService]::OATP)
     {
         Write-Host "$(Get-Date) Getting Anti Phish Settings"
@@ -545,6 +555,12 @@ Function Get-ORCAReport
             because your internal zone doesn't require to have the DKIM selector records published. In these instances use the AlternateDNS
             flag to use different resolvers (ones that will provide the external DNS records for your domains).
 
+        .PARAMETER  ExchangeEnvironmentName
+        This will generate MCCA report for Security & Compliance Center PowerShell in a Microsoft 365 DoD organization or Microsoft GCC High organization
+         O365USGovDoD
+           This will generate MCCA report for Security & Compliance Center PowerShell in a Microsoft 365 DoD organization.
+         O365USGovGCCHigh
+           This will generate MCCA report for Security & Compliance Center PowerShell in a Microsoft GCC High organization.
 
         .PARAMETER Collection
             Internal only.
@@ -563,6 +579,7 @@ Function Get-ORCAReport
         [Switch]$NoConnect,
         [Switch]$NoVersionCheck,
         [String[]]$AlternateDNS,
+        [string][validateset('O365Default', 'O365USGovDoD', 'O365USGovGCCHigh','O365GermanyCloud','O365China')] $ExchangeEnvironmentName = 'O365Default',
         $Collection
     )
 
@@ -585,7 +602,7 @@ Function Get-ORCAReport
         $Connect = $True
     }
 
-    $Result = Invoke-ORCA -Connect $Connect -PerformVersionCheck $PerformVersionCheck -AlternateDNS $AlternateDNS -Collection $Collection -Output @("HTML")
+    $Result = Invoke-ORCA -Connect $Connect -PerformVersionCheck $PerformVersionCheck -AlternateDNS $AlternateDNS -Collection $Collection -ExchangeEnvironmentName $ExchangeEnvironmentName -Output @("HTML")
     Write-Host "$(Get-Date) Complete! Output is in $($Result.Result)"
 }
 
@@ -680,6 +697,7 @@ Function Invoke-ORCA
         [Boolean]$PerformVersionCheck=$True,
         [Boolean]$InstallModules=$True,
         [String[]]$AlternateDNS,
+        [string][validateset('O365Default', 'O365USGovDoD', 'O365USGovGCCHigh')] $ExchangeEnvironmentName,
         $Output,
         $OutputOptions,
         $Collection
@@ -691,7 +709,7 @@ Function Invoke-ORCA
     # Unless -NoConnect specified (already connected), connect to Exchange Online
     If(!$NoConnect -and (Get-EXConnectionStatus) -eq $False) 
     {
-        Invoke-ORCAConnections -Install $InstallModules
+        Invoke-ORCAConnections  -ExchangeEnvironmentName $ExchangeEnvironmentName -Install $InstallModules
     }
 
     # Build a param object which can be used to pass params to the underlying classes
