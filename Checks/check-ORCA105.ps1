@@ -62,38 +62,12 @@ class ORCA105 : ORCACheck
 
                 # Determine if DeliverMessageAfterScan is on for this safelinks policy
                 If($Policy.DeliverMessageAfterScan -eq $true) 
-                {
-                    if($IsPolicyEnabled)
-                    {
-                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    elseif($IsBuiltIn)
-                    {
-                        $ConfigObject.InfoText = "This is a Built-In Policy is managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    else
-                       {
+                {                 
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                       }
                 }
                 Else 
                 {
-                    if($IsPolicyEnabled)
-                    {
-                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    elseif($IsBuiltIn)
-                    {
-                        $ConfigObject.InfoText = "This is a Built-In Policy is managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    else
-                       {
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                       }
                 }
 
                 # Add config to check
@@ -112,38 +86,12 @@ class ORCA105 : ORCACheck
                 $ConfigObject.ConfigData=$($Policy.ScanUrls)
 
                 If($Policy.ScanUrls -eq $true)
-                {
-                    if($IsPolicyEnabled)
-                {
-                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                elseif($IsBuiltIn)
-                {
-                    $ConfigObject.InfoText = "This is a Built-In Policy is managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                else
-                   { 
-                       $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                }
+                {                 
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")                
                 }
                 Else 
-                {
-                    if($IsPolicyEnabled)
-                    {
-                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    elseif($IsBuiltIn)
-                    {
-                        $ConfigObject.InfoText = "This is a Built-In Policy is managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    else
-                    {
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                    }
+                {                 
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
                 }
 
                 
