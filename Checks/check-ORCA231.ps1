@@ -93,28 +93,58 @@ class ORCA231 : ORCACheck
             If($Rules.Count -gt 0)
             {
                 $Count = 0
-
+                $CountOfPolicies = ($Rules).Count
                 ForEach($r in ($Rules | Sort-Object Priority))
                 {
+
+                    $IsBuiltIn = $false
+                    $policyname = $($r.PolicyName)
+                    $priority =$($r.Priority)
+                    if($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
+                    {
+                        $IsBuiltIn =$True
+                        $policyname = "$policyname" +" [Built-In]"
+                    }
+                    elseif(($policyname -eq "Default" -or $policyname -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
+                    {
+                        $IsBuiltIn =$True
+                        $policyname = "$policyname" +" [Default]"
+                    }
 
                     $Count++
 
                     $ConfigObject = [ORCACheckConfig]::new()
 
                     $ConfigObject.Object=$($AcceptedDomain.Name)
-                    $ConfigObject.ConfigItem=$($r.PolicyName)
-                    $ConfigObject.ConfigData=$($r.Priority)
+                    $ConfigObject.ConfigItem=$policyname
+                    $ConfigObject.ConfigData=$priority
 
                     If($Count -eq 1)
                     {
                         # First policy based on priority is a pass
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                        if($IsBuiltIn)
+                        {
+                            $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                        }
+                        else
+                        {
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                        }
                     }
                     else
                     {
+                        if($IsBuiltIn)
+                        {
+                            $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                        }
+                        else
+                        {
                         # Additional policies based on the priority should be listed as informational
-                        $ConfigObject.InfoText = "There are multiple policies that apply to this domain, only the policy with the lowest priority will apply. This policy may not apply based on a lower priority."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                            $ConfigObject.InfoText = "There are multiple policies that apply to this domain, only the policy with the lowest priority will apply. This policy may not apply based on a lower priority."
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                        }
                     }    
 
                     $this.AddConfig($ConfigObject)

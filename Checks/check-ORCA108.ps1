@@ -22,7 +22,7 @@ class ORCA108 : ORCACheck
         $this.ChiValue=[ORCACHI]::Low
         $this.Links= @{
             "Security & Compliance Center - DKIM"="https://protection.office.com/dkim"
-            "Use DKIM to validate outbound email sent from your custom domain in Office 365"="aka.ms/orca-dkim-docs-1"
+            "Use DKIM to validate outbound email sent from your custom domain in Office 365"="https://aka.ms/orca-dkim-docs-1"
         }
     }
 
@@ -40,11 +40,18 @@ class ORCA108 : ORCACheck
         ForEach($AcceptedDomain in $Config["AcceptedDomains"]) 
         {
             $HasMailbox = $false
-            $mailbox = Resolve-DnsName -Name $AcceptedDomain -Type MX
-            if($null -ne $mailbox)
+            $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name) -Type MX
+            try
             {
-                $HasMailbox = $true
+                If($AcceptedDomain.Name -notlike "*.onmicrosoft.com") 
+               { 
+                   if($null -ne $mailbox -and $mailbox.Count -gt 0)
+                    {
+                        $HasMailbox = $true
+                    }
+                }
             }
+            Catch{}
             If($HasMailbox) 
             {
     

@@ -59,7 +59,7 @@ class html : ORCAOutput
         <script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js' integrity='sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1' crossorigin='anonymous'></script>
         <script src='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js' integrity='sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM' crossorigin='anonymous'></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/js/all.js'></script>
-
+        
         <style>
         .table-borderless td,
         .table-borderless th {
@@ -190,7 +190,7 @@ class html : ORCAOutput
             color: #e52;
           font-size: 30px;
             text-shadow: 0 0 1px #333;
-          }
+          }         
         </style>
 
         <title>$($ReportTitle)</title>
@@ -227,15 +227,15 @@ class html : ORCAOutput
 
                             <div style='text-align:right;margin-top:-10px';>            
                             <span class='star-cb-group'>
-                               <input type='radio' id='rating-5' name='rating' value='5' onclick=""window.open('','_blank');"" />
+                               <input type='radio' id='rating-5' name='rating' value='5' onclick=""window.open('https://aka.ms/orca-feedback-1','_blank');"" />
                                <label for='rating-5'>5</label>
-                               <input type='radio' id='rating-4' name='rating' value='4' onclick=""window.open('','_blank');"" />
+                               <input type='radio' id='rating-4' name='rating' value='4' onclick=""window.open('https://aka.ms/orca-feedback-2','_blank');"" />
                                <label for='rating-4'>4</label>
-                               <input type='radio' id='rating-3' name='rating' value='3' onclick=""window.open('','_blank');"" />
+                               <input type='radio' id='rating-3' name='rating' value='3' onclick=""window.open('https://aka.ms/orca-feedback-3','_blank');"" />
                                <label for='rating-3'>3</label>
-                               <input type='radio' id='rating-2' name='rating' value='2' onclick=""window.open('','_blank');"" />
+                               <input type='radio' id='rating-2' name='rating' value='2' onclick=""window.open('https://aka.ms/orca-feedback-4','_blank');"" />
                                <label for='rating-2'>2</label>
-                               <input type='radio' id='rating-1' name='rating' value='1' onclick=""window.open('','_blank');"" />
+                               <input type='radio' id='rating-1' name='rating' value='1' onclick=""window.open('https://aka.ms/orca-feedback-5','_blank');"" />
                                <label for='rating-1'>1</label>
                                <input type='radio' id='rating-0' name='rating' value='0' class='star-cb-clear' />
                                <label for='rating-0'>0</label>
@@ -610,11 +610,46 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     <div class='d-flex justify-content-end'>
                                 "
 
-                                $Output += "
+                                if($($o.InfoText) -match "This is a Built-In/Default policy")
+                                {
+                                    $Output += "
+                                    <div class='flex-row badge badge-pill badge-light'>
+                                        <span style='vertical-align: middle;'>$($LevelText)</span>
+                                        <span class='$($oicon)' style='vertical-align: middle;'></span>
+                                    "
+                                    
+
+                                    $Output += "<p style='margin-top:5px;color:#005494;'><abbr title='$($o.InfoText)'><u>More Info</u></abbr></p></div>"
+                                    
+                                }
+                                elseif($($o.InfoText) -match "The policy is not enabled and will not apply")
+                                {
+                                    $Output += "
+                                    <div class='flex-row badge badge-pill badge-light'>
+                                        <span style='vertical-align: middle;'>$($LevelText)</span>
+                                        <span class='$($oicon)' style='vertical-align: middle;'></span>
+                                    "
+                                    $Output += "<p style='margin-top:5px;color:#005494;'><abbr title='$($o.InfoText)'><u>More Info</u></abbr></p></div>"                             
+                                    
+                                }
+                                elseif($o.Level -eq [ORCAConfigLevel]::Informational)
+                                {
+                                    $Output += "
+                                    <div class='flex-row badge badge-pill badge-light'>
+                                        <span style='vertical-align: middle;'>$($LevelText)</span>
+                                        <span class='$($oicon)' style='vertical-align: middle;'></span>
+                                    "
+                                    $Output += "<p style='margin-top:5px;color:#005494;'><abbr title='$($o.InfoText)'><u>More Info</u></abbr></p></div>"
+                              
+                                }
+                                else
+                                {
+                                    $Output += "
                                                 <div class='flex-row badge badge-pill badge-light'>
                                                     <span style='vertical-align: middle;'>$($LevelText)</span>
                                                     <span class='$($oicon)' style='vertical-align: middle;'></span>
                                                 </div>"
+                                
 
                                 if($Check.ChiValue -ne [ORCACHI]::NotRated -and $o.Level -ne [ORCAConfigLevel]::Informational)
                                 {
@@ -625,7 +660,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                                 </div>
                                     "
                                 }            
-
+                            }
                                 $Output += "
 
                                     </div>
@@ -633,33 +668,6 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     </td>
                                 </tr>
                                 "
-
-                                # Informational segment
-                                if($o.Level -eq [ORCAConfigLevel]::Informational)
-                                {
-                                    $Output += "
-                                    <tr>"
-                                    If($Check.CheckType -eq [CheckType]::ObjectPropertyValue)
-                                    {
-                                        $Output += "<td colspan='4' style='border: 0;'>"
-                                    }
-                                    else
-                                    {
-                                        $Output += "<td colspan='3' style='border: 0;'>"
-                                    }
-
-                                    $Output += "
-                                    <div class='alert alert-light' role='alert' style='text-align: left;'>
-                                    <span class='fas fa-info-circle text-muted' style='vertical-align: middle; padding-right:5px'></span>
-                                    <span style='vertical-align: middle;'>$($o.InfoText)</span>
-                                    </div>
-                                    "
-                                    
-                                    $Output += "</td></tr>
-                                    
-                                    "
-                                }
-
                             }
 
                             $Output +="

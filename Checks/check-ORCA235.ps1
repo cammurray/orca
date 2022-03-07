@@ -23,7 +23,7 @@ class ORCA235 : ORCACheck
         $this.DataType="Is HardFail"
         $this.ChiValue=[ORCACHI]::Low
         $this.Links= @{
-            "Use SPF to validate outbound email sent from your custom domain in Office 365"="aka.ms/orca-spf-docs-1"
+            "Use SPF to validate outbound email sent from your custom domain in Office 365"="https://aka.ms/orca-spf-docs-1"
         }
     }
 
@@ -42,11 +42,17 @@ class ORCA235 : ORCACheck
                 'ErrorAction' = 'SilentlyContinue'
             }
             $HasMailbox = $false
-            $mailbox = Resolve-DnsName -Name $AcceptedDomain -Type MX
-            if($null -ne $mailbox)
+            $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name)-Type MX
+
+            try
             {
-                $HasMailbox = $true
+                if($null -ne $mailbox -and $mailbox.Count -gt 0)
+                {
+                    $HasMailbox = $true
+                }
             }
+            Catch{}
+            
             If($HasMailbox) 
             {   
                 # Check objects
