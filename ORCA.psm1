@@ -483,7 +483,7 @@ Function Get-ORCACollection
     Write-Host "$(Get-Date) Getting EOP Preset Policy Settings"
     $Collection["EOPProtectionPolicyRule"] = Get-EOPProtectionPolicyRule
 
-    Write-Host "$(Get-Date) Getting Ouarantine Policy Settings"
+    Write-Host "$(Get-Date) Getting Quarantine Policy Settings"
     $Collection["QuarantineTag"] =  Get-QuarantinePolicy
 
     If($Collection["Services"] -band [ORCAService]::OATP)
