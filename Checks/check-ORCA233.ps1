@@ -28,8 +28,8 @@ class ORCA233 : ORCACheck
         $this.ItemName="Points to Service"
         $this.DataType="Enhanced Filtering"
         $this.Links= @{
-            "Security & Compliance Center - Enhanced Filtering"="https://protection.office.com/skiplisting"
-            "Enhanced Filtering for Connectors"="https://docs.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow/enhanced-filtering-for-connectors"
+            "Security & Compliance Center - Enhanced Filtering"="https://aka.ms/orca-connectors-action-skiplisting"
+            "Enhanced Filtering for Connectors"="https://aka.ms/orca-connectors-docs-1"
         }
     }
 

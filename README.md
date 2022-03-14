@@ -5,10 +5,16 @@ The Microsoft Defender for Office 365 Recommended Configuration Analyzer (ORCA)
 ORCA is a report that you can run in your environment which can highlight known configuration issues and improvements which can impact your experience with Microsoft Defender for Office 365 (formerly Office 365 Advanced Threat Protection).
 
 ## What's in scope
+* Configuration Health Index
 * Configuration in EOP which can impact ATP
 * SafeLinks configuration
 * SafeAttachments configuration
 * Antiphish and antispoof policies.
+
+## What is Configuration Health Index
+
+The configuration health index is a weighted value representing your configuration. Not all configuration is considered and some configuration is weighted higher than others. The index is represented as a percentage. How the configuration impacts the configuration health index is shown next to the recommendation in the report below as a positive or negative number. The impact to your security posture is a large consideration factor when rating the configuration.
+
 
 ## Sounds good! How do I run it?
 

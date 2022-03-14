@@ -24,9 +24,9 @@ class ORCA105 : ORCACheck
         $this.DataType="Current Value"
         $this.ChiValue=[ORCACHI]::Medium
         $this.Links= @{
-            "Security & Compliance Center - Safe links"="https://protection.office.com/safelinksv2"
-            "Set up Office 365 ATP Safe Links policies"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/set-up-atp-safe-links-policies#step-4-learn-about-atp-safe-links-policy-options"
-            "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
+            "Security & Compliance Center - Safe links"="https://aka.ms/orca-atpp-action-safelinksv2"
+            "Set up Office 365 ATP Safe Links policies"="https://aka.ms/orca-atpp-docs-10"
+            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 
@@ -39,9 +39,39 @@ class ORCA105 : ORCACheck
     GetResults($Config)
     {
         $Check = "ATP"
-        
-        ForEach($Policy in ($Config["SafeLinksPolicy"] | Where-Object {$_.IsEnabled -eq $True})) 
+        #$CountOfPolicies = ($Config["SafeLinksPolicy"] | Where-Object {$_.IsEnabled -eq $True}).Count
+        $CountOfPolicies = ($global:SafeLinkPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
+        ForEach($Policy in ($Config["SafeLinksPolicy"] )) 
         {
+            $IsPolicyDisabled = $false
+            $DeliverMessageAfterScan =$($Policy.DeliverMessageAfterScan)
+            $ScanUrls = $($Policy.ScanUrls)
+
+            $IsBuiltIn = $false
+            $policyname = $($Policy.Name)
+
+            ForEach($data in ($global:SafeLinkPolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
+            {
+                $IsPolicyDisabled = !$data.IsEnabled
+            }
+
+            if($IsPolicyDisabled)
+            {
+                $IsPolicyDisabled = $true
+                $policyname = "$policyname" +" [Disabled]"
+                $DeliverMessageAfterScan = "N/A"
+                $ScanUrls = "N/A"
+            }
+            elseif($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
+            {
+                $IsBuiltIn =$True
+                $policyname = "$policyname" +" [Built-In]"
+            }
+            elseif(($policyname -eq "Default" -or $policyname -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
+            {
+                $IsBuiltIn =$True
+                $policyname = "$policyname" +" [Default]"
+            }
 
             <#
             
@@ -51,18 +81,44 @@ class ORCA105 : ORCACheck
 
                 # Check objects
                 $ConfigObject = [ORCACheckConfig]::new()
-                $ConfigObject.Object=$($Policy.Name)
+                $ConfigObject.Object= $policyname
                 $ConfigObject.ConfigItem="DeliverMessageAfterScan"
-                $ConfigObject.ConfigData=$($Policy.DeliverMessageAfterScan)
+                $ConfigObject.ConfigData=$DeliverMessageAfterScan
 
                 # Determine if DeliverMessageAfterScan is on for this safelinks policy
-                If($Policy.DeliverMessageAfterScan -eq $true) 
+                If($DeliverMessageAfterScan -eq $true) 
                 {
+                    if($IsPolicyDisabled)
+                    {
+                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                    }
+                    elseif($IsBuiltIn)
+                    {
+                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                    }
+                    else
+                       {
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                       }
                 }
                 Else 
                 {
+                    if($IsPolicyDisabled)
+                    {
+                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                    }
+                    elseif($IsBuiltIn)
+                    {
+                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                    }
+                    else
+                       {
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                       }
                 }
 
                 # Add config to check
@@ -76,18 +132,46 @@ class ORCA105 : ORCACheck
 
                 # Check objects
                 $ConfigObject = [ORCACheckConfig]::new()
-                $ConfigObject.Object=$($Policy.Name)
+                $ConfigObject.Object= $policyname
                 $ConfigObject.ConfigItem="ScanUrls"
-                $ConfigObject.ConfigData=$($Policy.ScanUrls)
+                $ConfigObject.ConfigData=$ScanUrls
 
-                If($Policy.ScanUrls -eq $true)
+                If($ScanUrls -eq $true)
                 {
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                    if($IsPolicyDisabled)
+                {
+                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                }
+                elseif($IsBuiltIn)
+                {
+                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                }
+                else
+                   { 
+                       $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                }
                 }
                 Else 
                 {
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                    if($IsPolicyDisabled)
+                    {
+                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                    }
+                    elseif($IsBuiltIn)
+                    {
+                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                    }
+                    else
+                    {
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                    }
                 }
+
+                
 
                 # Add config to check
                 $this.AddConfig($ConfigObject)
@@ -112,3 +196,4 @@ class ORCA105 : ORCACheck
     }
 
 }
+

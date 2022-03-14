@@ -21,8 +21,8 @@ class ORCA114 : ORCACheck
         $this.DataType="Allowed IP"
         $this.ChiValue=[ORCACHI]::Medium
         $this.Links= @{
-            "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
-            "Use Anti-Spam Policy IP Allow lists"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/create-safe-sender-lists-in-office-365#use-anti-spam-policy-ip-allow-lists"
+            "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
+            "Use Anti-Spam Policy IP Allow lists"="https://aka.ms/orca-antispam-docs-3"
         }
     }
 
@@ -35,21 +35,43 @@ class ORCA114 : ORCACheck
     GetResults($Config)
     {
     
+        $CountOfPolicies = ($Config["HostedConnectionFilterPolicy"]).Count
         ForEach($HostedConnectionFilterPolicy in $Config["HostedConnectionFilterPolicy"]) 
         {
+            $IsBuiltIn = $false
+            $policyname = $($HostedConnectionFilterPolicy.Name)
+            $IPAllowList = $($HostedConnectionFilterPolicy.IPAllowList)
 
+            if($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
+            {
+                $IsBuiltIn =$True
+                $policyname = "$policyname" +" [Built-In]"
+            }
+            elseif(($policyname -eq "Default" -or $policyname -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
+            {
+                $IsBuiltIn =$True
+                $policyname = "$policyname" +" [Default]"
+            }
 
             # Check if IPAllowList < 0 and return inconclusive for manual checking of size
-            If($HostedConnectionFilterPolicy.IPAllowList.Count -gt 0)
+            If($IPAllowList.Count -gt 0)
             {
                 # IP Allow list present
-                ForEach($IPAddr in @($HostedConnectionFilterPolicy.IPAllowList)) 
+                ForEach($IPAddr in @($IPAllowList)) 
                 {
                     # Check objects
                     $ConfigObject = [ORCACheckConfig]::new()
-                    $ConfigObject.ConfigItem=$($HostedConnectionFilterPolicy.Name)
+                    $ConfigObject.ConfigItem=$policyname
                     $ConfigObject.ConfigData=$IPAddr
+                    if($IsBuiltIn)
+                    {
+                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                    }
+                    else
+                    {
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                    }
                     $this.AddConfig($ConfigObject)  
                 }
     
@@ -58,8 +80,17 @@ class ORCA114 : ORCACheck
             {
                 # Check objects
                 $ConfigObject = [ORCACheckConfig]::new()
-                $ConfigObject.ConfigItem=$($HostedConnectionFilterPolicy.Name)
+                $ConfigObject.ConfigItem=$policyname
+                $ConfigObject.ConfigData="No IP detected"
+                if($IsBuiltIn)
+                {
+                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                }
+                else
+                {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                }
                 $this.AddConfig($ConfigObject) 
             }
         }        

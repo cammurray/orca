@@ -21,8 +21,8 @@ class ORCA118_3 : ORCACheck
         $this.DataType="Organisation Domain Allow Listed"
         $this.ChiValue=[ORCACHI]::Critical
         $this.Links= @{
-            "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
-            "Use Anti-Spam Policy Sender/Domain Allow lists"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/create-safe-sender-lists-in-office-365#use-anti-spam-policy-senderdomain-allow-lists"
+            "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
+            "Use Anti-Spam Policy Sender/Domain Allow lists"="https://aka.ms/orca-antispam-docs-4"
         }
     
     }
@@ -35,14 +35,41 @@ class ORCA118_3 : ORCACheck
 
     GetResults($Config)
     {
-
+        #$CountOfPolicies = ($Config["HostedContentFilterPolicy"] ).Count
+        $CountOfPolicies = ($global:HostedContentPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
+       
         ForEach($Policy in $Config["HostedContentFilterPolicy"]) {
+            $IsPolicyDisabled = $false
+
+            $IsBuiltIn = $false
+            $policyname = $($Policy.Name)
+            $AllowedSenderDomains = $($Policy.AllowedSenderDomains)
+            ForEach($data in ($global:HostedContentPolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
+            {
+                $IsPolicyDisabled = !$data.IsEnabled
+            }
+
+            if($IsPolicyDisabled)
+            {
+                $IsPolicyDisabled = $true
+                $policyname = "$policyname" +" [Disabled]"
+            }
+            elseif($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
+            {
+                $IsBuiltIn =$True
+                $policyname = "$policyname" +" [Built-In]"
+            }
+            elseif(($policyname -eq "Default" -or $policyname -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
+            {
+                $IsBuiltIn =$True
+                $policyname = "$policyname" +" [Default]"
+            }
     
             # Fail if AllowedSenderDomains is not null
     
-            If(($Policy.AllowedSenderDomains).Count -gt 0) 
+            If(($AllowedSenderDomains).Count -gt 0) 
             {
-                ForEach($Domain in $Policy.AllowedSenderDomains) 
+                ForEach($Domain in $AllowedSenderDomains) 
                 {
 
                     # Is this domain an organisation domain?
@@ -50,9 +77,25 @@ class ORCA118_3 : ORCACheck
                     {
                         # Check objects
                         $ConfigObject = [ORCACheckConfig]::new()
-                        $ConfigObject.ConfigItem=$($Policy.Name)
+                        $ConfigObject.ConfigItem=$policyname
+                       
+                        if($IsPolicyDisabled)
+                    {
+                        $ConfigObject.ConfigData="N/A"
+                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                    }
+                    elseif($IsBuiltIn)
+                    {
+                        $ConfigObject.ConfigData=$Domain
+                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                    }
+                    else
+                       {
                         $ConfigObject.ConfigData=$Domain
                         $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                       }
                         $this.AddConfig($ConfigObject) 
                     } 
                 }

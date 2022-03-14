@@ -29,8 +29,8 @@ class ORCA232 : ORCACheck
         $this.DataType="Priority"
         $this.ChiValue=[ORCACHI]::Medium
         $this.Links= @{
-            "Security & Compliance Center - Anti-malware policies"="https://protection.office.com/antimalware"
-            "Order and precedence of email protection"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/how-policies-and-protections-are-combined?view=o365-worldwide"
+            "Security & Compliance Center - Anti-malware policies"="https://aka.ms/orca-mfp-action-antimalware"
+            "Order and precedence of email protection"="https://aka.ms/orca-atpp-docs-4"
         }
     }
 
@@ -54,10 +54,10 @@ class ORCA232 : ORCACheck
 
             ForEach($Rule in ($Config["MalwareFilterRule"] | Sort-Object Priority)) 
             {
-                if($null -eq $Rule.SentTo -and $null -eq $Rule.SentToMemberOf -and $Rule.State -eq "Enabled")
+                if( $Rule.State -eq "Enabled")
                 {
-                    if($Rule.RecipientDomainIs -contains $AcceptedDomain.Name -and $Rule.ExceptIfRecipientDomainIs -notcontains $AcceptedDomain.Name)
-                    {
+                    if($Rule.RecipientDomainIs -contains $AcceptedDomain.Name -and ($Rule.ExceptIfRecipientDomainIs -notcontains $AcceptedDomain.Name) -and ($null -eq $Rule.ExceptIfSentToMemberOf ) -and ($null -eq $Rule.ExceptIfSentTo) )
+                         {
                         # Policy applies to this domain
 
                         $Rules += New-Object -TypeName PSObject -Property @{
@@ -69,32 +69,81 @@ class ORCA232 : ORCACheck
                 }
 
             }
+            ForEach($Rule in ($Config["EOPProtectionPolicyRule"] | Sort-Object Priority)) 
+            {
+                if(($Rule.MalwareFilterPolicy -ne "") -and ($null -ne $Rule.MalwareFilterPolicy ))
+                { 
+                   if($Rule.State -eq "Enabled")
+                   {
+                    if($Rule.RecipientDomainIs -contains $AcceptedDomain.Name -and ($Rule.ExceptIfRecipientDomainIs -notcontains $AcceptedDomain.Name) -and ($null -eq $Rule.ExceptIfSentToMemberOf ) -and ($null -eq $Rule.ExceptIfSentTo) )
+                    {
+                            # Policy applies to this domain
+
+                            $Rules += New-Object -TypeName PSObject -Property @{
+                            PolicyName=$($Rule.MalwareFilterPolicy)
+                            Priority=$($Rule.Priority)
+                            }
+
+                        }   
+                    }
+                }
+            }
 
             If($Rules.Count -gt 0)
             {
                 $Count = 0
-
+                $CountOfPolicies = ($Rules).Count
                 ForEach($r in ($Rules | Sort-Object Priority))
                 {
+
+                    $IsBuiltIn = $false
+                    $policyname = $($r.PolicyName)
+                    $priority =$($r.Priority)
+                    if($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
+                    {
+                        $IsBuiltIn =$True
+                        $policyname = "$policyname" +" [Built-In]"
+                    }
+                    elseif(($policyname -eq "Default" -or $policyname -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
+                    {
+                        $IsBuiltIn =$True
+                        $policyname = "$policyname" +" [Default]"
+                    }
 
                     $Count++
 
                     $ConfigObject = [ORCACheckConfig]::new()
 
                     $ConfigObject.Object=$($AcceptedDomain.Name)
-                    $ConfigObject.ConfigItem=$($r.PolicyName)
-                    $ConfigObject.ConfigData=$($r.Priority)
+                    $ConfigObject.ConfigItem=$policyname
+                    $ConfigObject.ConfigData=$priority
 
                     If($Count -eq 1)
                     {
                         # First policy based on priority is a pass
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                        if($IsBuiltIn)
+                        {
+                            $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                        }
+                        else
+                        {
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                        }
                     }
                     else
                     {
+                        if($IsBuiltIn)
+                        {
+                            $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                        }
+                        else
+                        {
                         # Additional policies based on the priority should be listed as informational
-                        $ConfigObject.InfoText = "There are multiple policies that apply to this domain, only the policy with the lowest priority will apply. This policy may not apply based on a lower priority."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                            $ConfigObject.InfoText = "There are multiple policies that apply to this domain, only the policy with the lowest priority will apply. This policy may not apply based on a lower priority."
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                        }
                     }    
 
                     $this.AddConfig($ConfigObject)

@@ -30,8 +30,8 @@ class ORCA156 : ORCACheck
         $this.DataType="Current Value"
         $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
-            "Security & Compliance Center - Safe links"="https://protection.office.com/safelinksv2"
-            "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
+            "Security & Compliance Center - Safe links"="https://aka.ms/orca-atpp-action-safelinksv2"
+            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 
@@ -42,41 +42,127 @@ class ORCA156 : ORCACheck
     #>
 
     GetResults($Config)
-    {
+    {   
+        #$CountOfPolicies = ($Config["SafeLinksPolicy"]).Count + ($Config["AtpPolicy"]).Count
+        $CountOfPolicies = ($global:SafeLinkPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
+
+        $IsBuiltIn0 = $false
+        $policyname0 = $($Config["AtpPolicy"].Name)
+        $configdata = $($Config["AtpPolicy"].TrackClicks)
+        if($policyname0 -match "Built-In" -and $CountOfPolicies -gt 1)
+        {
+            $IsBuiltIn0 =$True
+            $policyname0 = "$policyname0" +" [Built-In]"
+        }
+        elseif(($policyname0 -eq "Default" -or $policyname0 -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
+        {
+            $IsBuiltIn0 =$True
+            $policyname0 = "$policyname0" +" [Default]"
+        }
 
         # Global ATP Policy
         $ConfigObject = [ORCACheckConfig]::new()
-        $ConfigObject.Object=$($Config["AtpPolicy"].Name)
+        $ConfigObject.Object=$policyname0
         $ConfigObject.ConfigItem="TrackClicks"
-        $ConfigObject.ConfigData=$($Config["AtpPolicy"].TrackClicks)
+        $ConfigObject.ConfigData=$configdata
 
         If($Config["AtpPolicy"].TrackClicks -eq $False -and $($Config["AtpPolicy"].EnableSafeLinksForClients -eq $True -or $Config["AtpPolicy"].EnableSafeLinksForWebAccessCompanion -eq $True -or $Config["AtpPolicy"].EnableSafeLinksForO365Clients -eq $True))
         {
-            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            if($IsBuiltIn0)
+            {
+                $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+            }
+            else
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")   
+            }  
         }
         ElseIf ($Config["AtpPolicy"].TrackClicks -eq $True)
         {
-            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")     
+            if($IsBuiltIn0)
+            {
+                $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+            }
+            else
+            {
+                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")   
+            }     
         }
 
         $this.AddConfig($ConfigObject)
 
+       
         ForEach($Policy in $Config["SafeLinksPolicy"]) 
         {
+            $IsPolicyDisabled = $false
+            $DoNotTrackUserClicks = $($Policy.DoNotTrackUserClicks)
 
+            $IsBuiltIn = $false
+            $policyname = $($Policy.Name)
+
+            ForEach($data in ($global:SafeLinkPolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
+            {
+                $IsPolicyDisabled = !$data.IsEnabled
+            }
+
+            if($IsPolicyDisabled)
+            {
+                $IsPolicyDisabled = $true
+                $policyname = "$policyname" +" [Disabled]"
+                $DoNotTrackUserClicks = "N/A"
+            }
+            elseif($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
+            {
+                $IsBuiltIn =$True
+                $policyname = "$policyname" +" [Built-In]"
+            }
+            elseif(($policyname -eq "Default" -or $policyname -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
+            {
+                $IsBuiltIn =$True
+                $policyname = "$policyname" +" [Default]"
+            }
+            
             $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="DoNotTrackUserClicks"
-            $ConfigObject.ConfigData=$($Policy.DoNotTrackUserClicks)
+            $ConfigObject.ConfigData=$DoNotTrackUserClicks
 
             # Determine if ATP link tracking is on for this safelinks policy
-            If($Policy.DoNotTrackUserClicks -eq $false)
+            If($DoNotTrackUserClicks -eq $false)
             {
+                if($IsPolicyDisabled)
+                    {
+                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                    }
+                    elseif($IsBuiltIn)
+                    {
+                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                    }
+                    else
+                       {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                       }
             } 
             else 
             {
+                if($IsPolicyDisabled)
+                    {
+                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                    }
+                    elseif($IsBuiltIn)
+                    {
+                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                    }
+                    else
+                       {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                       }
             }
 
             # Add config to check

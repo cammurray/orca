@@ -23,8 +23,8 @@ class ORCA103 : ORCACheck
         $this.DataType="Current Value"
         $this.ChiValue=[ORCACHI]::Low
         $this.Links= @{
-                "Security & Compliance Center - Anti-spam settings"="https://protection.office.com/antispam"
-                "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#anti-spam-anti-malware-and-anti-phishing-protection-in-eop"
+                "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
+                "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-6"
             }
     }
 
@@ -36,6 +36,7 @@ class ORCA103 : ORCACheck
 
     GetResults($Config)
     {
+        $CountOfPolicies = ($Config["HostedOutboundSpamFilterPolicy"]).Count
         ForEach($Policy in $Config["HostedOutboundSpamFilterPolicy"])
         {
 
@@ -44,14 +45,40 @@ class ORCA103 : ORCACheck
                 RecipientLimitExternalPerHour
             
             #>
-            
+            $IsBuiltIn = $false
+            $policyname = $($Policy.Name)
+            $RecipientLimitExternalPerHour = $($Policy.RecipientLimitExternalPerHour)
+            $RecipientLimitInternalPerHour = $($Policy.RecipientLimitInternalPerHour)
+            $RecipientLimitPerDay = $($Policy.RecipientLimitPerDay)
+            $ActionWhenThresholdReached = $($Policy.ActionWhenThresholdReached)
+
+            if($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
+            {
+                $IsBuiltIn =$True
+                $policyname = "$policyname" +" [Built-In]"
+            }
+            elseif(($policyname -eq "Default" -or $policyname -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
+            {
+                $IsBuiltIn =$True
+                $policyname = "$policyname" +" [Default]"
+            }
+
             $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.Object=$Policy.Name
+            $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="RecipientLimitExternalPerHour"
-            $ConfigObject.ConfigData=$($Policy.RecipientLimitExternalPerHour)
+            $ConfigObject.ConfigData=$RecipientLimitExternalPerHour
 
             # Recipient per hour limit for standard is 500
-            If($Policy.RecipientLimitExternalPerHour -eq 500)
+            if($IsBuiltIn)
+            {
+                $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+            }
+            else
+            {
+                  
+             
+            If($RecipientLimitExternalPerHour -eq 500)
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
@@ -61,7 +88,7 @@ class ORCA103 : ORCACheck
             }
 
             # Recipient per hour limit for strict is 400
-            If($Policy.RecipientLimitExternalPerHour -eq 400)
+            If($RecipientLimitExternalPerHour -eq 400)
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
             }
@@ -69,7 +96,7 @@ class ORCA103 : ORCACheck
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")              
             }
-
+        }
             # Add config to check
             $this.AddConfig($ConfigObject)
 
@@ -80,11 +107,17 @@ class ORCA103 : ORCACheck
             #>
             
             $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.Object=$Policy.Name
+            $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="RecipientLimitInternalPerHour"
-            $ConfigObject.ConfigData=$($Policy.RecipientLimitInternalPerHour)
-
-            If($Policy.RecipientLimitInternalPerHour -eq 1000)
+            $ConfigObject.ConfigData=$($RecipientLimitInternalPerHour)
+            if($IsBuiltIn)
+            {
+                $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+            }
+            else
+            {
+            If($RecipientLimitInternalPerHour -eq 1000)
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
@@ -93,7 +126,7 @@ class ORCA103 : ORCACheck
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")               
             }
 
-            If($Policy.RecipientLimitInternalPerHour -eq 800)
+            If($RecipientLimitInternalPerHour -eq 800)
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
             }
@@ -101,7 +134,7 @@ class ORCA103 : ORCACheck
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")              
             }
-
+        }
             # Add config to check
             $this.AddConfig($ConfigObject)
 
@@ -112,11 +145,17 @@ class ORCA103 : ORCACheck
             #>
             
             $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.Object=$Policy.Name
+            $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="RecipientLimitPerDay"
-            $ConfigObject.ConfigData=$($Policy.RecipientLimitPerDay)
-
-            If($Policy.RecipientLimitPerDay -eq 1000)
+            $ConfigObject.ConfigData=$($RecipientLimitPerDay)
+            if($IsBuiltIn)
+            {
+                $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+            }
+            else
+            {
+            If($RecipientLimitPerDay -eq 1000)
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
@@ -125,7 +164,7 @@ class ORCA103 : ORCACheck
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")               
             }
 
-            If($Policy.RecipientLimitPerDay -eq 800)
+            If($RecipientLimitPerDay -eq 800)
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
             }
@@ -133,16 +172,22 @@ class ORCA103 : ORCACheck
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")              
             }
-
+        }
             # Add config to check
             $this.AddConfig($ConfigObject)
 
             $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.Object=$Policy.Name
+            $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="ActionWhenThresholdReached"
-            $ConfigObject.ConfigData=$($Policy.ActionWhenThresholdReached)
-
-            If($Policy.ActionWhenThresholdReached -like "BlockUser")
+            $ConfigObject.ConfigData=$($ActionWhenThresholdReached)
+            if($IsBuiltIn)
+            {
+                $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+            }
+            else
+            {
+            If($ActionWhenThresholdReached -like "BlockUser")
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
@@ -150,7 +195,7 @@ class ORCA103 : ORCACheck
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")               
             }
-
+        }
             # Add config to check
             $this.AddConfig($ConfigObject)
 

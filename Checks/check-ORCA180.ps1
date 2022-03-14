@@ -22,9 +22,9 @@ class ORCA180 : ORCACheck
         $this.DataType="Antispoof Enforced"
         $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
-            "Security & Compliance Center - Anti-phishing"="https://protection.office.com/antiphishing"
-            "Anti-spoofing protection in Office 365"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/anti-spoofing-protection"
-            "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#office-365-advanced-threat-protection-security"
+            "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
+            "Anti-spoofing protection in Office 365"="https:/aka.ms/orca-atpp-docs-3"
+            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 
@@ -38,18 +38,61 @@ class ORCA180 : ORCACheck
     {
 
         $Enabled = $False
-  
+        #$CountOfPolicies = ($Config["AntiPhishPolicy"]).Count
+        $CountOfPolicies = ($global:AntiSpamPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
+      
         ForEach($Policy in $Config["AntiPhishPolicy"]) 
         {
+            $IsPolicyDisabled = $false
+            $EnableSpoofIntelligence = $($Policy.EnableSpoofIntelligence)
+
+            $IsBuiltIn = $false
+            $policyname = $($Policy.Name)
+            $Enabled =$($Policy.Enabled)
+            $Identity = $($Policy.Identity)
+            ForEach($data in ($global:AntiSpamPolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
+            {
+                $IsPolicyDisabled = !$data.IsEnabled
+            }
+
+            if($IsPolicyDisabled)
+            {
+                $IsPolicyDisabled = $true
+                $policyname = "$policyname" +" [Disabled]"
+                $EnableSpoofIntelligence = "N/A"
+            }
+            elseif($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
+            {
+                $IsBuiltIn =$True
+                $policyname = "$policyname" +" [Built-In]"
+            }
+            elseif(($policyname -eq "Default" -or $policyname -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
+            {
+                $IsBuiltIn =$True
+                $policyname = "$policyname" +" [Default]"
+            }
             # Fail if Enabled or EnableSpoofIntelligence is not set to true in any policy
-            If(($Policy.Enabled -eq $true -and $Policy.EnableSpoofIntelligence -eq $true) -or ($Policy.Identity -eq "Office365 AntiPhish Default" -and $Policy.EnableSpoofIntelligence -eq $true))
+            If(($Enabled -eq $true -and $EnableSpoofIntelligence -eq $true) -or ($Identity -eq "Office365 AntiPhish Default" -and $EnableSpoofIntelligence -eq $true))
             {
 
                 # Check objects
                 $ConfigObject = [ORCACheckConfig]::new()
-                $ConfigObject.ConfigItem=$($Policy.Name)
-                $ConfigObject.ConfigData=$Policy.EnableSpoofIntelligence
+                $ConfigObject.ConfigItem=$policyname
+                $ConfigObject.ConfigData=$EnableSpoofIntelligence
+                if($IsPolicyDisabled)
+                    {
+                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                    }
+                    elseif($IsBuiltIn)
+                    {
+                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                    }
+                    else
+                       {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                       }
 
                 $this.AddConfig($ConfigObject)
 

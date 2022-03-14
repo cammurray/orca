@@ -29,9 +29,9 @@ class ORCA125 : ORCACheck
         $this.DataType="Current Value"
         $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
-            "Security & Compliance Center - Anti-malware"="https://protection.office.com/antimalware"
-            "Recommended settings for EOP and Office 365 ATP security"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/recommended-settings-for-eop-and-office365-atp#anti-spam-anti-malware-and-anti-phishing-protection-in-eop"
-            "Configure anti-malware policies"="https://docs.microsoft.com/en-us/microsoft-365/security/office-365-security/configure-anti-malware-policies"
+            "Security & Compliance Center - Anti-malware"="https://aka.ms/orca-mfp-action-antimalware"
+            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-6"
+            "Configure anti-malware policies"="https://aka.ms/orca-mfp-docs-1"
         }
     
     }
@@ -44,24 +44,80 @@ class ORCA125 : ORCACheck
 
     GetResults($Config)
     {
-
+        #$CountOfPolicies = ($Config["MalwareFilterPolicy"]).Count
+        $CountOfPolicies = ($global:MalwarePolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
+       
         ForEach($Policy in $Config["MalwareFilterPolicy"]) 
         {
+            $IsPolicyDisabled = $false
+            $EnableExternalSenderNotifications = $($Policy.EnableExternalSenderNotifications)
+
+            $IsBuiltIn = $false
+            $policyname = $($Policy.Name)
+
+            ForEach($data in ($global:MalwarePolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
+            {
+                $IsPolicyDisabled = !$data.IsEnabled
+            }
+
+            if($IsPolicyDisabled)
+            {
+                $IsPolicyDisabled = $true
+                $policyname = "$policyname" +" [Disabled]"
+                $EnableExternalSenderNotifications = "N/A"
+            }
+            elseif($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
+            {
+                $IsBuiltIn =$True
+                $policyname = "$policyname" +" [Built-In]"
+            }
+            elseif(($policyname -eq "Default" -or $policyname -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
+            {
+                $IsBuiltIn =$True
+                $policyname = "$policyname" +" [Default]"
+            }
+
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="EnableExternalSenderNotifications"
-            $ConfigObject.ConfigData=$($Policy.EnableExternalSenderNotifications)
+            $ConfigObject.ConfigData=$EnableExternalSenderNotifications
 
             # Fail if EnableExternalSenderNotifications is set to true in the policy
-            If($Policy.EnableExternalSenderNotifications -eq $true) 
+            If($EnableExternalSenderNotifications -eq $true) 
             {
+                if($IsPolicyDisabled)
+                {
+                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not properly set according to this check. It is being flagged incase of accidental enablement."
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                }
+                elseif($IsBuiltIn)
+                {
+                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                }
+                else
+                   {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                   }
             }
             Else
             {
+                if($IsPolicyDisabled)
+                {
+                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                }
+                elseif($IsBuiltIn)
+                {
+                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                }
+                else
+                   {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                   }
             }
 
             $this.AddConfig($ConfigObject)

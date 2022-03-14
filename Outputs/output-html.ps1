@@ -29,8 +29,9 @@ class html : ORCAOutput
     $InfoCount = $($Checks | Where-Object {$_.Result -eq "Informational"}).Count
 
     # Misc
-    $ReportTitle = "Microsoft Defender for Office 365 Recommended Configuration Analyzer Report"
-
+    $ReportTitle = "Microsoft Defender for Office 365 Recommended Configuration Analyzer"
+    $ReportSub1 = "Microsoft Defender for Office 365 Recommended"
+    $ReportSub2 = "Configuration Analyzer Report"
     # Area icons
     $AreaIcon = @{}
     $AreaIcon["Default"] = "fas fa-user-cog"
@@ -58,16 +59,16 @@ class html : ORCAOutput
         <script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js' integrity='sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1' crossorigin='anonymous'></script>
         <script src='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js' integrity='sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM' crossorigin='anonymous'></script>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/js/all.js'></script>
-
+        
         <style>
         .table-borderless td,
         .table-borderless th {
             border: 0;
         }
         .bd-callout {
-            padding: 1.25rem;
-            margin-top: 1.25rem;
-            margin-bottom: 1.25rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
             border: 1px solid #eee;
             border-left-width: .25rem;
             border-radius: .25rem
@@ -118,6 +119,78 @@ class html : ORCAOutput
             border-left-color: #00bd19
         }
 
+        .navbar-custom { 
+            background-color: #005494;
+            color: white; 
+            padding-bottom: 10px;
+
+            
+        } 
+        /* Modify brand and text color */ 
+          
+        .navbar-custom .navbar-brand, 
+        .navbar-custom .navbar-text { 
+            color: white; 
+            padding-top: 70px;
+            padding-bottom: 10px;
+
+        } 
+        .star-cb-group {
+            /* remove inline-block whitespace */
+            font-size: 0;
+            /* flip the order so we can use the + and ~ combinators */
+            unicode-bidi: bidi-override;
+            direction: rtl;
+            /* the hidden clearer */
+          }
+          .star-cb-group * {
+            font-size: 1rem;
+          }
+          .star-cb-group > input {
+            display: none;
+          }
+          .star-cb-group > input + label {
+            /* only enough room for the star */
+            display: inline-block;
+            overflow: hidden;
+            text-indent: 9999px;
+            width: 1.7em;
+            white-space: nowrap;
+            cursor: pointer;
+          }
+          .star-cb-group > input + label:before {
+            display: inline-block;
+            text-indent: -9999px;
+            content: ""\2606"";
+            font-size: 30px;
+            color: #005494;
+          }
+          .star-cb-group > input:checked ~ label:before, .star-cb-group > input + label:hover ~ label:before, .star-cb-group > input + label:hover:before {
+            content:""\2605"";
+            color: #e52;
+          font-size: 30px;
+            text-shadow: 0 0 1px #333;
+          }
+          .star-cb-group > .star-cb-clear + label {
+            text-indent: -9999px;
+            width: .5em;
+            margin-left: -.5em;
+          }
+          .star-cb-group > .star-cb-clear + label:before {
+            width: .5em;
+          }
+          .star-cb-group:hover > input + label:before {
+            content: ""\2606"";
+            color: #005494;
+          font-size: 30px;
+            text-shadow: none;
+          }
+          .star-cb-group:hover > input + label:hover ~ label:before, .star-cb-group:hover > input + label:hover:before {
+            content: ""\2605"";
+            color: #e52;
+          font-size: 30px;
+            text-shadow: 0 0 1px #333;
+          }         
         </style>
 
         <title>$($ReportTitle)</title>
@@ -125,7 +198,7 @@ class html : ORCAOutput
     </head>
     <body class='app header-fixed bg-light'>
 
-        <nav class='navbar fixed-top navbar-light bg-white p-3 border-bottom'>
+        <nav class='navbar  fixed-top navbar-custom p-3 border-bottom'>
             <div class='container-fluid'>
                 <div class='col-sm' style='text-align:left'>
                     <div class='row'><div><i class='fas fa-binoculars'></i></div><div class='ml-3'><strong>ORCA</strong></div></div>
@@ -146,7 +219,29 @@ class html : ORCAOutput
                 <div class='card'>
                         
                         <div class='card-body'>
-                            <h2 class='card-title'>$($ReportTitle)</h2>
+                            <h2 class='card-title'>$($ReportSub1)</h2>
+                            
+                            <div style='text-align:right;margin-top:-65px;margin-right:8px;color:#005494;';>
+				                <b>Rate this report</b>
+					        </div>
+
+                            <div style='text-align:right;margin-top:-10px';>            
+                            <span class='star-cb-group'>
+                               <input type='radio' id='rating-5' name='rating' value='5' onclick=""window.open('https://aka.ms/orca-feedback-1','_blank');"" />
+                               <label for='rating-5'>5</label>
+                               <input type='radio' id='rating-4' name='rating' value='4' onclick=""window.open('https://aka.ms/orca-feedback-2','_blank');"" />
+                               <label for='rating-4'>4</label>
+                               <input type='radio' id='rating-3' name='rating' value='3' onclick=""window.open('https://aka.ms/orca-feedback-3','_blank');"" />
+                               <label for='rating-3'>3</label>
+                               <input type='radio' id='rating-2' name='rating' value='2' onclick=""window.open('https://aka.ms/orca-feedback-4','_blank');"" />
+                               <label for='rating-2'>2</label>
+                               <input type='radio' id='rating-1' name='rating' value='1' onclick=""window.open('https://aka.ms/orca-feedback-5','_blank');"" />
+                               <label for='rating-1'>1</label>
+                               <input type='radio' id='rating-0' name='rating' value='0' class='star-cb-clear' />
+                               <label for='rating-0'>0</label>
+                               </span>
+                            </div>
+                            <h2 class='card-title' style='margin-top:-10px'>$($ReportSub2)</h2>
 
                             <strong>Version $($this.VersionCheck.Version.ToString())</strong>
                             
@@ -223,10 +318,10 @@ class html : ORCAOutput
                     $Output += "
                     
                             <div class='col d-flex justify-content-center text-center'>
-                                <div class='card text-white bg-secondary mb-3' style='width: 18rem;'>
-                                    <div class='card-header'><h5>Informational</h5></div>
+                                <div class='card text-white bg-secondary mb-3' style='width: 18em;'>
+                                    <div class='card-header'><h6>Informational</h6></div>
                                     <div class='card-body'>
-                                    <h2>$($InfoCount)</h2>
+                                    <h3>$($InfoCount)</h3>
                                     </div>
                                 </div>
                             </div>
@@ -236,18 +331,18 @@ class html : ORCAOutput
 
 $Output +=        "<div class='col d-flex justify-content-center text-center'>
                     <div class='card text-white bg-warning mb-3' style='width: 18rem;'>
-                        <div class='card-header'><h5>Recommendations</h5></div>
+                        <div class='card-header'><h6>Recommendations</h6></div>
                         <div class='card-body'>
-                        <h2>$($RecommendationCount)</h2>
+                        <h3>$($RecommendationCount)</h3>
                         </div>
                     </div>
                 </div>
 
                 <div class='col d-flex justify-content-center text-center'>
                     <div class='card text-white bg-success mb-3' style='width: 18rem;'>
-                        <div class='card-header'><h5>OK</h5></div>
+                        <div class='card-header'><h6>OK</h6></div>
                         <div class='card-body'>
-                        <h2>$($OKCount)</h2>
+                        <h3>$($OKCount)</h3>
                         </div>
                     </div>
                 </div>
@@ -266,21 +361,25 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
             <div class='row'>
                 <div class='col-sm-4 text-center align-self-center'>
 
-                    <div class='progress' style='height: 80px'>
-                        <div class='progress-bar progress-bar-striped bg-info' role='progressbar' style='width: $($Collection["CHI"])%;' aria-valuenow='$($Collection["CHI"])' aria-valuemin='0' aria-valuemax='100'><h1>$($Collection["CHI"]) %</h1></div>
+                    <div class='progress' style='height: 40px'>
+                        <div class='progress-bar progress-bar-striped bg-info' role='progressbar' style='width: $($Collection["CHI"])%;' aria-valuenow='$($Collection["CHI"])' aria-valuemin='0' aria-valuemax='100'><h2>$($Collection["CHI"]) %</h2></div>
                     </div>
                 
                 </div>
                 <div class='col-sm-8'>
-                    <h4>Configuration Health Index</h4>
-                    
-                    <p>The configuration health index is a weighted value representing your configuration. Not all configuration is considered and some configuration is weighted higher than others. The index is represented as a percentage. How the configuration impacts the configuration health index is shown next to the recommendation in the report below as a positive or negative number. The impact to your security posture is a large consideration factor when rating the configuration.</p>
+                    <h6>Configuration Health Index</h6>                  
+                    <p>The configuration health index is a weighted value representing your configuration. Not all configuration is 
+                    considered and some configuration is weighted higher than others.<a href='https://aka.ms/orca-github' target='_blank'> See More </a></p>
 
                 </div>
             </div>
-        </div>
+
+            <div class='alert alert-success pt-2' >
+            Like this report? Try similar reporting for Microsoft's Compliance solutions. Download <a href='https://aka.ms/orca-mcca-github' target='_blank'> Microsoft Compliance Config Analyzer (MCCA)</a>
+             </div>
                     
     </div>
+  
     
     "
 
@@ -511,11 +610,46 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     <div class='d-flex justify-content-end'>
                                 "
 
-                                $Output += "
+                                if($($o.InfoText) -match "This is a Built-In/Default policy")
+                                {
+                                    $Output += "
+                                    <div class='flex-row badge badge-pill badge-light'>
+                                        <span style='vertical-align: middle;'>$($LevelText)</span>
+                                        <span class='$($oicon)' style='vertical-align: middle;'></span>
+                                    "
+                                    
+
+                                    $Output += "<p style='margin-top:5px;color:#005494;'><abbr title='$($o.InfoText)'><u>More Info</u></abbr></p></div>"
+                                    
+                                }
+                                elseif($($o.InfoText) -match "The policy is not enabled and will not apply")
+                                {
+                                    $Output += "
+                                    <div class='flex-row badge badge-pill badge-light'>
+                                        <span style='vertical-align: middle;'>$($LevelText)</span>
+                                        <span class='$($oicon)' style='vertical-align: middle;'></span>
+                                    "
+                                    $Output += "<p style='margin-top:5px;color:#005494;'><abbr title='$($o.InfoText)'><u>More Info</u></abbr></p></div>"                             
+                                    
+                                }
+                                elseif($o.Level -eq [ORCAConfigLevel]::Informational)
+                                {
+                                    $Output += "
+                                    <div class='flex-row badge badge-pill badge-light'>
+                                        <span style='vertical-align: middle;'>$($LevelText)</span>
+                                        <span class='$($oicon)' style='vertical-align: middle;'></span>
+                                    "
+                                    $Output += "<p style='margin-top:5px;color:#005494;'><abbr title='$($o.InfoText)'><u>More Info</u></abbr></p></div>"
+                              
+                                }
+                                else
+                                {
+                                    $Output += "
                                                 <div class='flex-row badge badge-pill badge-light'>
                                                     <span style='vertical-align: middle;'>$($LevelText)</span>
                                                     <span class='$($oicon)' style='vertical-align: middle;'></span>
                                                 </div>"
+                                
 
                                 if($Check.ChiValue -ne [ORCACHI]::NotRated -and $o.Level -ne [ORCAConfigLevel]::Informational)
                                 {
@@ -526,7 +660,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                                 </div>
                                     "
                                 }            
-
+                            }
                                 $Output += "
 
                                     </div>
@@ -534,33 +668,6 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     </td>
                                 </tr>
                                 "
-
-                                # Informational segment
-                                if($o.Level -eq [ORCAConfigLevel]::Informational)
-                                {
-                                    $Output += "
-                                    <tr>"
-                                    If($Check.CheckType -eq [CheckType]::ObjectPropertyValue)
-                                    {
-                                        $Output += "<td colspan='4' style='border: 0;'>"
-                                    }
-                                    else
-                                    {
-                                        $Output += "<td colspan='3' style='border: 0;'>"
-                                    }
-
-                                    $Output += "
-                                    <div class='alert alert-light' role='alert' style='text-align: right;'>
-                                    <span class='fas fa-info-circle text-muted' style='vertical-align: middle; padding-right:5px'></span>
-                                    <span style='vertical-align: middle;'>$($o.InfoText)</span>
-                                    </div>
-                                    "
-                                    
-                                    $Output += "</td></tr>
-                                    
-                                    "
-                                }
-
                             }
 
                             $Output +="
@@ -612,7 +719,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
             </div>
 
             <footer class='app-footer'>
-            <p><center>Bugs? Issues? Suggestions? <a href='https://github.com/cammurray/orca'>GitHub!</a><center></p>
+            <p><center>Bugs? Issues? Suggestions? <a href='https://aka.ms/orca-github'>GitHub!</a><center></p>
             </footer>
         </body>
     </html>"
