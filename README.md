@@ -141,11 +141,11 @@ The key that we will use is 'id' in the CosmosDB. Make sure you specify this as 
 
 Example - To output in to MyCosmosAccount database MyCosmosDB, the default collection will be ORCA
 
-`Invoke-ORCA -Output Cosmos -OutputOptions @{Cosmos=@{Account='MyCosmosAccount';Database='MyCosmosDB';Key='GFJqJesi2Rq910E0G7P4WoZkzowzbj23Sm9DUWFX0l0P8o16mYyuaZBN00Nbtj9F1QQnumzZKSGZwknXGERrlA=='}}`
+`Invoke-ORCA -Output Cosmos -OutputOptions @{Cosmos=@{Account='MyCosmosAccount';Database='MyCosmosDB';Key='YourKeyvalue'}}`
 
 Example - To output in to MyCosmosAccount database MyCosmosDB, in to a collection called MyORCA
 
-`Invoke-ORCA -Output Cosmos -OutputOptions @{Cosmos=@{Account='MyCosmosAccount';Database='MyCosmosDB';Key='GFJqJesi2Rq910E0G7P4WoZkzowzbj23Sm9DUWFX0l0P8o16mYyuaZBN00Nbtj9F1QQnumzZKSGZwknXGERrlA==';Collection='MyORCA'}}`
+`Invoke-ORCA -Output Cosmos -OutputOptions @{Cosmos=@{Account='MyCosmosAccount';Database='MyCosmosDB';Key='YourKeyvalue==';Collection='MyORCA'}}`
 
 #### Supported Params
 

@@ -706,7 +706,7 @@ Function Invoke-ORCA
             Invoke-ORCA -Output @("HTML","JSON") -OutputOptions @{HTML=@{DisplayReport=$False}}
 
         .EXAMPLE
-            Invoke-ORCA -Output "COSMOS" -OutputOptions @{HTML=@{DisplayReport=$False};Cosmos=@{Account='MyCosmosAccount';Database='MyCosmosDB';Key='GFJqJesi2Rq910E0G7P4WoZkzowzbj23Sm9DUWFX0l0P8o16mYyuaZBN00Nbtj9F1QQnumzZKSGZwknXGERrlA==';Collection='MyORCA'}}
+            Invoke-ORCA -Output "COSMOS" -OutputOptions @{HTML=@{DisplayReport=$False};Cosmos=@{Account='MyCosmosAccount';Database='MyCosmosDB';Key='YourKeyvalue';Collection='MyORCA'}}
 
     
     #>
