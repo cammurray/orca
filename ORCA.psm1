@@ -667,12 +667,12 @@ Function Invoke-ORCA
 
             Example if running a Cosmos output, you'll need to tell it which account, database and key to use like this:
 
-            -OutputOptions @{Cosmos=@{Account='MyCosmosAccount';Database='MyCosmosDB';Key='GFJqJesi2Rq910E0G7P4WoZkzowzbj23Sm9DUWFX0l0P8o16mYyuaZBN00Nbtj9F1QQnumzZKSGZwknXGERrlA==';Collection='MyORCA'}}
+            -OutputOptions @{Cosmos=@{Account='MyCosmosAccount';Database='MyCosmosDB';Key='<Your key>';Collection='MyORCA'}}
 
             If you're running multiple different outputs, just use a different key for that output module, for instance this will provide the Cosmos details to the Cosmos module
             and HTML details to the HTML module.
 
-            -OutputOptions @{HTML=@{DisplayReport=$False};Cosmos=@{Account='MyCosmosAccount';Database='MyCosmosDB';Key='GFJqJesi2Rq910E0G7P4WoZkzowzbj23Sm9DUWFX0l0P8o16mYyuaZBN00Nbtj9F1QQnumzZKSGZwknXGERrlA==';Collection='MyORCA'}}
+            -OutputOptions @{HTML=@{DisplayReport=$False};Cosmos=@{Account='MyCosmosAccount';Database='MyCosmosDB';Key='<Your key>';Collection='MyORCA'}}
         
         .PARAMETER PerformVersionCheck
             Prevents ORCA from determining if it's running the latest version if set to $False. It's always very important to be running the latest
