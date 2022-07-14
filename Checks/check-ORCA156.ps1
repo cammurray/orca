@@ -97,7 +97,7 @@ class ORCA156 : ORCACheck
         ForEach($Policy in $Config["SafeLinksPolicy"]) 
         {
             $IsPolicyDisabled = $false
-            $DoNotTrackUserClicks = $($Policy.DoNotTrackUserClicks)
+            $TrackUserClicks = $($Policy.TrackClicks)
 
             $IsBuiltIn = $false
             $policyname = $($Policy.Name)
@@ -111,7 +111,7 @@ class ORCA156 : ORCACheck
             {
                 $IsPolicyDisabled = $true
                 $policyname = "$policyname" +" [Disabled]"
-                $DoNotTrackUserClicks = "N/A"
+                $TrackUserClicks = "N/A"
             }
             elseif($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
             {
@@ -126,11 +126,11 @@ class ORCA156 : ORCACheck
             
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.Object=$policyname
-            $ConfigObject.ConfigItem="DoNotTrackUserClicks"
-            $ConfigObject.ConfigData=$DoNotTrackUserClicks
+            $ConfigObject.ConfigItem="TrackClicks"
+            $ConfigObject.ConfigData=$TrackUserClicks
 
             # Determine if ATP link tracking is on for this safelinks policy
-            If($DoNotTrackUserClicks -eq $false)
+            If($TrackUserClicks -eq $True)
             {
                 if($IsPolicyDisabled)
                     {
@@ -160,9 +160,9 @@ class ORCA156 : ORCACheck
                         $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
                     }
                     else
-                       {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                       }
+                    {
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                    }
             }
 
             # Add config to check

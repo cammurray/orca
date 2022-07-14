@@ -44,7 +44,8 @@ class ORCA107 : ORCACheck
     {
         #$CountOfPolicies = ($Config["HostedContentFilterPolicy"] ).Count
         $CountOfPolicies = ($global:HostedContentPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
-      
+        $globalSetting = $Config["QuarantineTagGlobal"]
+        $frequency = $($globalSetting.EndUserSpamNotificationFrequencyInDays)
         ForEach($Policy in $Config["HostedContentFilterPolicy"])
         {
             $IsPolicyDisabled = $false
@@ -86,13 +87,11 @@ class ORCA107 : ORCACheck
                 $ConfigObject.Object=$policyname
                 $QuarantineTag = $SpamQuarantineTag
                 $status = $false 
-                $frequency =0
                 ForEach($Tag in $Config["QuarantineTag"])
                 {
                     if($($Tag.Name) -eq $QuarantineTag)
                     {
                         $status = $Tag.ESNEnabled
-                        $frequency = $Tag.AdminNotificationFrequencyInDays
 
                         $ConfigObject.ConfigItem="EnableEndUserSpamNotifications"
                         

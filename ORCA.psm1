@@ -485,6 +485,7 @@ Function Get-ORCACollection
 
     Write-Host "$(Get-Date) Getting Quarantine Policy Settings"
     $Collection["QuarantineTag"] =  Get-QuarantinePolicy
+    $Collection["QuarantineTagGlobal"]  = Get-QuarantinePolicy -QuarantinePolicyType GlobalQuarantinePolicy
 
     If($Collection["Services"] -band [ORCAService]::OATP)
     {
