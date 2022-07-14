@@ -50,7 +50,7 @@ class ORCA125 : ORCACheck
         ForEach($Policy in $Config["MalwareFilterPolicy"]) 
         {
             $IsPolicyDisabled = $false
-            $EnableExternalSenderNotifications = $($Policy.EnableExternalSenderNotifications)
+            $EnableExternalSenderNotifications = $($Policy.EnableExternalSenderAdminNotifications)
 
             $IsBuiltIn = $false
             $policyname = $($Policy.Name)
@@ -81,7 +81,7 @@ class ORCA125 : ORCACheck
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.Object=$policyname
-            $ConfigObject.ConfigItem="EnableExternalSenderNotifications"
+            $ConfigObject.ConfigItem="EnableExternalSenderAdminNotifications"
             $ConfigObject.ConfigData=$EnableExternalSenderNotifications
 
             # Fail if EnableExternalSenderNotifications is set to true in the policy

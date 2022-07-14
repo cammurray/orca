@@ -129,7 +129,7 @@ class ORCA221 : ORCACheck
 
         }
 
-        If($PolicyExists -eq $False)
+        If($CountOfPolicies -eq 0)
         {
 
             $ConfigObject = [ORCACheckConfig]::new()
