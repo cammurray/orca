@@ -131,7 +131,7 @@ class ORCA124 : ORCACheck
             $this.AddConfig($ConfigObject)
         }
 
-        If($Enabled -eq $False)
+        If($CountOfPolicies -eq 0)
         {
 
             # No policy enabling

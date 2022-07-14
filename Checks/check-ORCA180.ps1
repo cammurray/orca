@@ -101,7 +101,7 @@ class ORCA180 : ORCACheck
             } 
         }
 
-        If($Enabled -eq $False)
+        If($CountOfPolicies -eq 0)
         {
 
             # No policy enabling
