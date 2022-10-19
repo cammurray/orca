@@ -44,10 +44,11 @@ class ORCA108_1 : ORCACheck
             
             try
             {
-                $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name) -Type MX -ErrorAction:Stop
+                
                 If($AcceptedDomain.Name -notlike "*.onmicrosoft.com") 
                { 
-                   if($null -ne $mailbox -and $mailbox.Count -gt 0)
+                    $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name) -Type MX -ErrorAction:Stop
+                    if($null -ne $mailbox -and $mailbox.Count -gt 0)
                     {
                         $HasMailbox = $true
                     }
