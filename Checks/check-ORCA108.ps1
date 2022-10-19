@@ -40,9 +40,10 @@ class ORCA108 : ORCACheck
         ForEach($AcceptedDomain in $Config["AcceptedDomains"]) 
         {
             $HasMailbox = $false
-            $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name) -Type MX
+            
             try
             {
+                $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name) -Type MX -ErrorAction:stop
                 If($AcceptedDomain.Name -notlike "*.onmicrosoft.com") 
                { 
                    if($null -ne $mailbox -and $mailbox.Count -gt 0)
