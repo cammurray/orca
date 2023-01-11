@@ -36,6 +36,7 @@ class ORCA143 : ORCACheck
 
     GetResults($Config)
     {
+        $this.SkipInReport=$True
         #$CountOfPolicies = ($Config["HostedContentFilterPolicy"]).Count 
         $CountOfPolicies = ($global:HostedContentPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
         
