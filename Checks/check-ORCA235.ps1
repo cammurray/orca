@@ -42,10 +42,10 @@ class ORCA235 : ORCACheck
                 'ErrorAction' = 'SilentlyContinue'
             }
             $HasMailbox = $false
-            $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name)-Type MX
 
             try
             {
+                $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name)-Type MX -ErrorAction:Stop
                 if($null -ne $mailbox -and $mailbox.Count -gt 0)
                 {
                     $HasMailbox = $true
