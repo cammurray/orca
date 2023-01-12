@@ -268,6 +268,7 @@ Class ORCACheck
     [CheckType] $CheckType = [CheckType]::PropertyValue
     $Links
     $ORCAParams
+    [Boolean] $SkipInReport=$false
 
     [ORCAResult] $Result=[ORCAResult]::Pass
     [int] $FailCount=0
@@ -314,6 +315,12 @@ Class ORCACheck
         Write-Host "$(Get-Date) Analysis - $($this.Area) - $($this.Name)"
         
         $this.GetResults($Config)
+
+        If($this.SkipInReport -eq $True)
+        {
+            Write-Host "$(Get-Date) Skipping - $($this.Name) - No longer part of $($this.Area)"
+            continue
+        }
 
         # If there is no results to expand, turn off ExpandResults
         if($this.Config.Count -eq 0)
