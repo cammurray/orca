@@ -56,15 +56,15 @@ function Get-ORCADirectory
 
     If($IsWindows)
     {
-        $Directory = "$($env:LOCALAPPDATA)\Microsoft\ORCA"
+        $Directory = "\Microsoft\ORCA\"
     }
-    elseif($IsLinux -or $IsMac)
+    elseif($IsLinux -or $IsMacOS)
     {
-        $Directory = "$($env:HOME)/ORCA"
+        $Directory = "/Microsoft/ORCA/"
     }
     else 
     {
-        $Directory = "$($env:LOCALAPPDATA)\Microsoft\ORCA"
+        $Directory = "\Microsoft\ORCA\"
     }
 
     If(Test-Path $Directory) 
@@ -73,7 +73,7 @@ function Get-ORCADirectory
     } 
     else 
     {
-        mkdir $Directory | out-null
+        new-item -name $Directory -Itemtype "Directory" | out-null
         Return $Directory
     }
 
