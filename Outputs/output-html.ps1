@@ -739,7 +739,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
         $Tenant = $(($Collection["AcceptedDomains"] | Where-Object {$_.InitialDomain -eq $True}).DomainName -split '\.')[0]
         $ReportFileName = "ORCA-$($tenant)-$(Get-Date -Format 'yyyyMMddHHmm').html"
 
-        $OutputFile = "$OutputDir\$ReportFileName"
+	$OutputFile = ".$OutputDir$ReportFileName"
 
         $Output | Out-File -FilePath $OutputFile
 
