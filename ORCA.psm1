@@ -632,6 +632,12 @@ Function Get-ORCAReport
 
     $Result = Invoke-ORCA -Connect $Connect -PerformVersionCheck $PerformVersionCheck -AlternateDNS $AlternateDNS -Collection $Collection -ExchangeEnvironmentName $ExchangeEnvironmentName -Output @("HTML")
     Write-Host "$(Get-Date) Complete! Output is in $($Result.Result)"
+
+    # Pre-requisite checks
+    if(!(Get-Command Resolve-DnsName -ErrorAction:SilentlyContinue))
+    {
+        Write-Warning "Resolve-DnsName command does not exist on this ORCA computer. On non windows machines, this command may not exist. Commands requiring DNS checks such as DKIM and SPF have failed! Follow instructions specific for your Operating System."
+    }
 }
 
 Function Invoke-ORCA
