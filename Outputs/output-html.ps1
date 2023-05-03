@@ -198,7 +198,7 @@ class html : ORCAOutput
     </head>
     <body class='app header-fixed bg-light'>
 
-        <nav class='navbar  fixed-top navbar-custom p-3 border-bottom'>
+        <nav class='navbar  fixed-top navbar-custom p-3 border-bottom d-print-block'>
             <div class='container-fluid'>
                 <div class='col-sm' style='text-align:left'>
                     <div class='row'><div><i class='fas fa-binoculars'></i></div><div class='ml-3'><strong>ORCA</strong></div></div>
