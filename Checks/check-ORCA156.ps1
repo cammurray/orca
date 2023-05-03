@@ -59,40 +59,6 @@ class ORCA156 : ORCACheck
             $IsBuiltIn0 =$True
             $policyname0 = "$policyname0" +" [Default]"
         }
-
-        # Global ATP Policy
-        $ConfigObject = [ORCACheckConfig]::new()
-        $ConfigObject.Object=$policyname0
-        $ConfigObject.ConfigItem="TrackClicks"
-        $ConfigObject.ConfigData=$configdata
-
-        If($Config["AtpPolicy"].TrackClicks -eq $False -and $($Config["AtpPolicy"].EnableSafeLinksForClients -eq $True -or $Config["AtpPolicy"].EnableSafeLinksForWebAccessCompanion -eq $True -or $Config["AtpPolicy"].EnableSafeLinksForO365Clients -eq $True))
-        {
-            if($IsBuiltIn0)
-            {
-                $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-            }
-            else
-            {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")   
-            }  
-        }
-        ElseIf ($Config["AtpPolicy"].TrackClicks -eq $True)
-        {
-            if($IsBuiltIn0)
-            {
-                $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-            }
-            else
-            {
-                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")   
-            }     
-        }
-
-        $this.AddConfig($ConfigObject)
-
        
         ForEach($Policy in $Config["SafeLinksPolicy"]) 
         {
