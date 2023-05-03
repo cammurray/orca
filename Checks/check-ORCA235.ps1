@@ -57,11 +57,19 @@ class ORCA235 : ORCACheck
             $SplatParameters = @{
                 'ErrorAction' = 'SilentlyContinue'
             }
+
+            # If alternate DNS specified, add Server param
+            if($null -ne $this.ORCAParams.AlternateDNS)
+            {
+                $SplatParameters["Server"] = $this.ORCAParams.AlternateDNS
+            }
+
             $HasMailbox = $false
 
             try
             {
-                $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name)-Type MX -ErrorAction:Stop
+                $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name) -Type MX -ErrorAction:Stop @SplatParameters
+
                 if($null -ne $mailbox -and $mailbox.Count -gt 0)
                 {
                     $HasMailbox = $true
