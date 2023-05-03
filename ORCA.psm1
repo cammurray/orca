@@ -500,8 +500,11 @@ Function Get-ORCACollection
     Write-Host "$(Get-Date) Getting Tenant Settings"
     $Collection["AdminAuditLogConfig"] = Get-AdminAuditLogConfig
 
-    Write-Host "$(Get-Date) Getting ATP Preset Policy Settings"
-    $Collection["ATPProtectionPolicyRule"] = Get-ATPProtectionPolicyRule
+    If($Collection["Services"] -band [ORCAService]::OATP)
+    {
+        Write-Host "$(Get-Date) Getting ATP Preset Policy Settings"
+        $Collection["ATPProtectionPolicyRule"] = Get-ATPProtectionPolicyRule
+    }
 
     Write-Host "$(Get-Date) Getting EOP Preset Policy Settings"
     $Collection["EOPProtectionPolicyRule"] = Get-EOPProtectionPolicyRule
