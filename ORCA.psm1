@@ -84,6 +84,7 @@ Function Invoke-ORCAConnections
     Param
     (
         [String]$ExchangeEnvironmentName,
+        [String]$DelegatedOrganization,
         [Boolean]$Install
     )
     <#
@@ -95,10 +96,25 @@ Function Invoke-ORCAConnections
     If(Get-Command "Connect-ExchangeOnline" -ErrorAction:SilentlyContinue)
     {
         Write-Host "$(Get-Date) Connecting to Exchange Online (Modern Module).."
-        Connect-ExchangeOnline -ExchangeEnvironmentName $ExchangeEnvironmentName -WarningAction:SilentlyContinue | Out-Null
+
+        if($DelegatedOrganization -eq $null)
+        {
+            Connect-ExchangeOnline -ExchangeEnvironmentName $ExchangeEnvironmentName -WarningAction:SilentlyContinue | Out-Null
+        } else 
+        {
+            Connect-ExchangeOnline -ExchangeEnvironmentName $ExchangeEnvironmentName -WarningAction:SilentlyContinue -DelegatedOrganization $DelegatedOrganization | Out-Null
+        }
+        
     }
     ElseIf(Get-Command "Connect-EXOPSSession" -ErrorAction:SilentlyContinue)
     {
+
+        # Cannot use Delegated Organization connecting this way, potentially we should deprecate this way of connecting
+        if($DelegatedOrganization -ne $null)
+        {
+            throw "Cannot use DelegatedOrganization without Exchange Online PowerShell module installed."
+        }
+
         Write-Host "$(Get-Date) Connecting to Exchange Online.."
         Connect-EXOPSSession -PSSessionOption $ProxySetting -WarningAction:SilentlyContinue | Out-Null    
     } 
@@ -581,6 +597,12 @@ Function Get-ORCAReport
             because your internal zone doesn't require to have the DKIM selector records published. In these instances use the AlternateDNS
             flag to use different resolvers (ones that will provide the external DNS records for your domains).
 
+        .PARAMETER DelegatedOrganization
+            Passes the DelegatedOrganization when connecting to Exchange Online. The DelegatedOrganization parameter specifies the customer organization 
+            that you want to manage (for example, contosoelectronics.onmicrosoft.com). 
+
+            Only use this param when connecting to organizations that you have access to.
+
         .PARAMETER  ExchangeEnvironmentName
         This will generate MCCA report for Security & Compliance Center PowerShell in a Microsoft 365 DoD organization or Microsoft GCC High organization
          O365USGovDoD
@@ -605,6 +627,7 @@ Function Get-ORCAReport
         [Switch]$NoConnect,
         [Switch]$NoVersionCheck,
         [String[]]$AlternateDNS,
+        [String]$DelegatedOrganization=$null,
         [string][validateset('O365Default', 'O365USGovDoD', 'O365USGovGCCHigh','O365GermanyCloud','O365China')] $ExchangeEnvironmentName = 'O365Default',
         $Collection
     )
@@ -621,16 +644,33 @@ Function Get-ORCAReport
         $PerformVersionCheck = $True
     }
 
-    If($NoConnect)
+    $Connect = $False
+
+    if(!$NoConnect)
     {
-        $Connect = $False
-    }
-    Else
-    {
-        $Connect = $True
+        # Determine if to connect
+
+        if($(Get-EXConnectionStatus) -eq $False)
+        {
+            $Connect = $True
+        } else {
+            # Check delegated organization specified, and we are connected to this organization.
+
+            if(![string]::IsNullOrEmpty($DelegatedOrganization))
+            {
+                $OrgID = (Get-OrganizationConfig).Identity
+
+                if($OrgID -ne $DelegatedOrganization)
+                {
+                    Write-Host "Connected to $($OrgID) not delegated organization $($DelegatedOrganization), reconnecting.."
+                    Disconnect-ExchangeOnline -Confirm:$False
+                    $Connect = $True
+                }
+            }
+        }
     }
 
-    $Result = Invoke-ORCA -Connect $Connect -PerformVersionCheck $PerformVersionCheck -AlternateDNS $AlternateDNS -Collection $Collection -ExchangeEnvironmentName $ExchangeEnvironmentName -Output @("HTML")
+    $Result = Invoke-ORCA -Connect $Connect -PerformVersionCheck $PerformVersionCheck -AlternateDNS $AlternateDNS -Collection $Collection -ExchangeEnvironmentName $ExchangeEnvironmentName -Output @("HTML") -DelegatedOrganization $DelegatedOrganization
     Write-Host "$(Get-Date) Complete! Output is in $($Result.Result)"
 
     # Pre-requisite checks
@@ -707,6 +747,12 @@ Function Invoke-ORCA
         .PARAMETER InstallModules
             Attempts to install missing modules (such as Exchange Online Management) in to the CurrentUser scope if they are missing. Defaults to $True
 
+        .PARAMETER DelegatedOrganization
+            Passes the DelegatedOrganization when connecting to Exchange Online. The DelegatedOrganization parameter specifies the customer organization 
+            that you want to manage (for example, contosoelectronics.onmicrosoft.com). 
+
+            Only use this param when connecting to organizations that you have access to.
+
         .PARAMETER Collection
             Internal only.
 
@@ -731,6 +777,7 @@ Function Invoke-ORCA
         [Boolean]$PerformVersionCheck=$True,
         [Boolean]$InstallModules=$True,
         [String[]]$AlternateDNS,
+        [String]$DelegatedOrganization=$null,
         [string][validateset('O365Default', 'O365USGovDoD', 'O365USGovGCCHigh')] $ExchangeEnvironmentName,
         $Output,
         $OutputOptions,
@@ -739,11 +786,10 @@ Function Invoke-ORCA
 
     # Version check
     $VersionCheck = Invoke-ORCAVersionCheck -GalleryCheck $PerformVersionCheck
-    
-    # Unless -NoConnect specified (already connected), connect to Exchange Online
-    If(!$NoConnect -and (Get-EXConnectionStatus) -eq $False) 
+
+    If($Connect)
     {
-        Invoke-ORCAConnections  -ExchangeEnvironmentName $ExchangeEnvironmentName -Install $InstallModules
+        Invoke-ORCAConnections  -ExchangeEnvironmentName $ExchangeEnvironmentName -Install $InstallModules -DelegatedOrganization $DelegatedOrganization
     }
 
     # Build a param object which can be used to pass params to the underlying classes

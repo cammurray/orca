@@ -78,6 +78,11 @@ There is definitely a lot of value in running your Office 365 environment with M
 
 However, there are also some checks within ORCA that are not Microsoft Defender for Office 365 specific which can impact the operation of Microsoft Defender for Office 365 and security within an Office 365 tenant. ORCA can still be ran on tenants without Microsoft Defender for Office 365, albeit with reduced qty. of checks..
 
+## How do I connect to a delegated organization?
+
+If you have permissions to another organization, pass the -DelegatedOrganization flag to connect to it. If you are already connected to another organization, we will
+first disconnect you before connecting to the other org.
+
 # Outputs
 
 We now support outputting to different formats (which can be useful for different purposes, such as tracking trending over time).
