@@ -42,30 +42,6 @@ class ORCA113 : ORCACheck
 
         #$CountOfPolicies = ($Config["SafeLinksPolicy"]).Count
         $CountOfPolicies = ($global:SafeLinkPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
-
-        $IsBuiltIn0 = $false
-        $policyname0 = $($Config["AtpPolicy"].Name)
-        $configdata =$($Config["AtpPolicy"].AllowClickThrough)
-
-        # Check objects
-        $ConfigObject = [ORCACheckConfig]::new()
-        $ConfigObject.Object= $policyname0
-        $ConfigObject.ConfigItem="AllowClickThrough"
-        $ConfigObject.ConfigData= $configdata 
-
-        If( $configdata -eq $True)
-        {
-            # Determine if AllowClickThrough is enabled in the policy applies to the entire organization
-            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")  
-        }
-        Else
-        {
-            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")          
-        }                   
- 
-        # Add config to check
-        $this.AddConfig($ConfigObject)
-        
        
         ForEach($Policy in $Config["SafeLinksPolicy"]) 
         {    
