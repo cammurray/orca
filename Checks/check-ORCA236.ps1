@@ -59,6 +59,7 @@ class ORCA236 : ORCACheck
             $ConfigObject.Object=$PolicyName
             $ConfigObject.ConfigItem="EnableSafeLinksForEmail"
             $ConfigObject.ConfigData=$Policy.EnableSafeLinksForEmail
+            $ConfigObject.ConfigReadonly = $Policy.IsPreset
 
             if($Policy.EnableSafeLinksForEmail -eq $true)
             {

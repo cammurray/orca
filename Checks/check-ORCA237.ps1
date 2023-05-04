@@ -59,6 +59,7 @@ class ORCA237 : ORCACheck
             $ConfigObject.Object=$PolicyName
             $ConfigObject.ConfigItem="EnableSafeLinksForTeams"
             $ConfigObject.ConfigData=$Policy.EnableSafeLinksForTeams
+            $ConfigObject.ConfigReadonly = $Policy.IsPreset
 
             if($Policy.EnableSafeLinksForTeams -eq $true)
             {

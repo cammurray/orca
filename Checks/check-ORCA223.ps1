@@ -57,24 +57,6 @@ class ORCA223 : ORCACheck
                 $IsPolicyDisabled = !$data.IsEnabled
             }
 
-            if($IsPolicyDisabled)
-            {
-                $IsPolicyDisabled = $true
-                $policyname = "$policyname" +" [Disabled]"
-                $EnableTargetedUserProtection = "N/A"
-                $TargetedUserProtectionAction = "N/A"
-            }
-            elseif($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
-            {
-                $IsBuiltIn =$True
-                $policyname = "$policyname" +" [Built-In]"
-            }
-            elseif(($policyname -eq "Default" -or $policyname -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
-            {
-                $IsBuiltIn =$True
-                $policyname = "$policyname" +" [Default]"
-            }
-
             # Is enabled
 
             $ConfigObject = [ORCACheckConfig]::new()
@@ -82,23 +64,25 @@ class ORCA223 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="EnableTargetedUserProtection"
             $ConfigObject.ConfigData=$EnableTargetedUserProtection
+            $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+            $ConfigObject.ConfigReadonly = $Policy.IsPreset
 
             If($EnableTargetedUserProtection -eq $False)
             {
                 if($IsPolicyDisabled)
-                    {
-                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    elseif($IsBuiltIn)
-                    {
-                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    else
-                       {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                       }
+                {
+                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                }
+                elseif($Policy.IsPreset)
+                {
+                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                }
+                else
+                {
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                }
             }
             else 
             {
@@ -107,15 +91,15 @@ class ORCA223 : ORCACheck
                     $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
                     $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
                 }
-                elseif($IsBuiltIn)
+                elseif($Policy.IsPreset)
                 {
                     $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
                     $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
                 }
                 else
-                   {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                   }
+                {
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                }
             }
             
             $this.AddConfig($ConfigObject)
@@ -127,60 +111,23 @@ class ORCA223 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="TargetedUserProtectionAction"
             $ConfigObject.ConfigData=$TargetedUserProtectionAction
+            $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+            $ConfigObject.ConfigReadonly = $Policy.IsPreset
 
             If($TargetedUserProtectionAction -eq "Quarantine")
             {
-                if($IsPolicyDisabled)
-                {
-                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                elseif($IsBuiltIn)
-                {
-                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                else
-                   {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                   }
             }
             else 
             {
-                if($IsPolicyDisabled)
-                    {
-                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    elseif($IsBuiltIn)
-                    {
-                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    else
-                       {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                       }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")     
             }
 
             If($TargetedUserProtectionAction -eq "Delete" -or $TargetedUserProtectionAction -eq "Redirect")
             {
-                # For either Delete or Quarantine we should raise an informational
-                if($IsPolicyDisabled)
-                    {
-                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    elseif($IsBuiltIn)
-                    {
-                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    else
-                       {
+
                 $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
                 $ConfigObject.InfoText = "The $($Policy.TargetedUserProtectionAction) option may impact the users ability to release emails and may impact user experience."
-                       }
             }
 
             

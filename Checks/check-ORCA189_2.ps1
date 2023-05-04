@@ -58,6 +58,7 @@ class ORCA189_2 : ORCACheck
                 $ConfigObject.Object=$($Rule.Name)
                 $ConfigObject.ConfigItem=$($Rule.SetHeaderName)
                 $ConfigObject.ConfigData=$($Rule.SetHeaderValue)
+                $ConfigObject.ConfigDisabled=$($Rule.State -eq "Disabled")
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
                 $this.AddConfig($ConfigObject)  
 

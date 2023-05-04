@@ -297,6 +297,13 @@ class html : ORCAOutput
             "    
         }
 
+        if(@($Checks | Where-Object {$_.CheckFailed}).Count -gt 0)
+        {
+            $Output += "
+            <div class='alert alert-danger pt-2' role='alert'>
+                <p>Some checks failed to run, check details below for more information</p>
+            </div>" 
+        }
 
                         $Output += "</div>
                 </div>"
@@ -486,6 +493,17 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     <div class='col' style='text-align:right'><h5><span class='badge $($BadgeType)'>$($BadgeName)</span></h5></div>
                                 </div>"
 
+
+                        if($Check.CheckFailed)
+                        {
+                                $Output +="
+                                <div class='row p-3'>
+                                    <div class='alert alert-danger' role='alert'>
+                                    This check failed to run.  $($Check.CheckFailureReason)
+                                    </div>
+                                </div>"
+                        }
+
                         if($Check.Importance) {
 
                                 $Output +="
@@ -494,7 +512,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                 </div>"
 
                         }
-                        
+
                         If($Check.ExpandResults -eq $True) {
 
                             # We should expand the results by showing a table of Config Data and Items
@@ -589,16 +607,58 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                 If($Check.CheckType -eq [CheckType]::ObjectPropertyValue)
                                 {
                                     # Object, property, value checks need three columns
-                                    $Output += "
-                                        <td>$($o.Object)</td>
-                                        <td>$($ConfigItem)</td>
+                                    $Output += "<td>$($o.Object)"
+
+                                    if($o.ConfigDisabled -eq $true)
+                                    {
+                                        $Output += "
+                                                <div class='flex-row badge badge-pill badge-light'>
+                                                    <span style='vertical-align: middle;'>Disabled</span>
+                                                    <span class='fas fa-times-circle text-muted' style='vertical-align: middle;'></span>
+                                                </div>"
+                                    }
+
+                                    if($o.ConfigReadonly -eq $true)
+                                    {
+                                        $Output += "
+                                                <div class='flex-row badge badge-pill badge-light'>
+                                                    <span style='vertical-align: middle;'>Read Only</span>
+                                                    <span class='fas fa-lock text-muted' style='vertical-align: middle;'></span>
+                                                </div>"
+                                    }
+                                    
+                                    
+                                    $Output += "</td>"
+                                        
+                                    $Output += "<td>$($ConfigItem)</td>
                                         <td>$($ConfigData)</td>
                                     "
                                 }
                                 Else 
                                 {
+                                    $Output += "<td>$($ConfigItem)"
+
+                                    if($o.ConfigDisabled -eq $true)
+                                    {
+                                        $Output += "
+                                                <div class='flex-row badge badge-pill badge-light'>
+                                                    <span style='vertical-align: middle;'>Disabled</span>
+                                                    <span class='fas fa-times-circle text-muted' style='vertical-align: middle;'></span>
+                                                </div>"
+                                    }
+
+                                    if($o.ConfigReadonly -eq $true)
+                                    {
+                                        $Output += "
+                                                <div class='flex-row badge badge-pill badge-light'>
+                                                    <span style='vertical-align: middle;'>Read Only</span>
+                                                    <span class='fas fa-lock text-muted' style='vertical-align: middle;'></span>
+                                                </div>"
+                                    }
+
+                                    $Output += "</td>"
+
                                     $Output += "
-                                        <td>$($ConfigItem)</td>
                                         <td>$($ConfigData)</td>
                                     "
                                 }
@@ -618,7 +678,6 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                         <span class='$($oicon)' style='vertical-align: middle;'></span>
                                     "
                                     
-
                                     $Output += "<p style='margin-top:5px;color:#005494;'><abbr title='$($o.InfoText)'><u>More Info</u></abbr></p></div>"
                                     
                                 }

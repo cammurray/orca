@@ -59,23 +59,6 @@ class ORCA107 : ORCACheck
                 $IsPolicyDisabled = !$data.IsEnabled
             }
 
-            if($IsPolicyDisabled)
-            {
-                $IsPolicyDisabled = $true
-                $policyname = "$policyname" + " [Disabled]"
-            }
-            elseif($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
-            {
-                $IsBuiltIn =$True
-                $policyname = "$policyname" +" [Built-In]"
-            }
-            elseif(($policyname -eq "Default" -or $policyname -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
-            {
-                $IsBuiltIn =$True
-                $policyname = "$policyname" +" [Default]"
-            }
-
-
             <#
             
             EnableEndUserSpamNotifications
@@ -85,6 +68,9 @@ class ORCA107 : ORCACheck
                 # Check objects
                 $ConfigObject = [ORCACheckConfig]::new()
                 $ConfigObject.Object=$policyname
+                $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+                $ConfigObject.ConfigReadonly=$Policy.IsPreset
+
                 $QuarantineTag = $SpamQuarantineTag
                 $status = $false 
                 ForEach($Tag in $Config["QuarantineTag"])
@@ -98,44 +84,13 @@ class ORCA107 : ORCACheck
         
                         If($status -eq $false )
                         {
-
-                            if($IsPolicyDisabled)
-                            {
-                                $ConfigObject.ConfigData ="N/A"
-                                $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-                                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                            }
-                            elseif($IsBuiltIn)
-                            {
-                                $ConfigObject.ConfigData = $status
-                                $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                            }
-                            else
-                            {
-                                $ConfigObject.ConfigData = $status
-                                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                            }
+                            $ConfigObject.ConfigData = $status
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
                         }
                         Else 
                         {
-                            if($IsPolicyDisabled)
-                            {
-                                $ConfigObject.ConfigData = "N/A"
-                                $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
-                                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                            }
-                            elseif($IsBuiltIn)
-                            {
-                                $ConfigObject.ConfigData = $status
-                                $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                            }
-                            else
-                            {
-                                $ConfigObject.ConfigData = $status
-                                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                            }
+                            $ConfigObject.ConfigData = $status
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
                         }
                 
                         # Add config to check
@@ -149,48 +104,19 @@ class ORCA107 : ORCACheck
                         $ConfigObject = [ORCACheckConfig]::new()
                         $ConfigObject.Object = $policyname
                         $ConfigObject.ConfigItem = "EndUserSpamNotificationFrequency"
-                        
+                        $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+                        $ConfigObject.ConfigReadonly=$Policy.IsPreset
         
                     
                         If($frequency -le 3)
                         {
-                            if($IsPolicyDisabled)
-                            {
-                                $ConfigObject.ConfigData = "N/A"
-                                $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
-                                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                            }
-                            elseif($IsBuiltIn)
-                            {
-                                $ConfigObject.ConfigData = $frequency
-                                $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                            }
-                            else
-                            {
-                                $ConfigObject.ConfigData = $frequency
-                                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                            }
+                            $ConfigObject.ConfigData = $frequency
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
                         }
                         Else 
                         {
-                            if($IsPolicyDisabled)
-                            {
-                                $ConfigObject.ConfigData = "N/A"
-                                $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-                                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                            }
-                            elseif($IsBuiltIn)
-                            {
-                                $ConfigObject.ConfigData = $frequency
-                                $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                            }
-                            else
-                            {
-                                $ConfigObject.ConfigData = $frequency
-                                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                            }
+                            $ConfigObject.ConfigData = $frequency
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
                         }
                         # Add config to check
                         $this.AddConfig($ConfigObject)
