@@ -48,6 +48,7 @@ class ORCA158 : ORCACheck
         $ConfigObject.Object=$Config["AtpPolicy"].Name
         $ConfigObject.ConfigItem="EnableATPForSPOTeamsODB"
         $ConfigObject.ConfigData=$Config["AtpPolicy"].EnableATPForSPOTeamsODB
+        
         # Determine if ATP is enabled or not
         If($Config["AtpPolicy"].EnableATPForSPOTeamsODB -eq $false) 
         {

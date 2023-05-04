@@ -47,6 +47,9 @@ class ORCA108 : ORCACheck
                 $ConfigObject.ConfigData = "Resolve-DnsName is not found on ORCA computer. Required for DNS checks."
                 $this.AddConfig($ConfigObject)
             }
+
+            $this.CheckFailed = $true
+            $this.CheckFailureReason = "Resolve-DnsName is not found on ORCA computer and is required for DNS checks."
         }
 
         # Check DKIM is enabled

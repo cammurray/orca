@@ -199,6 +199,8 @@ Class ORCACheckConfig
     {
         # Constructor
 
+        $this.Results = @()
+
         $this.Results += New-Object -TypeName ORCACheckConfigResult -Property @{
             Level=[ORCAConfigLevel]::Informational
         }
@@ -214,7 +216,6 @@ Class ORCACheckConfig
         $this.Results += New-Object -TypeName ORCACheckConfigResult -Property @{
             Level=[ORCAConfigLevel]::TooStrict
         }
-
     }
 
     # Set the result for this mode
@@ -238,6 +239,8 @@ Class ORCACheckConfig
     $Object
     $ConfigItem
     $ConfigData
+    $ConfigReadonly
+    $ConfigDisabled
     $InfoText
     [array]$Results
     [ORCAConfigLevel]$Level
@@ -291,17 +294,45 @@ Class ORCACheck
     [int] $PassCount=0
     [int] $InfoCount=0
     [Boolean] $Completed=$false
+
+    [Boolean] $CheckFailed = $false
+    [String] $CheckFailureReason = $null
     
     # Overridden by check
     GetResults($Config) { }
 
     AddConfig([ORCACheckConfig]$Config)
     {
+
+        # Manipulate result for disabled and read-only
+
+        if($Config.ConfigDisabled -eq $True)
+        {
+            $Config.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
+        }
+
+        if($Config.ConfigReadonly -eq $True)
+        {
+            $Config.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+        }
+
+        if($Config.ConfigReadonly -or $Config.ConfigDisabled)
+        {
+            $Config.Results = @()
+
+            $Config.Results += New-Object -TypeName ORCACheckConfigResult -Property @{
+                Level=[ORCAConfigLevel]::Informational
+            }
+
+            $Config.Level = [ORCAConfigLevel]::Informational
+        }
+        
         $this.Config += $Config
 
         $this.FailCount = @($this.Config | Where-Object {$_.Level -eq [ORCAConfigLevel]::None}).Count
         $this.PassCount = @($this.Config | Where-Object {$_.Level -eq [ORCAConfigLevel]::Standard -or $_.Level -eq [ORCAConfigLevel]::Strict}).Count
         $this.InfoCount = @($this.Config | Where-Object {$_.Level -eq [ORCAConfigLevel]::Informational}).Count
+
         $InfoCountDefault =  @($this.Config | Where-Object {$_.InfoText -imatch "This is a Built-In/Default policy managed by Microsoft"}).Count
         $InfoCountDisabled =  @($this.Config | Where-Object {$_.InfoText -imatch "The policy is not enabled and will not apply"}).Count
 
@@ -562,8 +593,41 @@ Function Get-ORCACollection
         
     }
 
+    # Add IsPreset properties for Preset policies (where applicable)
+    Add-IsPresetValue -CollectionEntity $Collection["HostedContentFilterPolicy"]
+    Add-IsPresetValue -CollectionEntity $Collection["EOPProtectionPolicyRule"]
+
+    If($Collection["Services"] -band [ORCAService]::OATP)
+    {
+        Add-IsPresetValue -CollectionEntity $Collection["ATPProtectionPolicyRule"]
+        Add-IsPresetValue -CollectionEntity $Collection["AntiPhishPolicy"]
+        Add-IsPresetValue -CollectionEntity $Collection["SafeAttachmentsPolicy"]
+        Add-IsPresetValue -CollectionEntity $Collection["SafeLinksPolicy"] 
+    }
 
     Return $Collection
+}
+
+Function Add-IsPresetValue
+{
+    Param (
+        $CollectionEntity
+    )
+
+    # List of preset names
+    $PresetNames = @("Standard Preset Security Policy","Strict Preset Security Policy","Built-In Protection Policy")
+
+    foreach($item in $CollectionEntity)
+    {
+        
+        if($null -ne $item.Name)
+        {
+            $IsPreset = $PresetNames -contains $item.Name
+
+            $item | Add-Member -MemberType NoteProperty -Name IsPreset -Value $IsPreset
+        }
+        
+    }
 }
 
 Function Get-ORCAReport
@@ -1124,6 +1188,9 @@ Function Invoke-ORCA
             $Check.Run($Collection)
         }
     }
+
+    # Manipulation of check results for disable/read-only
+
 
     <#
     

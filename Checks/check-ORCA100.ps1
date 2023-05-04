@@ -43,6 +43,7 @@ class ORCA100 : ORCACheck
             $BulkThreshold = $($Policy.BulkThreshold)
 
             $IsBuiltIn = $false
+
             $policyname = $($Policy.Name)
 
             ForEach($data in ($global:HostedContentPolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
@@ -50,7 +51,7 @@ class ORCA100 : ORCACheck
                 $IsPolicyDisabled = !$data.IsEnabled
             }
 
-            if($IsPolicyDisabled)
+            <#if($IsPolicyDisabled)
             {
                 $IsPolicyDisabled = $true
                 $policyname = "$policyname" +" [Disabled]"
@@ -65,30 +66,32 @@ class ORCA100 : ORCACheck
             {
                 $IsBuiltIn =$True
                 $policyname = "$policyname" +" [Default]"
-            }
+            }#>
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.ConfigItem=$policyname
             $ConfigObject.ConfigData=$BulkThreshold
-    
+            $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+            $ConfigObject.ConfigReadonly = $Policy.IsPreset
+
             # Standard check - between 4 and 6
             If($BulkThreshold -ge 4 -and $BulkThreshold -le 6)
             {
                 if($IsPolicyDisabled)
-                    {
-                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    elseif($IsBuiltIn)
-                    {
-                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    else
-                       {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                       }
+                {
+                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                }
+                elseif($IsBuiltIn)
+                {
+                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                }
+                else
+                {
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                }
             }
             Else 
             {
@@ -103,9 +106,9 @@ class ORCA100 : ORCACheck
                         $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
                     }
                     else
-                       {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                       }
+                    {
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                    }
             }
 
             # Strict check - is 4
@@ -122,9 +125,9 @@ class ORCA100 : ORCACheck
                         $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
                     }
                     else
-                       {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
-                       }
+                    {
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
+                    }
             }
             Else 
             {
@@ -139,9 +142,9 @@ class ORCA100 : ORCACheck
                         $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
                     }
                     else
-                       {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")
-                       }
+                    {
+                        $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")
+                    }
             }
 
             # Add config to check

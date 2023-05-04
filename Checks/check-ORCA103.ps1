@@ -67,17 +67,10 @@ class ORCA103 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="RecipientLimitExternalPerHour"
             $ConfigObject.ConfigData=$RecipientLimitExternalPerHour
+            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigReadonly=$Policy.IsPreset
 
             # Recipient per hour limit for standard is 500
-            if($IsBuiltIn)
-            {
-                $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-            }
-            else
-            {
-                  
-             
             If($RecipientLimitExternalPerHour -eq 500)
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
@@ -96,7 +89,7 @@ class ORCA103 : ORCACheck
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")              
             }
-        }
+
             # Add config to check
             $this.AddConfig($ConfigObject)
 
@@ -110,13 +103,9 @@ class ORCA103 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="RecipientLimitInternalPerHour"
             $ConfigObject.ConfigData=$($RecipientLimitInternalPerHour)
-            if($IsBuiltIn)
-            {
-                $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-            }
-            else
-            {
+            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigReadonly=$Policy.IsPreset
+
             If($RecipientLimitInternalPerHour -eq 1000)
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
@@ -134,7 +123,7 @@ class ORCA103 : ORCACheck
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")              
             }
-        }
+
             # Add config to check
             $this.AddConfig($ConfigObject)
 
@@ -148,13 +137,9 @@ class ORCA103 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="RecipientLimitPerDay"
             $ConfigObject.ConfigData=$($RecipientLimitPerDay)
-            if($IsBuiltIn)
-            {
-                $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-            }
-            else
-            {
+            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigReadonly=$Policy.IsPreset
+
             If($RecipientLimitPerDay -eq 1000)
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
@@ -172,7 +157,7 @@ class ORCA103 : ORCACheck
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")              
             }
-        }
+
             # Add config to check
             $this.AddConfig($ConfigObject)
 
@@ -180,13 +165,9 @@ class ORCA103 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="ActionWhenThresholdReached"
             $ConfigObject.ConfigData=$($ActionWhenThresholdReached)
-            if($IsBuiltIn)
-            {
-                $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-            }
-            else
-            {
+            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigReadonly=$Policy.IsPreset
+
             If($ActionWhenThresholdReached -like "BlockUser")
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
@@ -195,7 +176,7 @@ class ORCA103 : ORCACheck
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")               
             }
-        }
+            
             # Add config to check
             $this.AddConfig($ConfigObject)
 

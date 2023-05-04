@@ -63,23 +63,6 @@ class ORCA116 : ORCACheck
                 $IsPolicyDisabled = !$data.IsEnabled
             }
 
-            if($IsPolicyDisabled)
-            {
-                $IsPolicyDisabled = $true
-                $policyname = "$policyname" +" [Disabled]"
-                $MailboxIntelligenceProtectionAction = "N/A"
-            }
-            elseif($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
-            {
-                $IsBuiltIn =$True
-                $policyname = "$policyname" +" [Built-In]"
-            }
-            elseif(($policyname -eq "Default" -or $policyname -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
-            {
-                $IsBuiltIn =$True
-                $policyname = "$policyname" +" [Default]"
-            }
-
             $PolicyExists = $True
 
             # Determine if Mailbox Intelligence Protection action is configured
@@ -89,99 +72,34 @@ class ORCA116 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="MailboxIntelligenceProtectionAction"
             $ConfigObject.ConfigData=$MailboxIntelligenceProtectionAction
+            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigReadonly=$Policy.IsPreset
             
             # For standard, this should be MoveToJmf
             If($MailboxIntelligenceProtectionAction -ne "MoveToJmf")
             {
-                if($IsPolicyDisabled)
-                    {
-                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    elseif($IsBuiltIn)
-                    {
-                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    else
-                       {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")   
-                       }         
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")       
             }
             Else 
             {
-                if($IsPolicyDisabled)
-                {
-                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                elseif($IsBuiltIn)
-                {
-                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                else
-                   {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")  
-                   }                       
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")               
             }
 
             # For strict, this should be Quarantine
             If($MailboxIntelligenceProtectionAction -ne "Quarantine")
             {
-                if($IsPolicyDisabled)
-                    {
-                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    elseif($IsBuiltIn)
-                    {
-                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    else
-                       {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")   
-                       }         
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")        
             }
             Else 
             {
-                
-                    if($IsPolicyDisabled)
-                    {
-                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    elseif($IsBuiltIn)
-                    {
-                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    else
-                       {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")  
-                       }
-                                        
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")                         
             }
 
             # For either Delete or Quarantine we should raise an informational
             If($MailboxIntelligenceProtectionAction -eq "Delete" -or $MailboxIntelligenceProtectionAction -eq "Quarantine")
             {
-                if($IsPolicyDisabled)
-                    {
-                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    elseif($IsBuiltIn)
-                    {
-                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    else
-                       {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
                 $ConfigObject.InfoText = "The $($MailboxIntelligenceProtectionAction) option may impact the users ability to release emails and may impact user experience."
-                       }
             }
 
             $this.AddConfig($ConfigObject)
