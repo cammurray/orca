@@ -320,12 +320,7 @@ Class ORCACheck
             $Config.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
         }
 
-        if($Config.ConfigReadonly -eq $True)
-        {
-            $Config.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-        }
-
-        if($Config.ConfigReadonly -or $Config.ConfigDisabled)
+        if($Config.ConfigDisabled)
         {
             $Config.Results = @()
 
