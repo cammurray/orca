@@ -67,7 +67,7 @@ class ORCA103 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="RecipientLimitExternalPerHour"
             $ConfigObject.ConfigData=$RecipientLimitExternalPerHour
-            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigDisabled=!$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
 
             # Recipient per hour limit for standard is 500
@@ -103,7 +103,7 @@ class ORCA103 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="RecipientLimitInternalPerHour"
             $ConfigObject.ConfigData=$($RecipientLimitInternalPerHour)
-            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigDisabled=!$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
 
             If($RecipientLimitInternalPerHour -eq 1000)
@@ -137,7 +137,7 @@ class ORCA103 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="RecipientLimitPerDay"
             $ConfigObject.ConfigData=$($RecipientLimitPerDay)
-            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigDisabled=!$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
 
             If($RecipientLimitPerDay -eq 1000)
@@ -165,7 +165,7 @@ class ORCA103 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="ActionWhenThresholdReached"
             $ConfigObject.ConfigData=$($ActionWhenThresholdReached)
-            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigDisabled=!$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
 
             If($ActionWhenThresholdReached -like "BlockUser")

@@ -45,16 +45,11 @@ class ORCA220 : ORCACheck
         $CountOfPolicies = ($global:AntiSpamPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
         ForEach($Policy in $Config["AntiPhishPolicy"]) 
         {
-            $IsPolicyDisabled = $false
+            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $PhishThresholdLevel = $($Policy.PhishThresholdLevel)
 
             $IsBuiltIn = $false
             $policyname = $($Policy.Name)
-
-            ForEach($data in ($global:AntiSpamPolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
-            {
-                $IsPolicyDisabled = !$data.IsEnabled
-            }
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()

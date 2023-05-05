@@ -51,16 +51,11 @@ class ORCA179 : ORCACheck
       
         ForEach($Policy in $Config["SafeLinksPolicy"]) 
         {
-            $IsPolicyDisabled = $false
+            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $EnableForInternalSenders = $($Policy.EnableForInternalSenders)
 
             $IsBuiltIn = $false
             $policyname = $($Policy.Name)
-
-            ForEach($data in ($global:SafeLinkPolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
-            {
-                $IsPolicyDisabled = !$data.IsEnabled
-            }
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()

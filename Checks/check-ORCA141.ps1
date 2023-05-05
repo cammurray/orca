@@ -38,16 +38,11 @@ class ORCA141 : ORCACheck
        
         ForEach($Policy in $Config["HostedContentFilterPolicy"]) 
         {
-            $IsPolicyDisabled = $false
+            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $BulkSpamAction = $($Policy.BulkSpamAction)
 
             $IsBuiltIn = $false
             $policyname = $($Policy.Name)
-
-            ForEach($data in ($global:HostedContentPolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
-            {
-                $IsPolicyDisabled = !$data.IsEnabled
-            }
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()

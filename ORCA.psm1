@@ -192,6 +192,15 @@ enum ORCACHI
     Critical = 100
 }
 
+enum PolicyType
+{
+    Malware
+    Spam
+    Antiphish
+    SafeAttachments
+    SafeLinks
+}
+
 Class ORCACheckConfig
 {
 
@@ -593,6 +602,10 @@ Function Get-ORCACollection
         
     }
 
+    # Determine policy states
+    Write-Host "$(Get-Date) Determining applied policy states"
+    $Collection["PolicyStates"] = Get-PolicyStates -AntiphishPolicies $Collection["AntiPhishPolicy"] -AntiphishRules $Collection["AntiPhishRules"] -AntimalwarePolicies $Collection["MalwareFilterPolicy"] -AntimalwareRules $Collection["MalwareFilterRule"] -AntispamPolicies $Collection["HostedContentFilterPolicy"] -AntispamRules $Collection["HostedContentFilterRule"] -SafeLinksPolicies $Collection["SafeLinksPolicy"] -SafeLinksRules $Collection["SafeLinksRules"] -SafeAttachmentsPolicies $Collection["SafeAttachmentsPolicy"] -SafeAttachmentRules $Collection["SafeAttachmentsRules"] -ProtectionPolicyRulesATP $Collection["ATPProtectionPolicyRule"] -ProtectionPolicyRulesEOP $Collection["EOPProtectionPolicyRule"]
+
     # Add IsPreset properties for Preset policies (where applicable)
     Add-IsPresetValue -CollectionEntity $Collection["HostedContentFilterPolicy"]
     Add-IsPresetValue -CollectionEntity $Collection["EOPProtectionPolicyRule"]
@@ -747,6 +760,108 @@ Function Get-ORCAReport
     }
 }
 
+Function Get-PolicyStateInt
+{
+    <#
+    .SYNOPSIS
+        Called by Get-PolicyStates to process a policy
+    #>
+
+    Param(
+        $Policies,
+        $Rules,
+        $ProtectionPolicyRules,
+        $Type
+    )
+
+    # Fixed names of preset policies
+    $PresetNames = @("Standard Preset Security Policy","Strict Preset Security Policy")
+    $BuiltInNames = @("Built-In Protection Policy")
+
+    $ReturnPolicies = @{}
+
+    foreach($Policy in $Policies)
+    {
+
+        $Applies = $false
+        $Preset = $($PresetNames -contains $Policy.Name)
+        $BuiltIn = $($BuiltInNames -contains $Policy.Name)
+
+        # Built in rules always apply
+        if($BuiltIn)
+        {
+            $Applies = $True
+        }
+
+        # If not applying - check rules for application
+        if(!$Applies)
+        {
+
+            # If Preset, rules to check is the protection policy rules (ATP or EOP protection policy rules), if not, the policy rules.
+            if($Preset)
+            {
+                $CheckRules = $ProtectionPolicyRules
+            } else {
+                $CheckRules = $Rules
+            }
+
+            foreach($Rule in $($CheckRules | Where-Object {$_.Name -eq $Policy.Name}))
+            {
+                if($Rule.State -eq "Enabled")
+                {
+                    if($Rule.SentTo.Count -gt 0 -or $Rule.SentToMemberOf.Count -gt 0 -or $Rule.RecipientDomainIs.Count -gt 0)
+                    {
+                        $Applies = $true
+                    }
+                }
+            }
+        }
+
+        $ReturnPolicies[$Policy.Guid.ToString()] = New-Object -TypeName PSObject -Property @{
+            Applies=$Applies
+            Preset=$Preset
+            BuiltIn=$BuiltIn
+            Name=$Policy.Name
+            Type=$Type
+        }
+    }
+
+    return $ReturnPolicies
+}
+
+Function Get-PolicyStates
+{
+    <#
+    .SYNOPSIS
+        Returns hashtable of all policy GUIDs and if they are applied
+    #>
+
+    Param(
+        $AntiphishPolicies,
+        $AntiphishRules,
+        $AntimalwarePolicies,
+        $AntimalwareRules,
+        $AntispamPolicies,
+        $AntispamRules,
+        $SafeLinksPolicies,
+        $SafeLinksRules,
+        $SafeAttachmentsPolicies,
+        $SafeAttachmentRules,
+        $ProtectionPolicyRulesATP,
+        $ProtectionPolicyRulesEOP
+    )
+
+    $ReturnPolicies = @{}
+
+    $ReturnPolicies += Get-PolicyStateInt -Policies $AntiphishPolicies -Rules $AntiphishRules -Type [PolicyType]::Antiphish -ProtectionPolicyRules $ProtectionPolicyRulesATP
+    $ReturnPolicies += Get-PolicyStateInt -Policies $AntimalwarePolicies -Rules $AntimalwareRules -Type [PolicyType]::Malware -ProtectionPolicyRules $ProtectionPolicyRulesEOP
+    $ReturnPolicies += Get-PolicyStateInt -Policies $AntispamPolicies -Rules $AntispamRules -Type [PolicyType]::Spam -ProtectionPolicyRules $ProtectionPolicyRulesEOP
+    $ReturnPolicies += Get-PolicyStateInt -Policies $SafeLinksPolicies -Rules $SafeLinksRules -Type [PolicyType]::SafeAttachments -ProtectionPolicyRules $ProtectionPolicyRulesATP
+    $ReturnPolicies += Get-PolicyStateInt -Policies $SafeAttachmentsPolicies -Rules $SafeAttachmentRules -Type [PolicyType]::SafeLinks -ProtectionPolicyRules $ProtectionPolicyRulesATP
+
+    return $ReturnPolicies
+}
+
 Function Invoke-ORCA
 {
 
@@ -874,302 +989,6 @@ Function Invoke-ORCA
     If($Null -eq $Collection)
     {
         $Collection = Get-ORCACollection
-    }
-
-    foreach($Policy in ($Collection["SafeLinksPolicy"]))
-    {   
-        $IsEnabled = $true
-        $pName =$($Policy.Name) 
-       $Rules = $Collection["SafeLinksRules"]|Where-Object {$_.Name -eq $pName}
-
-       if($null -ne $Rules)
-       {
-        foreach($Rule in $Rules)
-        {
-            if($($Rule.State) -eq "Enabled")
-            {
-                 $IsEnabled = $true
-            }
-            else {
-             $IsEnabled = $False
-            }
-        }
-       }
-       elseif ($pName -match "Built-In") {
-            $IsEnabled = $true
-       }
-       elseif ($pName -match "Default") {
-            $IsEnabled = $true
-       }
-       else {
-            if( $null -ne $Collection["ATPProtectionPolicyRule"] )
-            {
-                ForEach($Rule in ($Collection["ATPProtectionPolicyRule"] | Where-Object {$_.SafeLinksPolicy -eq $pName})) 
-                {  
-                    $state=$($Rule.State)
-                }
-                if($state -eq "Enabled")
-                {
-                    $IsEnabled = $true
-                }
-                elseif($state -eq "Disabled") {
-                    $IsEnabled = $false
-                }
-                else {
-                    $IsEnabled = $false
-                }
-            }
-            else
-            { 
-                $IsEnabled = $false
-            }
-        }
-
-        $policyName = $($Policy.Name);
-        $pStat = New-Object -TypeName PolicyStats -Property @{
-            
-            PolicyName = $policyName;
-            IsEnabled = $IsEnabled
-        }
-
-        $global:SafeLinkPolicyStatus.Add($pStat)
-    }
-
-    foreach($Policy in ($Collection["SafeAttachmentsPolicy"]))
-    {   
-       $IsEnabled = $true
-       $pName =$($Policy.Name) 
-       $Rules = $Collection["SafeAttachmentsRules"]|Where-Object {$_.Name -eq $pName}
-
-       if($null -ne $Rules)
-       {
-           foreach($Rule in $Rules)
-           {
-               if($($Rule.State) -eq "Enabled")
-               {
-                    $IsEnabled = $true
-               }
-               else {
-                $IsEnabled = $False
-               }
-           }
-       }
-       elseif ($pName -match "Built-In") {
-            $IsEnabled = $true
-       }
-       elseif ($pName -match "Default") {
-        $IsEnabled = $true
-       }
-       else {
-            if( $null -ne $Collection["ATPProtectionPolicyRule"] )
-            {
-                ForEach($Rule in ($Collection["ATPProtectionPolicyRule"] | Where-Object {$_.SafeAttachmentPolicy -eq $pName})) 
-                {  
-                    $state=$($Rule.State)
-                }
-                if($state -eq "Enabled")
-                {
-                    $IsEnabled = $true
-                }
-                elseif($state -eq "Disabled") {
-                    $IsEnabled = $false
-                }
-                else {
-                    $IsEnabled = $false
-                }
-            }
-            else
-            { 
-                $IsEnabled = $false
-            }
-        }
-
-        $policyName = $($Policy.Name);
-        $pStat = New-Object -TypeName PolicyStats -Property @{
-            
-            PolicyName = $policyName;
-            IsEnabled = $IsEnabled
-        }
-
-        $global:SafeAttachmentsPolicyStatus.Add($pStat)
-    }
-
-    foreach($Policy in ($Collection["MalwareFilterPolicy"]))
-    {   
-        $IsEnabled = $true
-        $pName =$($Policy.Name) 
-       $Rules = $Collection["MalwareFilterRule"]|Where-Object {$_.Name -eq $pName}
-
-       if($null -ne $Rules)
-       {
-        foreach($Rule in $Rules)
-        {
-            if($($Rule.State) -eq "Enabled")
-            {
-                 $IsEnabled = $true
-            }
-            else {
-             $IsEnabled = $False
-            }
-        }
-       }
-       elseif ($pName -match "Built-In") {
-            $IsEnabled = $true
-       }
-       elseif ($pName -match "Default") {
-        $IsEnabled = $true
-       }
-       else {
-            if( $null -ne $Collection["EOPProtectionPolicyRule"] )
-            {
-                ForEach($Rule in ($Collection["EOPProtectionPolicyRule"] | Where-Object {$_.MalwareFilterPolicy -eq $pName})) 
-                {  
-                    $state=$($Rule.State)
-                }
-                if($state -eq "Enabled")
-                {
-                    $IsEnabled = $true
-                }
-                elseif($state -eq "Disabled") {
-                    $IsEnabled = $false
-                }
-                else {
-                    $IsEnabled = $false
-                }
-            }
-            else
-            { 
-                $IsEnabled = $false
-            }
-        }
-
-        $policyName = $($Policy.Name);
-        $pStat = New-Object -TypeName PolicyStats -Property @{
-            
-            PolicyName = $policyName;
-            IsEnabled = $IsEnabled
-        }
-
-        $global:MalwarePolicyStatus.Add($pStat)
-    }
-
-    
-    foreach($Policy in ($Collection["HostedContentFilterPolicy"]))
-    {   
-       $IsEnabled = $true
-       $pName =$($Policy.Name) 
-       $Rules = $Collection["HostedContentFilterRule"]|Where-Object {$_.Name -eq $pName}
-
-       if($null -ne $Rules)
-       {
-        foreach($Rule in $Rules)
-        {
-            if($($Rule.State) -eq "Enabled")
-            {
-                 $IsEnabled = $true
-            }
-            else {
-             $IsEnabled = $False
-            }
-        }
-       }
-       elseif ($pName -match "Built-In") {
-            $IsEnabled = $true
-       }
-       elseif ($pName -match "Default") {
-        $IsEnabled = $true
-       }
-       else {
-            if( $null -ne $Collection["EOPProtectionPolicyRule"] )
-            {
-                ForEach($Rule in ($Collection["EOPProtectionPolicyRule"] | Where-Object {$_.HostedContentFilterPolicy -eq $pName})) 
-                {  
-                    $state=$($Rule.State)
-                }
-                if($state -eq "Enabled")
-                {
-                    $IsEnabled = $true
-                }
-                elseif($state -eq "Disabled") {
-                    $IsEnabled = $false
-                }
-                else {
-                    $IsEnabled = $false
-                }
-            }
-            else
-            { 
-                $IsEnabled = $false
-            }
-        }
-
-        $policyName = $($Policy.Name);
-        $pStat = New-Object -TypeName PolicyStats -Property @{
-            
-            PolicyName = $policyName;
-            IsEnabled = $IsEnabled
-        }
-
-        $global:HostedContentPolicyStatus.Add($pStat)
-    }
-
-    foreach($Policy in ($Collection["AntiPhishPolicy"]))
-    {   
-        $IsEnabled = $true
-        $pName =$($Policy.Name) 
-       $Rules = $Collection["AntiPhishRules"]|Where-Object {$_.Name -eq $pName}
-
-       if($null -ne $Rules)
-       {
-        foreach($Rule in $Rules)
-        {
-            if($($Rule.State) -eq "Enabled")
-            {
-                 $IsEnabled = $true
-            }
-            else {
-             $IsEnabled = $False
-            }
-        }
-       }
-       elseif ($pName -match "Built-In") {
-            $IsEnabled = $true
-       }
-       elseif ($pName -match "Default") {
-        $IsEnabled = $true
-       }
-       else {
-            if( $null -ne $Collection["EOPProtectionPolicyRule"] )
-            {
-                ForEach($Rule in ($Collection["EOPProtectionPolicyRule"] | Where-Object {$_.AntiPhishPolicy -eq $pName})) 
-                {  
-                    $state=$($Rule.State)
-                }
-                if($state -eq "Enabled")
-                {
-                    $IsEnabled = $true
-                }
-                elseif($state -eq "Disabled") {
-                    $IsEnabled = $false
-                }
-                else {
-                    $IsEnabled = $false
-                }
-            }
-            else
-            { 
-                $IsEnabled = $false
-            }
-        }
-
-        $policyName = $($Policy.Name);
-        $pStat = New-Object -TypeName PolicyStats -Property @{
-            
-            PolicyName = $policyName;
-            IsEnabled = $IsEnabled
-        }
-
-        $global:AntiSpamPolicyStatus.Add($pStat)
     }
 
     # Perform checks inside classes/modules

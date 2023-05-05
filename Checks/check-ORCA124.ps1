@@ -50,17 +50,11 @@ class ORCA124 : ORCACheck
        
         ForEach($Policy in $Config["SafeAttachmentsPolicy"]) 
         {
-            $IsPolicyDisabled = $false
+            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $Action = $($Policy.Action)
 
             $IsBuiltIn = $false
             $policyname = $($Policy.Name)
-
-            ForEach($data in ($global:SafeAttachmentsPolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
-            {
-                $IsPolicyDisabled = !$data.IsEnabled
-            }
-
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
