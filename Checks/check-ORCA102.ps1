@@ -39,7 +39,9 @@ class ORCA102 : ORCACheck
         #$CountOfPolicies = ($Config["HostedContentFilterPolicy"]).Count
         $CountOfPolicies = ($global:HostedContentPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
         ForEach($Policy in $Config["HostedContentFilterPolicy"]) {
-            $IsPolicyDisabled = $false
+
+            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
+
             $IncreaseScoreWithImageLinks = $($Policy.IncreaseScoreWithImageLinks) 
             $IncreaseScoreWithNumericIps = $($Policy.IncreaseScoreWithNumericIps) 
             $IncreaseScoreWithRedirectToOtherPort = $($Policy.IncreaseScoreWithRedirectToOtherPort) 
@@ -58,11 +60,6 @@ class ORCA102 : ORCACheck
            
             $IsBuiltIn = $false
             $policyname = $($Policy.Name)
-
-            ForEach($data in ($global:HostedContentPolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
-            {
-                $IsPolicyDisabled = !$data.IsEnabled
-            }
 
             # Determine if ASF options are off or not
             If($IncreaseScoreWithImageLinks -eq "On" -or $IncreaseScoreWithNumericIps -eq "On" -or $IncreaseScoreWithRedirectToOtherPort -eq "On" -or $IncreaseScoreWithBizOrInfoUrls -eq "On" -or $MarkAsSpamEmptyMessages -eq "On" -or $MarkAsSpamJavaScriptInHtml -eq "On" -or $MarkAsSpamFramesInHtml -eq "On" -or $MarkAsSpamObjectTagsInHtml -eq "On" -or $MarkAsSpamEmbedTagsInHtml -eq "On" -or $MarkAsSpamFormTagsInHtml -eq "On" -or $MarkAsSpamWebBugsInHtml -eq "On" -or $MarkAsSpamSensitiveWordList -eq "On" -or $MarkAsSpamFromAddressAuthFail -eq "On" -or $MarkAsSpamNdrBackscatter -eq "On" -or $MarkAsSpamSpfRecordHardFail -eq "On") {
