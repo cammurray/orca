@@ -44,16 +44,11 @@ class ORCA110 : ORCACheck
        
         ForEach($Policy in $Config["MalwareFilterPolicy"])
         {
-            $IsPolicyDisabled = $false
+            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $EnableInternalSenderNotifications = $($Policy.EnableInternalSenderAdminNotifications)
 
             $IsBuiltIn = $false
             $policyname = $($Policy.Name)
-
-            ForEach($data in ($global:MalwarePolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
-            {
-                $IsPolicyDisabled = !$data.IsEnabled
-            }
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()

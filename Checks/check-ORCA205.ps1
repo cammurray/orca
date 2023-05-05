@@ -48,16 +48,12 @@ class ORCA205 : ORCACheck
       
         ForEach($Policy in $Config["MalwareFilterPolicy"])
         {
-            $IsPolicyDisabled = $false
+            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $EnableFileFilter = $($Policy.EnableFileFilter)
 
             $IsBuiltIn = $false
             $policyname = $($Policy.Name)
             $FileTypesCount =$(@($Policy.FileTypes).Count)
-            ForEach($data in ($global:MalwarePolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
-            {
-                $IsPolicyDisabled = !$data.IsEnabled
-            }
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()

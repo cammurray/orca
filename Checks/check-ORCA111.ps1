@@ -44,18 +44,13 @@ class ORCA111 : ORCACheck
         ForEach ($Policy in $Config["AntiPhishPolicy"])
         {
 
-            $IsPolicyDisabled = $false
+            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $EnableUnauthenticatedSender = $($Policy.EnableUnauthenticatedSender)
 
             $IsBuiltIn = $false
             $policyname = $($Policy.Name)
             $identity = $($Policy.Identity)
             $enabled = $($Policy.Enabled)
-
-            ForEach($data in ($global:AntiSpamPolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
-            {
-                $IsPolicyDisabled = !$data.IsEnabled
-            }
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()

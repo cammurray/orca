@@ -43,16 +43,11 @@ class ORCA105 : ORCACheck
         $CountOfPolicies = ($global:SafeLinkPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
         ForEach($Policy in ($Config["SafeLinksPolicy"] )) 
         {
-            $IsPolicyDisabled = $false
+            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $DeliverMessageAfterScan =$($Policy.DeliverMessageAfterScan)
             $ScanUrls = $($Policy.ScanUrls)
 
             $policyname = $($Policy.Name)
-
-            ForEach($data in ($global:SafeLinkPolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
-            {
-                $IsPolicyDisabled = !$data.IsEnabled
-            }
 
             <#
             

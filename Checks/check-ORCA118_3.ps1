@@ -39,13 +39,8 @@ class ORCA118_3 : ORCACheck
         $CountOfPolicies = ($global:HostedContentPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
        
         ForEach($Policy in $Config["HostedContentFilterPolicy"]) {
-            $IsPolicyDisabled = $false
+            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $AllowedSenderDomains = $($Policy.AllowedSenderDomains)
-
-            ForEach($data in ($global:HostedContentPolicyStatus | Where-Object {$_.PolicyName -eq $($Policy.Name)})) 
-            {
-                $IsPolicyDisabled = !$data.IsEnabled
-            }
     
             # Fail if AllowedSenderDomains is not null
     

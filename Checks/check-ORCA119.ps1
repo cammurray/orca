@@ -50,16 +50,11 @@ class ORCA119 : ORCACheck
        
         ForEach($Policy in ($Config["AntiPhishPolicy"] ))
         {
-            $IsPolicyDisabled = $false
+            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $EnableSimilarDomainsSafetyTips = $($Policy.EnableSimilarDomainsSafetyTips)
 
             $IsBuiltIn = $false
             $policyname = $($Policy.Name)
-
-            ForEach($data in ($global:AntiSpamPolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
-            {
-                $IsPolicyDisabled = !$data.IsEnabled
-            }
 
             $PolicyExists = $True
 

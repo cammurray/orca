@@ -42,17 +42,12 @@ class ORCA121 : ORCACheck
        
         ForEach($Policy in $Config["HostedContentFilterPolicy"]) 
         {
-            $IsPolicyDisabled = $false
+            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $SpamAction = $($Policy.SpamAction)
             $PhishSpamAction =$($Policy.PhishSpamAction)
 
             $IsBuiltIn = $false
             $policyname = $($Policy.Name)
-
-            ForEach($data in ($global:HostedContentPolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
-            {
-                $IsPolicyDisabled = !$data.IsEnabled
-            }
 
             # Check requirement of Spam ZAP - MoveToJmf, redirect, delete, quarantine
 
