@@ -539,6 +539,7 @@ Function Get-ORCACollection
     {
         Write-Host "$(Get-Date) Getting ATP Preset Policy Settings"
         $Collection["ATPProtectionPolicyRule"] = Get-ATPProtectionPolicyRule
+        $Collection["ATPBuiltInProtectionRule"] = Get-ATPBuiltInProtectionRule
     }
 
     Write-Host "$(Get-Date) Getting EOP Preset Policy Settings"
