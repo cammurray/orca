@@ -47,7 +47,7 @@ class ORCA121 : ORCACheck
             $PhishSpamAction =$($Policy.PhishSpamAction)
 
             $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             # Check requirement of Spam ZAP - MoveToJmf, redirect, delete, quarantine
 
@@ -57,6 +57,7 @@ class ORCA121 : ORCACheck
             $ConfigObject.ConfigItem="SpamAction"
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             If($SpamAction -eq "MoveToJmf" -or $SpamAction -eq "Redirect" -or $SpamAction -eq "Delete" -or $SpamAction -eq "Quarantine") 
             {
@@ -79,6 +80,7 @@ class ORCA121 : ORCACheck
             $ConfigObject.ConfigItem="PhishSpamAction"
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             If($PhishSpamAction -eq "MoveToJmf" -or $PhishSpamAction -eq "Redirect" -or $PhishSpamAction -eq "Delete" -or $PhishSpamAction -eq "Quarantine")
             {

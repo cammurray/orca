@@ -12,7 +12,7 @@ class ORCA222 : ORCACheck
     {
         $this.Control=222
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Domain Impersonation Action"
         $this.PassText="Domain Impersonation action is set to move to Quarantine"
         $this.FailRecommendation="Configure domain impersonation action to Quarantine"
@@ -38,10 +38,12 @@ class ORCA222 : ORCACheck
     GetResults($Config)
     {
 
-        $PolicyExists = $False
+        <#
+        
+        This check does not need a default fail if no policies exist
+        
+        #>
 
-        #$CountOfPolicies = ($Config["AntiPhishPolicy"] | Where-Object {$_.Enabled -eq $True}).Count
-        $CountOfPolicies = ($global:AntiSpamPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
         ForEach($Policy in ($Config["AntiPhishPolicy"] | Where-Object {$_.Enabled -eq $True}))
         {
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
@@ -50,10 +52,7 @@ class ORCA222 : ORCACheck
             $EnableOrganizationDomainsProtection = $($Policy.EnableOrganizationDomainsProtection)
             $TargetedDomainProtectionAction = $($Policy.TargetedDomainProtectionAction)
 
-            $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
-
-            $PolicyExists = $True
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             <#
             
@@ -71,6 +70,7 @@ class ORCA222 : ORCACheck
                 $ConfigObject.ConfigData=$EnableTargetedDomainsProtection
                 $ConfigObject.ConfigDisabled = $IsPolicyDisabled
                 $ConfigObject.ConfigReadonly = $Policy.IsPreset
+                $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
@@ -84,6 +84,7 @@ class ORCA222 : ORCACheck
                 $ConfigObject.ConfigData=$EnableOrganizationDomainsProtection
                 $ConfigObject.ConfigDisabled = $IsPolicyDisabled
                 $ConfigObject.ConfigReadonly = $Policy.IsPreset
+                $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
@@ -99,6 +100,7 @@ class ORCA222 : ORCACheck
                 $ConfigObject.ConfigData=$EnableTargetedDomainsProtection
                 $ConfigObject.ConfigDisabled = $IsPolicyDisabled
                 $ConfigObject.ConfigReadonly = $Policy.IsPreset
+                $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
 
@@ -115,6 +117,7 @@ class ORCA222 : ORCACheck
                 $ConfigObject.ConfigData=$EnableOrganizationDomainsProtection
                 $ConfigObject.ConfigDisabled = $IsPolicyDisabled
                 $ConfigObject.ConfigReadonly = $Policy.IsPreset
+                $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
 
@@ -130,6 +133,7 @@ class ORCA222 : ORCACheck
             $ConfigObject.ConfigData=$TargetedDomainProtectionAction
             $ConfigObject.ConfigDisabled = $IsPolicyDisabled
             $ConfigObject.ConfigReadonly = $Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             If($TargetedDomainProtectionAction -eq "Quarantine")
             {
@@ -149,20 +153,7 @@ class ORCA222 : ORCACheck
 
             $this.AddConfig($ConfigObject)
     
-        }
-    
-        If($CountOfPolicies -eq 0)
-        {
-
-            $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.Object="All"
-            $ConfigObject.ConfigItem="Enabled"
-            $ConfigObject.ConfigData="False"
-            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")  
-
-            $this.AddConfig($ConfigObject)
-     
-        }
+        } 
 
     }
 

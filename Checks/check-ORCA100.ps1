@@ -42,10 +42,11 @@ class ORCA100 : ORCACheck
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.ConfigItem=$($Policy.Name)
+            $ConfigObject.ConfigItem=$Config["PolicyStates"][$Policy.Guid.ToString()].Name
             $ConfigObject.ConfigData=$BulkThreshold
             $ConfigObject.ConfigDisabled = $IsPolicyDisabled
             $ConfigObject.ConfigReadonly = $Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             # Standard check - between 4 and 6
             If($BulkThreshold -ge 4 -and $BulkThreshold -le 6)

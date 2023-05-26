@@ -43,16 +43,12 @@ class ORCA205 : ORCACheck
 
     GetResults($Config)
     {
-        #$CountOfPolicies = ($Config["MalwareFilterPolicy"]).Count
-        $CountOfPolicies = ($global:MalwarePolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
       
         ForEach($Policy in $Config["MalwareFilterPolicy"])
         {
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $EnableFileFilter = $($Policy.EnableFileFilter)
-
-            $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
             $FileTypesCount =$(@($Policy.FileTypes).Count)
 
             # Check objects
@@ -62,6 +58,7 @@ class ORCA205 : ORCACheck
             $ConfigObject.ConfigData=$($EnableFileFilter)
             $ConfigObject.ConfigDisabled = $IsPolicyDisabled
             $ConfigObject.ConfigReadonly = $Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             # Fail if EnableFileFilter is not set to true or FileTypes is empty in the policy
 
@@ -82,6 +79,7 @@ class ORCA205 : ORCACheck
             $ConfigObject.ConfigItem="FileTypes"
             $ConfigObject.ConfigDisabled = $IsPolicyDisabled
             $ConfigObject.ConfigReadonly = $Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             If($FileTypesCount.Count -eq 0) 
             {

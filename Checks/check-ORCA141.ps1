@@ -42,13 +42,14 @@ class ORCA141 : ORCACheck
             $BulkSpamAction = $($Policy.BulkSpamAction)
 
             $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.ConfigItem=$policyname
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             # For standard Fail if BulkSpamAction is not set to MoveToJmf
     

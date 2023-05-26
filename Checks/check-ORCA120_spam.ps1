@@ -45,7 +45,7 @@ class ORCA120_spam : ORCACheck
             $SpamZapEnabled = $($Policy.SpamZapEnabled)
 
             $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
@@ -53,6 +53,7 @@ class ORCA120_spam : ORCACheck
             $ConfigObject.ConfigData=$SpamZapEnabled
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             if($SpamZapEnabled -eq $true) 
             {

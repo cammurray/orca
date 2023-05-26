@@ -54,7 +54,7 @@ class ORCA107 : ORCACheck
             $SpamQuarantineTag =  $($Policy.SpamQuarantineTag)
 
             $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             <#
             
@@ -67,6 +67,7 @@ class ORCA107 : ORCACheck
                 $ConfigObject.Object=$policyname
                 $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                 $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                 $QuarantineTag = $SpamQuarantineTag
                 $status = $false 
@@ -103,6 +104,7 @@ class ORCA107 : ORCACheck
                         $ConfigObject.ConfigItem = "EndUserSpamNotificationFrequency"
                         $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                         $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                        $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
         
                     
                         If($frequency -le 3)

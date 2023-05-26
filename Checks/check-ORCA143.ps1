@@ -46,7 +46,7 @@ class ORCA143 : ORCACheck
             $InlineSafetyTipsEnabled = $($Policy.InlineSafetyTipsEnabled)
 
             $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
 
             $ConfigObject = [ORCACheckConfig]::new()
@@ -55,6 +55,7 @@ class ORCA143 : ORCACheck
             $ConfigObject.ConfigData=$InlineSafetyTipsEnabled
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             # Fail if InlineSafetyTipsEnabled is not set to true
     

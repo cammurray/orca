@@ -12,7 +12,7 @@ class ORCA105 : ORCACheck
     {
         $this.Control="ORCA-105"
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Safe Links Synchronous URL detonation"
         $this.PassText="Safe Links Synchronous URL detonation is enabled"
         $this.FailRecommendation="Enable Safe Links Synchronous URL detonation"
@@ -39,15 +39,22 @@ class ORCA105 : ORCACheck
     GetResults($Config)
     {
         $Check = "ATP"
-        #$CountOfPolicies = ($Config["SafeLinksPolicy"] | Where-Object {$_.IsEnabled -eq $True}).Count
-        $CountOfPolicies = ($global:SafeLinkPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
+
+        $EnabledPolicyExists = $False
+
         ForEach($Policy in ($Config["SafeLinksPolicy"] )) 
         {
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
+
+            if(!$IsPolicyDisabled)
+            {
+                $EnabledPolicyExists = $True
+            }
+
             $DeliverMessageAfterScan =$($Policy.DeliverMessageAfterScan)
             $ScanUrls = $($Policy.ScanUrls)
 
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             <#
             
@@ -62,11 +69,17 @@ class ORCA105 : ORCACheck
                 $ConfigObject.ConfigData=$DeliverMessageAfterScan
                 $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                 $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                 # Determine if DeliverMessageAfterScan is on for this safelinks policy
                 If($DeliverMessageAfterScan -eq $true) 
                 {
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+
+                    if(!$IsPolicyDisabled)
+                    {
+                        $AnyEnabled_DeliverMessageAfterScan = $True
+                    }
                 }
                 Else 
                 {
@@ -89,10 +102,16 @@ class ORCA105 : ORCACheck
                 $ConfigObject.ConfigData=$ScanUrls
                 $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                 $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                 If($ScanUrls -eq $true)
                 {
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+
+                    if(!$IsPolicyDisabled)
+                    {
+                        $AnyEnabled_ScanUrls = $True
+                    }
                 }
                 Else 
                 {
@@ -104,22 +123,28 @@ class ORCA105 : ORCACheck
 
         }
 
-        $CountOfPolicies = ($global:SafeLinkPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
-
-        If($CountOfPolicies -eq 0)
+        If(!$EnabledPolicyExists)
         {
 
-            # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.Object="All"
-            $ConfigObject.ConfigItem="Enabled"
+            $ConfigObject.Object="All enabled policies"
+            $ConfigObject.ConfigItem="DeliverMessageAfterScan"
             $ConfigObject.ConfigData="False"
             $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             
             # Add config to check
             $this.AddConfig($ConfigObject)
 
-        }    
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object="All enabled policies"
+            $ConfigObject.ConfigItem="ScanUrls"
+            $ConfigObject.ConfigData="False"
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            
+            # Add config to check
+            $this.AddConfig($ConfigObject)
+        }
 
     }
 

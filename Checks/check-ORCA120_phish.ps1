@@ -43,7 +43,7 @@ class ORCA120_phish : ORCACheck
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $PhishZapEnabled = $($Policy.PhishZapEnabled)
             
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
@@ -51,6 +51,7 @@ class ORCA120_phish : ORCACheck
             $ConfigObject.ConfigData=$PhishZapEnabled
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             if($PhishZapEnabled -eq $true) 
             {

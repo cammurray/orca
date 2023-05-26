@@ -44,13 +44,14 @@ class ORCA142 : ORCACheck
             $PhishSpamAction = $($Policy.PhishSpamAction)
 
             $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem=$policyname
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             # Fail if PhishSpamAction is not set to Quarantine
     

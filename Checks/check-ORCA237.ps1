@@ -20,7 +20,7 @@ class ORCA237 : ORCACheck
     {
         $this.Control=237
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Safe Links protections for links in teams messages"
         $this.PassText="Safe Links is enabled for teams messages"
         $this.FailRecommendation="Enable Safe Links policy action for unknown potentially malicious URLs in teams messages"
@@ -52,7 +52,7 @@ class ORCA237 : ORCACheck
             # Policy is turned on, default false
             $PolicyEnabled = $false
 
-            $PolicyName = $($Policy.Name)
+            $PolicyName = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
@@ -60,6 +60,7 @@ class ORCA237 : ORCACheck
             $ConfigObject.ConfigItem="EnableSafeLinksForTeams"
             $ConfigObject.ConfigData=$Policy.EnableSafeLinksForTeams
             $ConfigObject.ConfigReadonly = $Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             if($Policy.EnableSafeLinksForTeams -eq $true)
             {

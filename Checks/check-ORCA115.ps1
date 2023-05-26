@@ -18,7 +18,7 @@ class ORCA115 : ORCACheck
     {
         $this.Control=115
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Mailbox Intelligence Protection"
         $this.PassText="Mailbox intelligence based impersonation protection is enabled in anti-phishing policies"
         $this.FailRecommendation="Enable Mailbox intelligence based impersonation protection in anti-phishing policies"
@@ -44,11 +44,6 @@ class ORCA115 : ORCACheck
 
     GetResults($Config)
     {
-
-        $PolicyExists = $False
-        
-        #$CountOfPolicies = ($Config["AntiPhishPolicy"] | Where-Object {$_.Enabled -eq $True}).Count       
-        $CountOfPolicies = ($global:AntiSpamPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
         
         ForEach($Policy in ($Config["AntiPhishPolicy"]))
         {
@@ -56,10 +51,7 @@ class ORCA115 : ORCACheck
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $EnableMailboxIntelligenceProtection = $($Policy.EnableMailboxIntelligenceProtection)
 
-            $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
-
-            $PolicyExists = $True
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             # Determine if Mailbox Intelligence Protection is enabled
 
@@ -70,6 +62,7 @@ class ORCA115 : ORCACheck
             $ConfigObject.ConfigData=$EnableMailboxIntelligenceProtection
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             If($EnableMailboxIntelligenceProtection -eq $false)
             {
@@ -83,16 +76,18 @@ class ORCA115 : ORCACheck
             $this.AddConfig($ConfigObject)
 
         }
-        
-        If($PolicyExists -eq $False)
+
+            
+        If($Config["AnyPolicyState"][[PolicyType]::Antiphish] -eq $False)
         {
             $ConfigObject = [ORCACheckConfig]::new()
-
-            $ConfigObject.Object="No Enabled Policy"
-            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
-
+            $ConfigObject.Object="No Enabled Policies"
+            $ConfigObject.ConfigItem="EnableMailboxIntelligenceProtection"
+            $ConfigObject.ConfigData=""
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             $this.AddConfig($ConfigObject)
         }
+
 
     }
 

@@ -18,7 +18,7 @@ class ORCA156 : ORCACheck
     {
         $this.Control=156
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Safe Links Tracking"
         $this.PassText="Safe Links Policies are tracking when user clicks on safe links"
         $this.FailRecommendation="Enable tracking of user clicks in Safe Links Policies"
@@ -43,15 +43,13 @@ class ORCA156 : ORCACheck
 
     GetResults($Config)
     {   
-        #$CountOfPolicies = ($Config["SafeLinksPolicy"]).Count + ($Config["AtpPolicy"]).Count
-        $CountOfPolicies = ($global:SafeLinkPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
        
         ForEach($Policy in $Config["SafeLinksPolicy"]) 
         {
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $TrackUserClicks = $($Policy.TrackClicks)
 
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.Object=$policyname
@@ -59,6 +57,7 @@ class ORCA156 : ORCACheck
             $ConfigObject.ConfigData=$TrackUserClicks
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             # Determine if ATP link tracking is on for this safelinks policy
             If($TrackUserClicks -eq $True)

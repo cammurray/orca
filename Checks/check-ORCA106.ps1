@@ -41,22 +41,18 @@ class ORCA106 : ORCACheck
 
     GetResults($Config)
     {
-        #$CountOfPolicies = ($Config["HostedContentFilterPolicy"]).Count
-        $CountOfPolicies = ($global:HostedContentPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
         ForEach($Policy in $Config["HostedContentFilterPolicy"])
         {
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $QuarantineRetentionPeriod = $($Policy.QuarantineRetentionPeriod)
 
-            $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
-
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.ConfigItem=$policyname
+            $ConfigObject.ConfigItem=$Config["PolicyStates"][$Policy.Guid.ToString()].Name
             $ConfigObject.ConfigData=$QuarantineRetentionPeriod
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             If($QuarantineRetentionPeriod -eq 30)
             {

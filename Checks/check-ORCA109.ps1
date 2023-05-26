@@ -50,11 +50,12 @@ class ORCA109 : ORCACheck
             $AllowedSenders = $($Policy.AllowedSenders)
 
             $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.ConfigItem=$policyname
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
             if($null -eq $AllowedSenders)
             {
                 $AllowedSenders = "No Sender Detected"

@@ -20,7 +20,7 @@ class ORCA236 : ORCACheck
     {
         $this.Control=236
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Safe Links protections for links in email"
         $this.PassText="Safe Links is enabled for emails"
         $this.FailRecommendation="Enable Safe Links policy action for unknown potentially malicious URLs in emails"
@@ -52,7 +52,7 @@ class ORCA236 : ORCACheck
             # Policy is turned on, default false
             $PolicyEnabled = $false
 
-            $PolicyName = $($Policy.Name)
+            $PolicyName = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
@@ -60,6 +60,7 @@ class ORCA236 : ORCACheck
             $ConfigObject.ConfigItem="EnableSafeLinksForEmail"
             $ConfigObject.ConfigData=$Policy.EnableSafeLinksForEmail
             $ConfigObject.ConfigReadonly = $Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             if($Policy.EnableSafeLinksForEmail -eq $true)
             {
