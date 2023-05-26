@@ -12,7 +12,7 @@ class ORCA112 : ORCACheck
     {
         $this.Control="ORCA-112"
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Anti-spoofing protection action"
         $this.PassText="Anti-spoofing protection action is configured to Move message to the recipients' Junk Email folders in Anti-phishing policy"
         $this.FailRecommendation="Configure Anti-spoofing protection action to Move message to the recipients' Junk Email folders in Anti-phishing policy"
@@ -39,16 +39,13 @@ class ORCA112 : ORCACheck
 
     GetResults($Config)
     {
-        #$CountOfPolicies = ($Config["AntiPhishPolicy"]).Count
-        $CountOfPolicies = ($global:AntiSpamPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
        
         ForEach ($Policy in $Config["AntiPhishPolicy"])
         {
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $AuthenticationFailAction = $($Policy.AuthenticationFailAction)
 
-            $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
             $identity = $($Policy.Identity)
             $enabled = $($Policy.Enabled)
             
@@ -59,6 +56,7 @@ class ORCA112 : ORCACheck
             $ConfigObject.ConfigData=$AuthenticationFailAction
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             If(($enabled -eq $true -and $AuthenticationFailAction -eq "MoveToJmf") -or ($identity -eq "Office365 AntiPhish Default" -and $AuthenticationFailAction -eq "MoveToJmf"))
             {
@@ -81,7 +79,19 @@ class ORCA112 : ORCACheck
             # Add config to check
             $this.AddConfig($ConfigObject)
 
-        }        
+        }
+        
+    
+        If($Config["AnyPolicyState"][[PolicyType]::Antiphish] -eq $False)
+        {
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object="No Enabled Policies"
+            $ConfigObject.ConfigItem="AuthenticationFailAction"
+            $ConfigObject.ConfigData=""
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            $this.AddConfig($ConfigObject)
+        }
+        
 
     }
 

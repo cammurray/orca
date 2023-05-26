@@ -59,7 +59,7 @@ class ORCA102 : ORCACheck
             $MarkAsSpamSpfRecordHardFail = $($Policy.MarkAsSpamSpfRecordHardFail) 
            
             $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             # Determine if ASF options are off or not
             If($IncreaseScoreWithImageLinks -eq "On" -or $IncreaseScoreWithNumericIps -eq "On" -or $IncreaseScoreWithRedirectToOtherPort -eq "On" -or $IncreaseScoreWithBizOrInfoUrls -eq "On" -or $MarkAsSpamEmptyMessages -eq "On" -or $MarkAsSpamJavaScriptInHtml -eq "On" -or $MarkAsSpamFramesInHtml -eq "On" -or $MarkAsSpamObjectTagsInHtml -eq "On" -or $MarkAsSpamEmbedTagsInHtml -eq "On" -or $MarkAsSpamFormTagsInHtml -eq "On" -or $MarkAsSpamWebBugsInHtml -eq "On" -or $MarkAsSpamSensitiveWordList -eq "On" -or $MarkAsSpamFromAddressAuthFail -eq "On" -or $MarkAsSpamNdrBackscatter -eq "On" -or $MarkAsSpamSpfRecordHardFail -eq "On") {
@@ -72,6 +72,7 @@ class ORCA102 : ORCACheck
                     $ConfigObject.ConfigData=$IncreaseScoreWithImageLinks
                     $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                     $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                    $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
@@ -88,6 +89,7 @@ class ORCA102 : ORCACheck
                     $ConfigObject.ConfigData=$IncreaseScoreWithNumericIps
                     $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                     $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                    $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
@@ -104,6 +106,7 @@ class ORCA102 : ORCACheck
                     $ConfigObject.ConfigData=$IncreaseScoreWithRedirectToOtherPort
                     $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                     $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                    $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
@@ -118,6 +121,7 @@ class ORCA102 : ORCACheck
                     $ConfigObject.Object=$policyname
                     $ConfigObject.ConfigItem="IncreaseScoreWithBizOrInfoUrls"
                     $ConfigObject.ConfigData=$IncreaseScoreWithBizOrInfoUrls
+                    $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
@@ -134,6 +138,7 @@ class ORCA102 : ORCACheck
                     $ConfigObject.ConfigData=$MarkAsSpamEmptyMessages
                     $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                     $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                    $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
@@ -150,6 +155,7 @@ class ORCA102 : ORCACheck
                     $ConfigObject.ConfigData=$MarkAsSpamJavaScriptInHtml
                     $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                     $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                    $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
@@ -165,6 +171,7 @@ class ORCA102 : ORCACheck
                     $ConfigObject.ConfigData=$MarkAsSpamFramesInHtml
                     $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                     $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                    $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
@@ -181,6 +188,7 @@ class ORCA102 : ORCACheck
                     $ConfigObject.ConfigData=$MarkAsSpamObjectTagsInHtml
                     $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                     $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                    $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
@@ -197,6 +205,7 @@ class ORCA102 : ORCACheck
                     $ConfigObject.ConfigData=$MarkAsSpamEmbedTagsInHtml
                     $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                     $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                    $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
@@ -213,6 +222,7 @@ class ORCA102 : ORCACheck
                     $ConfigObject.ConfigData=$MarkAsSpamFormTagsInHtml
                     $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                     $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                    $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
@@ -229,6 +239,7 @@ class ORCA102 : ORCACheck
                     $ConfigObject.ConfigData=$MarkAsSpamWebBugsInHtml
                     $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                     $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                    $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
@@ -245,6 +256,7 @@ class ORCA102 : ORCACheck
                     $ConfigObject.ConfigData=$MarkAsSpamSensitiveWordList
                     $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                     $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                    $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
@@ -261,6 +273,7 @@ class ORCA102 : ORCACheck
                     $ConfigObject.ConfigData=$MarkAsSpamFromAddressAuthFail
                     $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                     $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                    $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
@@ -277,6 +290,7 @@ class ORCA102 : ORCACheck
                     $ConfigObject.ConfigData=$MarkAsSpamNdrBackscatter
                     $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                     $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                    $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
@@ -293,6 +307,7 @@ class ORCA102 : ORCACheck
                     $ConfigObject.ConfigData=$MarkAsSpamSpfRecordHardFail
                     $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                     $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                    $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
@@ -311,6 +326,7 @@ class ORCA102 : ORCACheck
                 $ConfigObject.ConfigData="Disabled"
                 $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                 $ConfigObject.ConfigReadonly=$Policy.IsPreset
+                $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
 

@@ -12,7 +12,7 @@ class ORCA111 : ORCACheck
     {
         $this.Control="ORCA-111"
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Unauthenticated Sender (tagging)"
         $this.PassText="Anti-phishing policy exists and EnableUnauthenticatedSender is true"
         $this.FailRecommendation="Enable unauthenticated sender tagging in Anti-phishing policy"
@@ -38,9 +38,7 @@ class ORCA111 : ORCACheck
 
     GetResults($Config)
     {
-        #$CountOfPolicies = ($Config["AntiPhishPolicy"] ).Count
-        $CountOfPolicies = ($global:AntiSpamPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
-       
+
         ForEach ($Policy in $Config["AntiPhishPolicy"])
         {
 
@@ -48,7 +46,7 @@ class ORCA111 : ORCACheck
             $EnableUnauthenticatedSender = $($Policy.EnableUnauthenticatedSender)
 
             $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
             $identity = $($Policy.Identity)
             $enabled = $($Policy.Enabled)
 
@@ -59,6 +57,7 @@ class ORCA111 : ORCACheck
             $ConfigObject.ConfigData=$EnableUnauthenticatedSender
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             If(($enabled -eq $true -and $EnableUnauthenticatedSender -eq $true) -or ($identity -eq "Office365 AntiPhish Default" -and $EnableUnauthenticatedSender -eq $true))
             {
@@ -72,7 +71,17 @@ class ORCA111 : ORCACheck
             # Add config to check
             $this.AddConfig($ConfigObject)
 
-        }        
+        }
+
+        If($Config["AnyPolicyState"][[PolicyType]::Antiphish] -eq $False)
+        {
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object="No Enabled Policies"
+            $ConfigObject.ConfigItem="EnableUnauthenticatedSender"
+            $ConfigObject.ConfigData="False"
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            $this.AddConfig($ConfigObject)
+        }
     }
 
 }

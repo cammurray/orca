@@ -18,7 +18,7 @@ class ORCA220 : ORCACheck
     {
         $this.Control=220
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Advanced Phishing Threshold Level"
         $this.PassText="Advanced Phish filter Threshold level is adequate."
         $this.FailRecommendation="Set Advanced Phish filter Threshold to 2 or 3"
@@ -27,6 +27,7 @@ class ORCA220 : ORCACheck
         $this.ItemName="Antiphishing Policy"
         $this.DataType="Advanced Phishing Threshold Level"
         $this.ChiValue=[ORCACHI]::Medium
+        $this.ObjectType="Policy"
         $this.Links= @{
             "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
             "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
@@ -41,15 +42,14 @@ class ORCA220 : ORCACheck
 
     GetResults($Config)
     {
-        #$CountOfPolicies = ($Config["AntiPhishPolicy"]).Count
-        $CountOfPolicies = ($global:AntiSpamPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
+
+
         ForEach($Policy in $Config["AntiPhishPolicy"]) 
         {
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $PhishThresholdLevel = $($Policy.PhishThresholdLevel)
 
-            $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
@@ -57,6 +57,7 @@ class ORCA220 : ORCACheck
             $ConfigObject.ConfigData=$PhishThresholdLevel
             $ConfigObject.ConfigDisabled = $IsPolicyDisabled
             $ConfigObject.ConfigReadonly = $Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             # Standard
 
@@ -83,7 +84,16 @@ class ORCA220 : ORCACheck
             $this.AddConfig($ConfigObject)
 
 
-        }        
+        }
+        
+        If($Config["AnyPolicyState"][[PolicyType]::Antiphish] -eq $False)
+        {
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.ConfigItem="No Enabled Policies"
+            $ConfigObject.ConfigData=""
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            $this.AddConfig($ConfigObject)
+        }       
 
     }
 

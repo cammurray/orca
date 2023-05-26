@@ -48,7 +48,7 @@ class ORCA110 : ORCACheck
             $EnableInternalSenderNotifications = $($Policy.EnableInternalSenderAdminNotifications)
 
             $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
@@ -56,6 +56,7 @@ class ORCA110 : ORCACheck
             $ConfigObject.ConfigData=$EnableInternalSenderNotifications
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             If ($EnableInternalSenderNotifications -eq $False)
             {

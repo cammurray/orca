@@ -42,14 +42,13 @@ class ORCA101 : ORCACheck
 
             $MarkAsSpamBulkMail = $($Policy.MarkAsSpamBulkMail)
 
-            $policyname = $($Policy.Name)
-
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.ConfigItem=$policyname
+            $ConfigObject.ConfigItem=$Config["PolicyStates"][$Policy.Guid.ToString()].Name
             $ConfigObject.ConfigData=$MarkAsSpamBulkMail
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             If($MarkAsSpamBulkMail -eq "On")
             {

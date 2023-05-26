@@ -12,7 +12,7 @@ class ORCA223 : ORCACheck
     {
         $this.Control=223
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="User Impersonation Action"
         $this.PassText="User impersonation action is set to move to Quarantine"
         $this.FailRecommendation="Configure user impersonation action to Quarantine"
@@ -38,19 +38,16 @@ class ORCA223 : ORCACheck
     GetResults($Config)
     {
 
-        $PolicyExists = $False
-        #$CountOfPolicies = ($Config["AntiPhishPolicy"] | Where-Object {$_.Enabled -eq $True}).Count
-        $CountOfPolicies = ($global:AntiSpamPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
         ForEach($Policy in ($Config["AntiPhishPolicy"] ))
         {
 
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
+            $IsPreset = $Config["PolicyStates"][$Policy.Guid.ToString()].Preset
 
             $EnableTargetedUserProtection = $($Policy.EnableTargetedUserProtection)
             $TargetedUserProtectionAction = $($Policy.TargetedUserProtectionAction)
 
-            $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             # Is enabled
 
@@ -60,41 +57,16 @@ class ORCA223 : ORCACheck
             $ConfigObject.ConfigItem="EnableTargetedUserProtection"
             $ConfigObject.ConfigData=$EnableTargetedUserProtection
             $ConfigObject.ConfigDisabled = $IsPolicyDisabled
-            $ConfigObject.ConfigReadonly = $Policy.IsPreset
+            $ConfigObject.ConfigReadonly = $IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             If($EnableTargetedUserProtection -eq $False)
             {
-                if($IsPolicyDisabled)
-                {
-                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                elseif($Policy.IsPreset)
-                {
-                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                else
-                {
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
             else 
             {
-                if($IsPolicyDisabled)
-                {
-                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                elseif($Policy.IsPreset)
-                {
-                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                else
-                {
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
             
             $this.AddConfig($ConfigObject)
@@ -107,7 +79,8 @@ class ORCA223 : ORCACheck
             $ConfigObject.ConfigItem="TargetedUserProtectionAction"
             $ConfigObject.ConfigData=$TargetedUserProtectionAction
             $ConfigObject.ConfigDisabled = $IsPolicyDisabled
-            $ConfigObject.ConfigReadonly = $Policy.IsPreset
+            $ConfigObject.ConfigReadonly = $IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             If($TargetedUserProtectionAction -eq "Quarantine")
             {
@@ -129,20 +102,31 @@ class ORCA223 : ORCACheck
             $this.AddConfig($ConfigObject)
 
         }
-    
-        If($CountOfPolicies -eq 0)
+
+        If($Config["AnyPolicyState"][[PolicyType]::Antiphish] -eq $False)
         {
 
+            # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
-
-            $ConfigObject.Object="All"
-            $ConfigObject.ConfigItem="Enabled"
-            $ConfigObject.ConfigData="False"
+            $ConfigObject.Object="No Enabled Policies"
+            $ConfigObject.ConfigItem="EnableTargetedUserProtection"
+            $ConfigObject.ConfigData=""
             $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-
+            
+            # Add config to check
             $this.AddConfig($ConfigObject)
-         
-        }    
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object="No Enabled Policies"
+            $ConfigObject.ConfigItem="TargetedUserProtectionAction"
+            $ConfigObject.ConfigData=""
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            
+            # Add config to check
+            $this.AddConfig($ConfigObject)
+
+        }       
 
     }
 

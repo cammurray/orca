@@ -18,7 +18,7 @@ class ORCA119 : ORCACheck
     {
         $this.Control=119
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Similar Domains Safety Tips"
         $this.PassText="Similar Domains Safety Tips is enabled"
         $this.FailRecommendation="Enable Similar Domains Safety Tips so that users can receive visible indication on incoming messages."
@@ -43,20 +43,13 @@ class ORCA119 : ORCACheck
 
     GetResults($Config)
     {
-
-        $PolicyExists = $False
-        #$CountOfPolicies = ($Config["AntiPhishPolicy"] | Where-Object {$_.Enabled -eq $True}).Count
-        $CountOfPolicies = ($global:AntiSpamPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
        
         ForEach($Policy in ($Config["AntiPhishPolicy"] ))
         {
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $EnableSimilarDomainsSafetyTips = $($Policy.EnableSimilarDomainsSafetyTips)
 
-            $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
-
-            $PolicyExists = $True
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             #  Determine if tips for domain impersonation is on
 
@@ -67,6 +60,7 @@ class ORCA119 : ORCACheck
             $ConfigObject.ConfigData=$EnableSimilarDomainsSafetyTips
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             If($EnableSimilarDomainsSafetyTips -eq $false)
             {
@@ -80,16 +74,16 @@ class ORCA119 : ORCACheck
             $this.AddConfig($ConfigObject)
 
         }
-
-        If($PolicyExists -eq $False)
+        
+        If($Config["AnyPolicyState"][[PolicyType]::Antiphish] -eq $False)
         {
             $ConfigObject = [ORCACheckConfig]::new()
-
-            $ConfigObject.Object="No Policies"
-            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
-
-            $this.AddConfig($ConfigObject)      
-        }             
+            $ConfigObject.Object="No Enabled Policies"
+            $ConfigObject.ConfigItem="EnableSimilarDomainsSafetyTips"
+            $ConfigObject.ConfigData=""
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            $this.AddConfig($ConfigObject)
+        }  
 
     }
 

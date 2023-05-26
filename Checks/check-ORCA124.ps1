@@ -18,7 +18,7 @@ class ORCA124 : ORCACheck
     {
         $this.Control=124
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Safe attachments unknown malware response"
         $this.PassText="Safe attachments unknown malware response set to block messages"
         $this.FailRecommendation="Set Safe attachments unknown malware response to block messages"
@@ -44,25 +44,26 @@ class ORCA124 : ORCACheck
     GetResults($Config)
     {
 
-        $Enabled = $False
-        #$CountOfPolicies = ($Config["SafeAttachmentsPolicy"]).Count      
-        $CountOfPolicies = ($global:SafeAttachmentsPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
+        <#
+        
+        This check does not need a default response where no policies exist,
+        because the 'Built-In Protection Policy' has this turned on.
+        
+        #>
        
         ForEach($Policy in $Config["SafeAttachmentsPolicy"]) 
         {
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $Action = $($Policy.Action)
 
-            $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
-
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.Object=$policyname
+            $ConfigObject.Object=$($Policy.Name)
             $ConfigObject.ConfigItem="Action"
             $ConfigObject.ConfigData=$Action
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
             
             # Determine if ATP Safe attachments action is set to block
             If($Action -ne "Block") 
@@ -72,32 +73,17 @@ class ORCA124 : ORCACheck
             Else 
             {
 
-                $Enabled = $True
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
 
             If($Action -eq "Replace" -or $Action -eq "DynamicDelivery")
             {
-                $Enabled = $True
                 $ConfigObject.InfoText = "Attachments with detected malware will be blocked, the body of the email message delivered to the recipient."
                 $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
             }
 
             $this.AddConfig($ConfigObject)
         }
-
-        If($CountOfPolicies -eq 0)
-        {
-
-            # No policy enabling
-            $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.ConfigItem="All"
-            $ConfigObject.ConfigData="Enabled False"
-            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-
-            $this.AddConfig($ConfigObject)
-
-        }    
 
     }
 

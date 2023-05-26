@@ -44,14 +44,15 @@ class ORCA139 : ORCACheck
             $SpamAction = $($Policy.SpamAction)
 
             $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
-
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
+            
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.ConfigItem=$policyname
             $ConfigObject.ConfigData=$($SpamAction)
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
             
             # For standard, this should be MoveToJmf
             If($SpamAction -ne "MoveToJmf") 

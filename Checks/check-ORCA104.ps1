@@ -45,7 +45,7 @@ class ORCA104 : ORCACheck
             $HighConfidencePhishAction = $($Policy.HighConfidencePhishAction)
 
             $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
@@ -53,6 +53,7 @@ class ORCA104 : ORCACheck
             $ConfigObject.ConfigData=$HighConfidencePhishAction
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
     
             If($HighConfidencePhishAction -eq "Quarantine") 
             {

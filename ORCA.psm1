@@ -199,6 +199,14 @@ enum PolicyType
     Antiphish
     SafeAttachments
     SafeLinks
+    OutboundSpam
+}
+
+enum PresetPolicyLevel
+{
+    None = 0
+    Strict = 1
+    Standard = 2
 }
 
 Class ORCACheckConfig
@@ -250,6 +258,7 @@ Class ORCACheckConfig
     $ConfigData
     $ConfigReadonly
     $ConfigDisabled
+    [string]$ConfigPolicyGuid
     $InfoText
     [array]$Results
     [ORCAConfigLevel]$Level
@@ -313,22 +322,20 @@ Class ORCACheck
     AddConfig([ORCACheckConfig]$Config)
     {
 
-        # Manipulate result for disabled and read-only
+        # Manipulate result for disabled
 
         if($Config.ConfigDisabled -eq $True)
         {
             $Config.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-        }
 
-        if($Config.ConfigDisabled)
-        {
-            $Config.Results = @()
-
-            $Config.Results += New-Object -TypeName ORCACheckConfigResult -Property @{
-                Level=[ORCAConfigLevel]::Informational
+            ForEach($c in $Config.Results)
+            {
+                # Downgrade Fails to Informational
+                if($c.Level -ne [ORCAConfigLevel]::Pass)
+                {
+                    $c.Level = [ORCAConfigLevel]::Informational
+                }
             }
-
-            $Config.Level = [ORCAConfigLevel]::Informational
         }
         
         $this.Config += $Config
@@ -531,6 +538,7 @@ Function Get-ORCACollection
     $Collection["HostedContentFilterPolicy"] = Get-HostedContentFilterPolicy
     $Collection["HostedContentFilterRule"] = Get-HostedContentFilterRule
     $Collection["HostedOutboundSpamFilterPolicy"] = Get-HostedOutboundSpamFilterPolicy
+    $Collection["HostedOutboundSpamFilterRule"] = Get-HostedOutboundSpamFilterRule
 
     Write-Host "$(Get-Date) Getting Tenant Settings"
     $Collection["AdminAuditLogConfig"] = Get-AdminAuditLogConfig
@@ -600,7 +608,9 @@ Function Get-ORCACollection
 
     # Determine policy states
     Write-Host "$(Get-Date) Determining applied policy states"
-    $Collection["PolicyStates"] = Get-PolicyStates -AntiphishPolicies $Collection["AntiPhishPolicy"] -AntiphishRules $Collection["AntiPhishRules"] -AntimalwarePolicies $Collection["MalwareFilterPolicy"] -AntimalwareRules $Collection["MalwareFilterRule"] -AntispamPolicies $Collection["HostedContentFilterPolicy"] -AntispamRules $Collection["HostedContentFilterRule"] -SafeLinksPolicies $Collection["SafeLinksPolicy"] -SafeLinksRules $Collection["SafeLinksRules"] -SafeAttachmentsPolicies $Collection["SafeAttachmentsPolicy"] -SafeAttachmentRules $Collection["SafeAttachmentsRules"] -ProtectionPolicyRulesATP $Collection["ATPProtectionPolicyRule"] -ProtectionPolicyRulesEOP $Collection["EOPProtectionPolicyRule"]
+
+    $Collection["PolicyStates"] = Get-PolicyStates -AntiphishPolicies $Collection["AntiPhishPolicy"] -AntiphishRules $Collection["AntiPhishRules"] -AntimalwarePolicies $Collection["MalwareFilterPolicy"] -AntimalwareRules $Collection["MalwareFilterRule"] -AntispamPolicies $Collection["HostedContentFilterPolicy"] -AntispamRules $Collection["HostedContentFilterRule"] -SafeLinksPolicies $Collection["SafeLinksPolicy"] -SafeLinksRules $Collection["SafeLinksRules"] -SafeAttachmentsPolicies $Collection["SafeAttachmentsPolicy"] -SafeAttachmentRules $Collection["SafeAttachmentsRules"] -ProtectionPolicyRulesATP $Collection["ATPProtectionPolicyRule"] -ProtectionPolicyRulesEOP $Collection["EOPProtectionPolicyRule"] -OutboundSpamPolicies $Collection["HostedOutboundSpamFilterPolicy"] -OutboundSpamRules $Collection["HostedOutboundSpamFilterRule"] -BuiltInProtectionRule $Collection["ATPBuiltInProtectionRule"]
+    $Collection["AnyPolicyState"] = Get-AnyPolicyState -PolicyStates $Collection["PolicyStates"]
 
     # Add IsPreset properties for Preset policies (where applicable)
     Add-IsPresetValue -CollectionEntity $Collection["HostedContentFilterPolicy"]
@@ -756,6 +766,25 @@ Function Get-ORCAReport
     }
 }
 
+class PolicyInfo {
+    # Policy applies to something, is enabled, has a rule
+    [bool] $Applies
+
+    # Preset policy (Standard or Strict)
+    [bool] $Preset
+
+    # Preset level if applicable
+    [PresetPolicyLevel] $PresetLevel
+
+    # Built in policy (BIP)
+    [bool] $BuiltIn
+
+    # Default policy
+    [bool] $Default
+    [String] $Name
+    [PolicyType] $Type
+}
+
 Function Get-PolicyStateInt
 {
     <#
@@ -767,12 +796,9 @@ Function Get-PolicyStateInt
         $Policies,
         $Rules,
         $ProtectionPolicyRules,
-        $Type
+        $BuiltInProtectionRule,
+        [PolicyType]$Type
     )
-
-    # Fixed names of preset policies
-    $PresetNames = @("Standard Preset Security Policy","Strict Preset Security Policy")
-    $BuiltInNames = @("Built-In Protection Policy")
 
     $ReturnPolicies = @{}
 
@@ -780,13 +806,76 @@ Function Get-PolicyStateInt
     {
 
         $Applies = $false
-        $Preset = $($PresetNames -contains $Policy.Name)
-        $BuiltIn = $($BuiltInNames -contains $Policy.Name)
+        $Default = $false
+        $Preset = $false
+        $PresetPolicyLevel = [PresetPolicyLevel]::None
+        $BuiltIn = ($Policy.Identity -eq $BuiltInProtectionRule.SafeAttachmentPolicy -or $Policy.Identity -eq $BuiltInProtectionRule.SafeLinksPolicy)
+        $Name = $Policy.Name
+
+        # Determine preset - MDO
+        if($Type -eq [PolicyType]::SafeLinks -or $Type -eq [PolicyType]::SafeAttachments)
+        {
+            $MatchingPolicyRule = @($ProtectionPolicyRules | Where-Object {$_.SafeAttachmentsPolicy -eq $Policy.Identity -or $_.SafeLinksPolicy -eq $Policy.Identity})
+            
+            if($MatchingPolicyRule.Count -gt 0)
+            {
+                $Preset = $True
+                $Name = $MatchingPolicyRule[0].Name
+            }
+        }
+
+        # Determine preset - EOP
+        if($Type -eq [PolicyType]::Antiphish -or $Type -eq [PolicyType]::Spam -or $Type -eq [PolicyType]::Malware)
+        {
+            $MatchingPolicyRule = @($ProtectionPolicyRules | Where-Object {
+                $_.HostedContentFilterPolicy -eq $Policy.Identity -or 
+                $_.AntiPhishPolicy -eq $Policy.Identity -or
+                $_.MalwareFilterPolicy -eq $Policy.Identity
+            })
+            
+            if($MatchingPolicyRule.Count -gt 0)
+            {
+                $Preset = $True
+                $Name = $MatchingPolicyRule[0].Name
+            }
+        }
+
+        # Determine level of preset based on name
+        if($Preset)
+        {
+            if($Name -like "Standard*")
+            {
+                $PresetPolicyLevel = ([PresetPolicyLevel]::Standard)
+            }
+            if($Name -like "Strict*")
+            {
+                $PresetPolicyLevel = ([PresetPolicyLevel]::Strict)
+            }
+        }
 
         # Built in rules always apply
         if($BuiltIn)
         {
             $Applies = $True
+        }
+
+        # Checks for default policies EOP
+        if(
+            $Policy.DistinguishedName.StartsWith("CN=Default,CN=Malware Filter,CN=Transport Settings") -or 
+            $Policy.DistinguishedName.StartsWith("CN=Default,CN=Hosted Content Filter,CN=Transport Settings") -or
+            $Policy.DistinguishedName.StartsWith("CN=Default,CN=Outbound Spam Filter,CN=Transport Settings"))
+        {
+            $Default = $True
+            $Applies = $True
+        }
+
+        # Check for default policies MDO
+        if ($Policy.DistinguishedName.StartsWith("CN=Office365 AntiPhish Default,CN=AntiPhish,CN=Transport Settings,CN=Configuration"))
+        {
+            $Default = $True
+            
+            # Policy will apply based on Enabled state
+            $Applies = $Policy.Enabled
         }
 
         # If not applying - check rules for application
@@ -809,15 +898,26 @@ Function Get-PolicyStateInt
                     {
                         $Applies = $true
                     }
+
+                    # Outbound spam uses From, FromMemberOf and SenderDomainIs conditions
+                    if($Type -eq [PolicyType]::OutboundSpam)
+                    {
+                        if($Rule.From.Count -gt 0 -or $Rule.FromMemberOf.Count -gt 0 -or $Rule.SenderDomainIs.Count -gt 0)
+                        {
+                            $Applies = $true
+                        }
+                    }
                 }
             }
         }
 
-        $ReturnPolicies[$Policy.Guid.ToString()] = New-Object -TypeName PSObject -Property @{
+        $ReturnPolicies[$Policy.Guid.ToString()] = New-Object -TypeName PolicyInfo -Property @{
             Applies=$Applies
             Preset=$Preset
+            PresetLevel=($PresetPolicyLevel)
             BuiltIn=$BuiltIn
-            Name=$Policy.Name
+            Default=$Default
+            Name=$Name 
             Type=$Type
         }
     }
@@ -839,23 +939,82 @@ Function Get-PolicyStates
         $AntimalwareRules,
         $AntispamPolicies,
         $AntispamRules,
+        $OutboundSpamPolicies,
+        $OutboundSpamRules,
         $SafeLinksPolicies,
         $SafeLinksRules,
         $SafeAttachmentsPolicies,
         $SafeAttachmentRules,
         $ProtectionPolicyRulesATP,
-        $ProtectionPolicyRulesEOP
+        $ProtectionPolicyRulesEOP,
+        $BuiltInProtectionRule
     )
 
     $ReturnPolicies = @{}
 
-    $ReturnPolicies += Get-PolicyStateInt -Policies $AntiphishPolicies -Rules $AntiphishRules -Type [PolicyType]::Antiphish -ProtectionPolicyRules $ProtectionPolicyRulesATP
-    $ReturnPolicies += Get-PolicyStateInt -Policies $AntimalwarePolicies -Rules $AntimalwareRules -Type [PolicyType]::Malware -ProtectionPolicyRules $ProtectionPolicyRulesEOP
-    $ReturnPolicies += Get-PolicyStateInt -Policies $AntispamPolicies -Rules $AntispamRules -Type [PolicyType]::Spam -ProtectionPolicyRules $ProtectionPolicyRulesEOP
-    $ReturnPolicies += Get-PolicyStateInt -Policies $SafeLinksPolicies -Rules $SafeLinksRules -Type [PolicyType]::SafeAttachments -ProtectionPolicyRules $ProtectionPolicyRulesATP
-    $ReturnPolicies += Get-PolicyStateInt -Policies $SafeAttachmentsPolicies -Rules $SafeAttachmentRules -Type [PolicyType]::SafeLinks -ProtectionPolicyRules $ProtectionPolicyRulesATP
+    $ReturnPolicies += Get-PolicyStateInt -Policies $AntiphishPolicies -Rules $AntiphishRules -Type ([PolicyType]::Antiphish) -ProtectionPolicyRules $ProtectionPolicyRulesEOP -BuiltInProtectionRule $BuiltInProtectionRule
+    $ReturnPolicies += Get-PolicyStateInt -Policies $AntimalwarePolicies -Rules $AntimalwareRules -Type ([PolicyType]::Malware) -ProtectionPolicyRules $ProtectionPolicyRulesEOP
+    $ReturnPolicies += Get-PolicyStateInt -Policies $AntispamPolicies -Rules $AntispamRules -Type ([PolicyType]::Spam) -ProtectionPolicyRules $ProtectionPolicyRulesEOP
+    $ReturnPolicies += Get-PolicyStateInt -Policies $SafeLinksPolicies -Rules $SafeLinksRules -Type ([PolicyType]::SafeAttachments) -ProtectionPolicyRules $ProtectionPolicyRulesATP -BuiltInProtectionRule $BuiltInProtectionRule
+    $ReturnPolicies += Get-PolicyStateInt -Policies $SafeAttachmentsPolicies -Rules $SafeAttachmentRules -Type ([PolicyType]::SafeLinks) -ProtectionPolicyRules $ProtectionPolicyRulesATP -BuiltInProtectionRule $BuiltInProtectionRule
+    $ReturnPolicies += Get-PolicyStateInt -Policies $OutboundSpamPolicies -Rules $OutboundSpamRules -Type ([PolicyType]::OutboundSpam) -ProtectionPolicyRules $ProtectionPolicyRulesATP -BuiltInProtectionRule $BuiltInProtectionRule
 
     return $ReturnPolicies
+}
+
+function Get-AnyPolicyState
+{
+    <#
+    .SYNOPSIS
+        Returns if any policy is enabled and applies
+    #>
+
+    Param(
+        $PolicyStates
+    )
+
+    $ReturnVals = @{}
+    $ReturnVals[[PolicyType]::Antiphish] = $False
+    $ReturnVals[[PolicyType]::Malware] = $False
+    $ReturnVals[[PolicyType]::Spam] = $False
+    $ReturnVals[[PolicyType]::SafeAttachments] = $False
+    $ReturnVals[[PolicyType]::SafeLinks] = $False
+
+    foreach($Key in $PolicyStates.Keys)
+    {
+        if($PolicyStates[$Key].Type -eq [PolicyType]::Antiphish)
+        {
+            Write-Host "AP Policy"
+        }
+
+        if($PolicyStates[$Key].Type -eq [PolicyType]::Antiphish -and $PolicyStates[$Key].Applies)
+        {
+            $ReturnVals[[PolicyType]::Antiphish] = $True
+        }
+
+        if($PolicyStates[$Key].Type -eq [PolicyType]::Malware -and $PolicyStates[$Key].Applies)
+        {
+            $ReturnVals[[PolicyType]::Malware] = $True
+        }
+
+        if($PolicyStates[$Key].Type -eq [PolicyType]::Spam -and $PolicyStates[$Key].Applies)
+        {
+            $ReturnVals[[PolicyType]::Spam] = $True
+        }
+
+        if($PolicyStates[$Key].Type -eq [PolicyType]::SafeAttachments -and $PolicyStates[$Key].Applies)
+        {
+            $ReturnVals[[PolicyType]::SafeAttachments] = $True
+        }
+
+        if($PolicyStates[$Key].Type -eq [PolicyType]::SafeLinks -and $PolicyStates[$Key].Applies)
+        {
+            $ReturnVals[[PolicyType]::SafeLinks]  = $True
+        }
+    }
+
+    return $ReturnVals;
+
 }
 
 Function Invoke-ORCA

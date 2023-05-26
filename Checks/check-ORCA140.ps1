@@ -42,13 +42,14 @@ class ORCA140 : ORCACheck
             $HighConfidenceSpamAction = $($Policy.HighConfidenceSpamAction)
 
             $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem=$policyname
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
             
             # Fail if HighConfidenceSpamAction is not set to Quarantine
     

@@ -36,7 +36,7 @@ class ORCA103 : ORCACheck
 
     GetResults($Config)
     {
-        $CountOfPolicies = ($Config["HostedOutboundSpamFilterPolicy"]).Count
+
         ForEach($Policy in $Config["HostedOutboundSpamFilterPolicy"])
         {
 
@@ -45,23 +45,12 @@ class ORCA103 : ORCACheck
                 RecipientLimitExternalPerHour
             
             #>
-            $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
             $RecipientLimitExternalPerHour = $($Policy.RecipientLimitExternalPerHour)
             $RecipientLimitInternalPerHour = $($Policy.RecipientLimitInternalPerHour)
             $RecipientLimitPerDay = $($Policy.RecipientLimitPerDay)
             $ActionWhenThresholdReached = $($Policy.ActionWhenThresholdReached)
-
-            if($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
-            {
-                $IsBuiltIn =$True
-                $policyname = "$policyname" +" [Built-In]"
-            }
-            elseif(($policyname -eq "Default" -or $policyname -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
-            {
-                $IsBuiltIn =$True
-                $policyname = "$policyname" +" [Default]"
-            }
 
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.Object=$policyname
@@ -69,6 +58,7 @@ class ORCA103 : ORCACheck
             $ConfigObject.ConfigData=$RecipientLimitExternalPerHour
             $ConfigObject.ConfigDisabled=!$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             # Recipient per hour limit for standard is 500
             If($RecipientLimitExternalPerHour -eq 500)

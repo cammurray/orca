@@ -12,7 +12,7 @@ class ORCA180 : ORCACheck
     {
         $this.Control=180
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Anti-spoofing protection"
         $this.PassText="Anti-phishing policy exists and EnableSpoofIntelligence is true"
         $this.FailRecommendation="Enable anti-spoofing protection in Anti-phishing policy"
@@ -38,8 +38,6 @@ class ORCA180 : ORCACheck
 
     GetResults($Config)
     {
-
-        $Enabled = $False
       
         ForEach($Policy in $Config["AntiPhishPolicy"]) 
         {
@@ -51,6 +49,7 @@ class ORCA180 : ORCACheck
             $ConfigObject.ConfigData=$Policy.EnableSpoofIntelligence
             $ConfigObject.ConfigReadonly = $Policy.IsPreset
             $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             # Fail if Enabled or EnableSpoofIntelligence is not set to true in any policy
             If($Policy.EnableSpoofIntelligence -eq $true)
@@ -64,24 +63,19 @@ class ORCA180 : ORCACheck
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
 
-            if($Policy.Enabled)
-            {
-                $Enabled = $True
-            }
-
             $this.AddConfig($ConfigObject)
 
         }
 
-        # Ensure atleast one policy was enabled
-        if(!$Enabled)
+        If($Config["AnyPolicyState"][[PolicyType]::Antiphish] -eq $False)
         {
             $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.ConfigItem="Anti-Phishing Policies"
-            $ConfigObject.ConfigData="No policies enabled"
+            $ConfigObject.Object="No Enabled Policies"
+            $ConfigObject.ConfigItem="EnableSpoofIntelligence"
+            $ConfigObject.ConfigData=""
             $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             $this.AddConfig($ConfigObject)
-        }
+        }       
 
     }
 

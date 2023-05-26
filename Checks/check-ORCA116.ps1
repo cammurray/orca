@@ -18,7 +18,7 @@ class ORCA116 : ORCACheck
     {
         $this.Control=116
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Mailbox Intelligence Protection Action"
         $this.PassText="Mailbox intelligence based impersonation protection action set to move message to junk mail folder"
         $this.FailRecommendation="Change Mailbox intelligence based impersonation protection action to move message to junk mail folder"
@@ -45,9 +45,11 @@ class ORCA116 : ORCACheck
     GetResults($Config)
     {
 
-        $PolicyExists = $False
-        #$CountOfPolicies = ($Config["AntiPhishPolicy"]| Where-Object {$_.Enabled -eq $true}).Count
-        $CountOfPolicies = ($global:AntiSpamPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
+        <#
+        
+        This check does not need a default catch all as the default anti-phishing policy cannot be disabled
+        
+        #>
        
         ForEach($Policy in ($Config["AntiPhishPolicy"] ))
         {
@@ -55,10 +57,7 @@ class ORCA116 : ORCACheck
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $MailboxIntelligenceProtectionAction = $($Policy.MailboxIntelligenceProtectionAction)
 
-            $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
-
-            $PolicyExists = $True
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             # Determine if Mailbox Intelligence Protection action is configured
 
@@ -69,6 +68,7 @@ class ORCA116 : ORCACheck
             $ConfigObject.ConfigData=$MailboxIntelligenceProtectionAction
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
             
             # For standard, this should be MoveToJmf
             If($MailboxIntelligenceProtectionAction -ne "MoveToJmf")
@@ -100,16 +100,17 @@ class ORCA116 : ORCACheck
             $this.AddConfig($ConfigObject)
 
         }
-        
-        If($PolicyExists -eq $False)
+
+        If($Config["AnyPolicyState"][[PolicyType]::Antiphish] -eq $False)
         {
             $ConfigObject = [ORCACheckConfig]::new()
-
-            $ConfigObject.Object="No Enabled Policy"
-            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
-
+            $ConfigObject.Object="No Enabled Policies"
+            $ConfigObject.ConfigItem="MailboxIntelligenceProtectionAction"
+            $ConfigObject.ConfigData=""
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             $this.AddConfig($ConfigObject)
         }
+
 
     }
 

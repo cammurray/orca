@@ -18,7 +18,7 @@ class ORCA228 : ORCACheck
     {
         $this.Control=228
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Anti-phishing trusted senders"
         $this.PassText="No trusted senders in Anti-phishing policy"
         $this.FailRecommendation="Remove whitelisting on senders in Anti-phishing policy"
@@ -43,26 +43,21 @@ class ORCA228 : ORCACheck
     GetResults($Config)
     {
 
-        $PolicyExists = $False
-        #$CountOfPolicies = ($Config["AntiPhishPolicy"] | Where-Object {$_.Enabled -eq $True}).Count
-        $CountOfPolicies = ($global:AntiSpamPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
+
         ForEach($Policy in ($Config["AntiPhishPolicy"] ))
         {
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
 
             $ExcludedSenders = $($Policy.ExcludedSenders)
 
-            $policyname = $($Policy.Name)
-
-            $PolicyExists = $True
-
             #  Determine if tips for user impersonation is on
 
             $ConfigObject = [ORCACheckConfig]::new()
 
-            $ConfigObject.Object=$policyname
+            $ConfigObject.Object=$($Policy.Name)
             $ConfigObject.ConfigItem="ExcludedSenders"
             $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             <#
             
@@ -83,17 +78,7 @@ class ORCA228 : ORCACheck
 
             $this.AddConfig($ConfigObject)
 
-        }
-
-        If($PolicyExists -eq $False)
-        {
-            $ConfigObject = [ORCACheckConfig]::new()
-
-            $ConfigObject.Object="No Policies"
-            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
-
-            $this.AddConfig($ConfigObject)      
-        }        
+        }    
 
     }
 

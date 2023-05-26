@@ -291,7 +291,7 @@ class html : ORCAOutput
             $Output += "
             <div class='alert alert-danger pt-2' role='alert'>
                 <p>Microsoft Defender for Office 365 was <strong>NOT</strong> detected on this tenant. <strong>The purpose of ORCA is to check for Microsoft Defender for Office 365 recommended configuration</strong> - <i>however, these checks will be skipped. Other results should be relevant to base EOP configuration.</i></p>
-                <p>Consider Office Advanced Threat Protection for:<ul><li>Automatic incident response capabilities</li><li>Attack simulation capabilities</li><li>Behavioural analysis (sandboxing) of malware</li><li>Time of click protection against URLs</li><li>Advanced anti-phishing controls</li></ul></p>
+                <p>Consider Microsoft Defender for Office 365 for:<ul><li>Automatic incident response capabilities</li><li>Attack simulation capabilities</li><li>Behavioural analysis (sandboxing) of malware</li><li>Time of click protection against URLs</li><li>Advanced anti-phishing controls</li></ul></p>
             </div>
             
             "    
@@ -604,6 +604,31 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     $ConfigData = $o.ConfigData
                                 }
 
+                                $PolicyPills = "";
+
+                                if($null -ne $o.ConfigPolicyGuid)
+                                {
+                                    # Get policy object
+                                    $Policy = $Collection["PolicyStates"][$o.ConfigPolicyGuid]
+
+                                    if($Policy.Preset)
+                                    {
+                                        $PolicyPills += "
+                                            <div class='flex-row badge badge-pill badge-info'>
+                                                <span style='vertical-align: middle;'>Preset ($($Policy.PresetLevel))</span>
+                                            </div>"
+                                    }
+
+                                    if($Policy.BuiltIn)
+                                    {
+                                        $PolicyPills += "
+                                            <div class='flex-row badge badge-pill badge-info'>
+                                                <span style='vertical-align: middle;'>Built-in Protection Policy</span>
+                                            </div>"
+                                    }
+
+                                }
+
                                 If($Check.CheckType -eq [CheckType]::ObjectPropertyValue)
                                 {
                                     # Object, property, value checks need three columns
@@ -612,7 +637,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     if($o.ConfigDisabled -eq $true)
                                     {
                                         $Output += "
-                                                <div class='flex-row badge badge-pill badge-light'>
+                                                <div class='flex-row badge badge-pill badge-dark>
                                                     <span style='vertical-align: middle;'>Disabled</span>
                                                     <span class='fas fa-times-circle text-muted' style='vertical-align: middle;'></span>
                                                 </div>"
@@ -627,6 +652,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                                 </div>"
                                     }
                                     
+                                    $Output += $PolicyPills
                                     
                                     $Output += "</td>"
                                         
@@ -641,7 +667,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     if($o.ConfigDisabled -eq $true)
                                     {
                                         $Output += "
-                                                <div class='flex-row badge badge-pill badge-light'>
+                                                <div class='flex-row badge badge-pill badge-dark'>
                                                     <span style='vertical-align: middle;'>Disabled</span>
                                                     <span class='fas fa-times-circle text-muted' style='vertical-align: middle;'></span>
                                                 </div>"
@@ -655,6 +681,8 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                                     <span class='fas fa-lock text-muted' style='vertical-align: middle;'></span>
                                                 </div>"
                                     }
+
+                                    $Output += $PolicyPills
 
                                     $Output += "</td>"
 

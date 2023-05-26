@@ -20,11 +20,11 @@ class ORCA239 : ORCACheck
     {
         $this.Control=239
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Built-in Protection"
         $this.PassText="No exclusions for the built-in protection policies"
         $this.FailRecommendation="Remove exclusions from the built-in protection policies."
-        $this.Importance="Built-in protection policies provide catch-all protection against users not covered by higher order policies. Excluding users from the built-in protection policies may mean these users have reduced protections."
+        $this.Importance="Built-in protection policies provide catch-all protection against users not covered by higher order policies. Excluding users from the built-in protection policies may mean these users have reduced protections. It is important not to rely on the 'built-in' policies, as these policies only apply the minimum level of protections and should serve as a catch-all."
         $this.ItemName="Exclusion Type"
         $this.DataType="Exclusion"
         $this.ExpandResults=$True
