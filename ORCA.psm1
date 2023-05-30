@@ -593,6 +593,9 @@ Function Get-ORCACollection
     Write-Host "$(Get-Date) Getting Connectors"
     $Collection["InboundConnector"] = Get-InboundConnector
 
+    Write-Host "$(Get-Date) Getting Outlook External Settings"
+    $Collection["ExternalInOutlook"] = Get-ExternalInOutlook
+
     # Required for Enhanced Filtering checks
     Write-Host "$(Get-Date) Getting MX Reports for all domains"
     $Collection["MXReports"] = @()
