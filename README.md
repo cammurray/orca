@@ -158,3 +158,9 @@ Example - To output in to MyCosmosAccount database MyCosmosDB, in to a collectio
 * Database, Required, String - The Cosmos DB name
 * Key, Required, String - One of the keys for this Cosmos DB account
 * Collection, Optional, String - The collection to output in to, by default this will be ORCA
+
+# Additional notes
+
+ORCA is developed by Product Managers at Microsoft, however, is not an official Microsoft utility.
+
+For official, in-product configuration analysis, use the MDO config analyzer.
