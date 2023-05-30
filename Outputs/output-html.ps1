@@ -824,27 +824,29 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     </tbody>
                                 </table>"
                                 
-                            # If any links exist
-                            If($Check.Links)
-                            {
-                                $Output += "
-                                <table>"
-                                ForEach($Link in $Check.Links.Keys) {
-                                    $Output += "
-                                    <tr>
-                                    <td style='width:40px'><i class='fas fa-external-link-alt'></i></td>
-                                    <td><a href='$($Check.Links[$Link])'>$Link</a></td>
-                                    <tr>
-                                    "
-                                }
-                                $Output += "
-                                </table>
-                                "
-                            }
+
 
                             $Output +="
                             </div>"
 
+                        }
+
+                        # If any links exist
+                        If($Check.Links)
+                        {
+                            $Output += "
+                            <table>"
+                            ForEach($Link in $Check.Links.Keys) {
+                                $Output += "
+                                <tr>
+                                <td style='width:40px'><i class='fas fa-external-link-alt'></i></td>
+                                <td><a href='$($Check.Links[$Link])'>$Link</a></td>
+                                <tr>
+                                "
+                            }
+                            $Output += "
+                            </table>
+                            "
                         }
 
                         $Output += "
