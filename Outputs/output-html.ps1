@@ -21,6 +21,7 @@ class html : ORCAOutput
 
     # Obtain the tenant domain and date for the report
     $TenantDomain = ($Collection["AcceptedDomains"] | Where-Object {$_.InitialDomain -eq $True}).DomainName
+    $Tenant = $(($Collection["AcceptedDomains"] | Where-Object {$_.InitialDomain -eq $True}).DomainName -split '\.')[0]
     $ReportDate = $(Get-Date -format 'dd-MMM-yyyy HH:mm')
 
     # Summary
@@ -43,8 +44,30 @@ class html : ORCAOutput
     $AreaIcon["Transport Rules"] = "fas fa-list"
     $AreaIcon["Transport Rules"] = "fas fa-list"
 
+    # Embed checks as JSON in to HTML file at beginning for charting/historic purposes
+    $MetaObject = New-Object -TypeName PSObject -Property @{
+        Tenant=$Tenant
+        TenantDomain=$TenantDomain
+        ReportDate=$ReportDate
+        Version=$($this.VersionCheck.Version.ToString())
+        Summary=New-Object -TypeName PSObject -Property @{
+            Recommendation=$RecommendationCount
+            OK=$OKCount
+            InfoCount=$InfoCount
+        }
+        Checks=$Checks
+    }
+
+    $EncodedText = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(($MetaObject | ConvertTo-Json)))
+    $output = "<!-- checkjson`n"
+    $output += $($EncodedText)
+    $output += "`nendcheckjson -->"
+
+    # Get historic report info
+    $HistoricData = $this.GetHistoricData($MetaObject,$Tenant)
+
     # Output start
-    $output = "<!doctype html>
+    $output += "<!doctype html>
     <html lang='en'>
     <head>
         <!-- Required meta tags -->
@@ -60,6 +83,10 @@ class html : ORCAOutput
         
         <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css' crossorigin='anonymous'>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/js/all.js'></script>
+
+        <script src='https://cdn.jsdelivr.net/npm/chart.js'></script>
+        <script src='https://cdn.jsdelivr.net/npm/moment@2.27.0'></script>
+        <script src='https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@0.1.1'></script>
         
         <style>
         .table-borderless td,
@@ -353,6 +380,11 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                         </div>
                     </div>
                 </div>
+
+                <div>
+                    <canvas id='chartOverview' height='80'></canvas>
+                </div>
+
             </div>"
 
     <#
@@ -839,22 +871,44 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
             <footer class='app-footer'>
             <p><center>Bugs? Issues? Suggestions? <a href='https://aka.ms/orca-github'>GitHub!</a><center></p>
             </footer>
-        </body>
-    </html>"
+        </body>"
+
+    <#
+    
+        CHART GENERATION
+    
+    #>
+
+    $Output += "<script>
+
+    const ctx = document.getElementById('chartOverview');"
+
+    $Output += $this.getChartDataOverview($HistoricData)
+
+    $Output += "let chart = new Chart(ctx, {
+        type: 'line',
+        data: data,
+        
+        options: {
+          scales: {
+            x: {
+              type: 'time',
+              time: {
+                unit: 'day'
+                }
+            }
+          },
+        },
+      });
+  </script>"
+
+    $Output += "</html>"
 
 
         # Write to file
 
-        if($null -eq $this.OutputDirectory)
-        {
-            $OutputDir = $this.DefaultOutputDirectory
-        }
-        else 
-        {
-            $OutputDir = $this.OutputDirectory
-        }
+        $OutputDir = $this.GetOutputDir();
 
-        $Tenant = $(($Collection["AcceptedDomains"] | Where-Object {$_.InitialDomain -eq $True}).DomainName -split '\.')[0]
         $ReportFileName = "ORCA-$($tenant)-$(Get-Date -Format 'yyyyMMddHHmm').html"
 
         $OutputFile = "$OutputDir\$ReportFileName"
@@ -870,6 +924,111 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
         $this.Completed = $True
         $this.Result = $OutputFile
 
+    }
+
+    [string]GetOutputDir()
+    {
+        if($null -eq $this.OutputDirectory)
+        {
+            return $this.DefaultOutputDirectory
+        }
+        else 
+        {
+            return $this.OutputDirectory
+        }
+    }
+
+    [string]getChartDataOverview($HistoricData)
+    {
+
+        $Output = "";
+        $Output += "const data = {"
+        $Output += "labels: ["
+        # Build labels
+        foreach($dataSet in $HistoricData)
+        {
+            $Output += "new Date('$($dataSet.ReportDate)'),"
+        }
+
+        # build dataset Recommendation OK InfoCount
+        $Output += "],
+        datasets: [{
+            label: 'Info',
+            borderColor: '#adb5bd',
+            backgroundColor: '#adb5bd',
+            data: ["
+
+            foreach($dataSet in $HistoricData)
+            {
+                $Output += "$($dataSet.Summary.InfoCount),"
+            }
+
+            $Output += "],
+          },
+          {
+            label: 'Recommendation',
+            borderColor: '#ffc107',
+            backgroundColor: '#ffc107',
+            data: ["
+
+            foreach($dataSet in $HistoricData)
+            {
+                $Output += "$($dataSet.Summary.Recommendation),"
+            }
+
+            $Output += "],
+          },
+          {
+            label: 'OK',
+            borderColor: '#198754',
+            backgroundColor: '#198754',
+            data: ["
+
+            foreach($dataSet in $HistoricData)
+            {
+                $Output += "$($dataSet.Summary.OK),"
+            }
+
+            $Output += "],
+          }],
+        };"
+        return $Output += "`n"
+    }
+
+    [Object[]]GetHistoricData($Current,$Tenant)
+    {
+        $HistoricData = @($Current)
+
+
+        # Get reports in outputdirectory
+        try {
+
+            $Path = $($this.GetOutputDir() + "\ORCA-$($Tenant)-*.html");
+    
+            $MatchingReports = Get-ChildItem $Path
+            ForEach($MatchReport in $MatchingReports)
+            {
+                # Get the first line
+                $FirstLines = Get-Content $MatchReport -First 2
+                if($FirstLines[0] -like "<!-- checkjson*")
+                {
+                    # Get the underlying object
+                    $DecodedText = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($FirstLines[1]))
+                    $Object = ConvertFrom-Json $DecodedText
+
+                    if($Object.Tenant -eq $Tenant)
+                    {
+                        Write-Host "$(Get-Date) Output - HTML - Got historic data for tenant $($Tenant) in $($MatchReport.FullName)"
+                        $HistoricData += $Object
+                    }
+                }
+            }
+        }
+        catch {
+            <#Do this if a terminating exception happens#>
+        }
+
+        return $HistoricData;
     }
 
 }
