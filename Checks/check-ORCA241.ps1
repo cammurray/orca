@@ -1,32 +1,31 @@
 using module "..\ORCA.psm1"
 
-class ORCA111 : ORCACheck
+class ORCA241 : ORCACheck
 {
     <#
     
-        CONSTRUCTOR with Check Header Data
+        Check for first contact safety tip
     
     #>
 
-    ORCA111()
+    ORCA241()
     {
-        $this.Control="ORCA-111"
+        $this.Control=241
         $this.Services=[ORCAService]::OATP
         $this.Area="Microsoft Defender for Office 365 Policies"
-        $this.Name="Unauthenticated Sender (tagging)"
-        $this.PassText="Anti-phishing policy exists and EnableUnauthenticatedSender is true"
-        $this.FailRecommendation="Enable unauthenticated sender tagging in Anti-phishing policy"
-        $this.Importance="When the sender email address is spoofed, the message appears to originate from someone or somewhere other than the actual source. It is recommended to enable unauthenticated sender tagging in Office 365 Anti-phishing policies. The feature apply a '?' symbol in Outlook's sender card if the sender fails authentication checks."
+        $this.Name="First Contact Safety Tip"
+        $this.PassText="Anti-phishing policy exists and EnableFirstContactSafetyTips is true"
+        $this.FailRecommendation="Enable fist contact safety tips to highlight suspicious messages to users."
+        $this.Importance="Attackers pretend to be other people in order to trick users. By enabling first contact safety tips, users are shown a visual representation on the email that this is the first time that they have received an email from this sender. This can trigger users in to being suspicious of an email if it they believe it is coming from someone they know."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Antiphishing Policy"
         $this.ItemName="Setting"
         $this.DataType="Current Value"
-        $this.ChiValue=[ORCACHI]::Medium
+        $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
+            "First Contact Safety Tip"="https://learn.microsoft.com/en-us/microsoft-365/security/office-365-security/anti-phishing-policies-about?view=o365-worldwide#first-contact-safety-tip"
             "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
-            "Unverified Sender"="https://aka.ms/orca-atpp-docs-12"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-6"
         }
     }
 
@@ -43,23 +42,19 @@ class ORCA111 : ORCACheck
         {
 
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
-            $EnableUnauthenticatedSender = $($Policy.EnableUnauthenticatedSender)
 
-            $IsBuiltIn = $false
             $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
-            $identity = $($Policy.Identity)
-            $enabled = $($Policy.Enabled)
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.Object=$policyname
-            $ConfigObject.ConfigItem="EnableUnauthenticatedSender"
-            $ConfigObject.ConfigData=$EnableUnauthenticatedSender
+            $ConfigObject.ConfigItem="EnableFirstContactSafetyTips"
+            $ConfigObject.ConfigData=$Policy.EnableFirstContactSafetyTips
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
-            If(($enabled -eq $true -and $EnableUnauthenticatedSender -eq $true) -or ($identity -eq "Office365 AntiPhish Default" -and $EnableUnauthenticatedSender -eq $true))
+            If($Policy.EnableFirstContactSafetyTips -eq $true)
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             }
@@ -77,7 +72,7 @@ class ORCA111 : ORCACheck
         {
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.Object="No Enabled Policies"
-            $ConfigObject.ConfigItem="EnableUnauthenticatedSender"
+            $ConfigObject.ConfigItem="EnableFirstContactSafetyTips"
             $ConfigObject.ConfigData="False"
             $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             $this.AddConfig($ConfigObject)

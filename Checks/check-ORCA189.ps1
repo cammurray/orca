@@ -21,7 +21,7 @@ class ORCA189 : ORCACheck
     {
         $this.Control=189
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Safe Attachments Whitelisting"
         $this.PassText="Safe Attachments is not bypassed"
         $this.FailRecommendation="Remove mail flow rules which bypass Safe Attachments"
@@ -59,6 +59,7 @@ class ORCA189 : ORCACheck
                 $ConfigObject.Object=$($Rule.Name)
                 $ConfigObject.ConfigItem=$($Rule.SetHeaderName)
                 $ConfigObject.ConfigData=$($Rule.SetHeaderValue)
+                $ConfigObject.ConfigDisabled=$($Rule.State -eq "Disabled")
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
                 $this.AddConfig($ConfigObject)  
 

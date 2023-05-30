@@ -12,7 +12,7 @@ class ORCA112 : ORCACheck
     {
         $this.Control="ORCA-112"
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Anti-spoofing protection action"
         $this.PassText="Anti-spoofing protection action is configured to Move message to the recipients' Junk Email folders in Anti-phishing policy"
         $this.FailRecommendation="Configure Anti-spoofing protection action to Move message to the recipients' Junk Email folders in Anti-phishing policy"
@@ -39,121 +39,59 @@ class ORCA112 : ORCACheck
 
     GetResults($Config)
     {
-        #$CountOfPolicies = ($Config["AntiPhishPolicy"]).Count
-        $CountOfPolicies = ($global:AntiSpamPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
        
         ForEach ($Policy in $Config["AntiPhishPolicy"])
         {
-            $IsPolicyDisabled = $false
+            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $AuthenticationFailAction = $($Policy.AuthenticationFailAction)
 
-            $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
             $identity = $($Policy.Identity)
             $enabled = $($Policy.Enabled)
-
-            ForEach($data in ($global:AntiSpamPolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
-            {
-                $IsPolicyDisabled = !$data.IsEnabled
-            }
-
-            if($IsPolicyDisabled)
-            {
-                $IsPolicyDisabled = $true
-                $policyname = "$policyname" + " [Disabled]"
-                $AuthenticationFailAction = "N/A"
-            }
-            elseif($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
-            {
-                $IsBuiltIn =$True
-                $policyname = "$policyname" +" [Built-In]"
-            }
-            elseif(($policyname -eq "Default" -or $policyname -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
-            {
-                $IsBuiltIn =$True
-                $policyname = "$policyname" +" [Default]"
-            }
-
+            
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="AuthenticationFailAction"
             $ConfigObject.ConfigData=$AuthenticationFailAction
-            
+            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigReadonly=$Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
+
             If(($enabled -eq $true -and $AuthenticationFailAction -eq "MoveToJmf") -or ($identity -eq "Office365 AntiPhish Default" -and $AuthenticationFailAction -eq "MoveToJmf"))
             {
-                if($IsPolicyDisabled)
-                {
-                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                elseif($IsBuiltIn)
-                {
-                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                else
-                {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                }
             }
             Else 
             {
-                if($IsPolicyDisabled)
-                {
-                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                elseif($IsBuiltIn)
-                {
-                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                else
-                {
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             }
 
             If(($enabled -eq $true -and $AuthenticationFailAction -eq "Quarantine") -or ($identity -eq "Office365 AntiPhish Default" -and $AuthenticationFailAction -eq "Quarantine"))
             {
-                if($IsPolicyDisabled)
-                {
-                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                elseif($IsBuiltIn)
-                {
-                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                else
-                {
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
-                }
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
             }
             Else 
             {
-                if($IsPolicyDisabled)
-                {
-                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                elseif($IsBuiltIn)
-                {
-                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                else
-                {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")
-                }
             }
             
             # Add config to check
             $this.AddConfig($ConfigObject)
 
-        }        
+        }
+        
+    
+        If($Config["AnyPolicyState"][[PolicyType]::Antiphish] -eq $False)
+        {
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object="No Enabled Policies"
+            $ConfigObject.ConfigItem="AuthenticationFailAction"
+            $ConfigObject.ConfigData=""
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            $this.AddConfig($ConfigObject)
+        }
+        
 
     }
 

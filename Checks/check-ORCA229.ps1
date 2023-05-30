@@ -18,7 +18,7 @@ class ORCA229 : ORCACheck
     {
         $this.Control=229
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Anti-phishing trusted domains"
         $this.PassText="No trusted domains in Anti-phishing policy"
         $this.FailRecommendation="Remove whitelisting on domains in Anti-phishing policy"
@@ -43,40 +43,20 @@ class ORCA229 : ORCACheck
     GetResults($Config)
     {
 
-        $PolicyExists = $False
-        #$CountOfPolicies = ($Config["AntiPhishPolicy"]| Where-Object {$_.Enabled -eq $True}).Count
-        $CountOfPolicies = ($global:AntiSpamPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
         ForEach($Policy in ($Config["AntiPhishPolicy"] ))
         {
 
-            $IsPolicyDisabled = $false
+            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ExcludedDomains = $($Policy.ExcludedDomains)
 
-            $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
+            
+            <#
+            
+            Important! Do not apply read only here on preset policies. This can be adjusted.
+            
+            #>
 
-            ForEach($data in ($global:MalwarePolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
-            {
-                $IsPolicyDisabled = !$data.IsEnabled
-            }
-
-            if($IsPolicyDisabled)
-            {
-                $IsPolicyDisabled = $true
-                $policyname = "$policyname" +" [Disabled]"
-            }
-            elseif($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
-            {
-                $IsBuiltIn =$True
-                $policyname = "$policyname" +" [Built-In]"
-            }
-            elseif(($policyname -eq "Default" -or $policyname -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
-            {
-                $IsBuiltIn =$True
-                $policyname = "$policyname" +" [Default]"
-            }
-
-            $PolicyExists = $True
             If(($ExcludedDomains).Count -gt 0)
             {
                 ForEach($Domain in $ExcludedDomains) 
@@ -86,7 +66,9 @@ class ORCA229 : ORCACheck
                     $ConfigObject.Object=$policyname
                     $ConfigObject.ConfigItem="ExcludedDomains"
                     $ConfigObject.ConfigData=$($Domain)
+                    $ConfigObject.ConfigDisabled = $IsPolicyDisabled
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                    $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
                     $this.AddConfig($ConfigObject)  
                 }
             }
@@ -97,33 +79,13 @@ class ORCA229 : ORCACheck
                 $ConfigObject.Object=$policyname
                 $ConfigObject.ConfigItem="ExcludedDomains"
                 $ConfigObject.ConfigData="No domain detected"
-                if($IsPolicyDisabled)
-                {
-                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                elseif($IsBuiltIn)
-                {
-                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                else
-                   {
+                $ConfigObject.ConfigDisabled = $IsPolicyDisabled
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                   }
+                $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
+
                 $this.AddConfig($ConfigObject)  
             }
-        }
-
-        If($PolicyExists -eq $False)
-        {
-            $ConfigObject = [ORCACheckConfig]::new()
-
-            $ConfigObject.Object="No Policies"
-            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")            
-
-            $this.AddConfig($ConfigObject)      
-        }             
+        }      
 
     }
 

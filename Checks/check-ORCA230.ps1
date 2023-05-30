@@ -18,7 +18,7 @@ class ORCA230 : ORCACheck
     {
         $this.Control=230
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Anti-phishing Rules"
         $this.PassText="Each domain has a Anti-phishing policy applied to it, or the default policy is being used"
         $this.FailRecommendation="Check your anti-phishing policies for duplicate rules. Some policies and settings may not be applying."

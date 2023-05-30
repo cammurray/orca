@@ -18,7 +18,7 @@ class ORCA158 : ORCACheck
     {
         $this.Control=158
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Safe Attachments SharePoint and Teams"
         $this.PassText="Safe Attachments is enabled for SharePoint and Teams"
         $this.FailRecommendation="Enable Safe Attachments for SharePoint and Teams"
@@ -48,6 +48,7 @@ class ORCA158 : ORCACheck
         $ConfigObject.Object=$Config["AtpPolicy"].Name
         $ConfigObject.ConfigItem="EnableATPForSPOTeamsODB"
         $ConfigObject.ConfigData=$Config["AtpPolicy"].EnableATPForSPOTeamsODB
+        
         # Determine if ATP is enabled or not
         If($Config["AtpPolicy"].EnableATPForSPOTeamsODB -eq $false) 
         {

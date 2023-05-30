@@ -18,11 +18,11 @@ class ORCA225 : ORCACheck
     {
         $this.Control=225
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Safe Documents for Office clients"
         $this.PassText="Safe Documents is enabled for Office clients"
         $this.FailRecommendation="Enable Safe Documents for Office clients"
-        $this.Importance="Safe Documents can assist protecting files opened in Office appplications. Before a user is allowed to trust a file opened in Office 365 ProPlus using Protected View, the file will be verified by Microsoft Defender Advanced Threat Protection."
+        $this.Importance="Safe Documents can assist protecting files opened in Office appplications. Before a user is allowed to trust a file opened in Office 365 ProPlus using Protected View, the file will be verified by Microsoft Defender for Office 365."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Safe Attachments Policy"

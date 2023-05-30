@@ -35,6 +35,24 @@ class ORCA108_1 : ORCACheck
     GetResults($Config)
     {
         $Check = "DKIM"
+
+        # Check pre-requisites for DNS resolution
+        If(!(Get-Command "Resolve-DnsName" -ErrorAction:SilentlyContinue))
+        {
+            # No Resolve-DnsName command
+            ForEach($AcceptedDomain in $Config["AcceptedDomains"])
+            {
+                $ConfigObject = [ORCACheckConfig]::new()
+                $ConfigObject.Object = $($AcceptedDomain.Name)
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.ConfigItem = "Pre-requisites not installed"
+                $ConfigObject.ConfigData = "Resolve-DnsName is not found on ORCA computer. Required for DNS checks."
+                $this.AddConfig($ConfigObject)
+            }
+
+            $this.CheckFailed = $true
+            $this.CheckFailureReason = "Resolve-DnsName is not found on ORCA computer and is required for DNS checks."
+        }
     
         # Check DKIM is enabled
     

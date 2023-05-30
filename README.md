@@ -53,14 +53,6 @@ It's that simple! At the conclusion, your default browser will open with a repor
 
 Log an Issue via the Issues tab in GitHub!
 
-# License
-
-We're completely open source and as matter of fact we also use some open source components in our report.
-
-We use the following components in order to generate the report
-* Bootstrap, MIT License - https://getbootstrap.com/docs/4.0/about/license/
-* Fontawesome, CC BY 4.0 License - https://fontawesome.com/license/free
-
 # FAQ
 
 ### Is it kept up to date?
@@ -77,6 +69,11 @@ There is definitely a lot of value in running your Office 365 environment with M
 * Advanced anti-phishing controls
 
 However, there are also some checks within ORCA that are not Microsoft Defender for Office 365 specific which can impact the operation of Microsoft Defender for Office 365 and security within an Office 365 tenant. ORCA can still be ran on tenants without Microsoft Defender for Office 365, albeit with reduced qty. of checks..
+
+## How do I connect to a delegated organization?
+
+If you have permissions to another organization, pass the -DelegatedOrganization flag to connect to it. If you are already connected to another organization, we will
+first disconnect you before connecting to the other org.
 
 # Outputs
 
@@ -153,3 +150,83 @@ Example - To output in to MyCosmosAccount database MyCosmosDB, in to a collectio
 * Database, Required, String - The Cosmos DB name
 * Key, Required, String - One of the keys for this Cosmos DB account
 * Collection, Optional, String - The collection to output in to, by default this will be ORCA
+
+# Charting
+
+Version 2.3 introduces charting and historical information as a concept in to ORCA. When running ORCA an ORCA report,
+ORCA will look for previous reports in the same Output Directory for the same tenant. We will show a chart of how the recommendations
+progress between versions.
+
+# Additional notes
+
+ORCA is developed by Product Managers at Microsoft, however, is not an official Microsoft utility.
+
+For official, in-product configuration analysis, use the MDO config analyzer.
+
+# License
+
+We're completely open source and as matter of fact we also use some open source components in our report.
+
+We use the following components in order to generate the report
+* Bootstrap, MIT License - https://getbootstrap.com/docs/4.0/about/license/
+
+The MIT License (MIT)
+
+Copyright (c) 2011-2021 Twitter, Inc.
+Copyright (c) 2011-2021 The Bootstrap Authors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+* Fontawesome, CC BY 4.0 License - https://fontawesome.com/license/free
+* ChartJS, MIT License - https://github.com/chartjs/Chart.js
+
+The MIT License (MIT)
+
+Copyright (c) 2014-2022 Chart.js Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+* MomentJS, MIT License - https://github.com/moment/moment/
+
+Copyright (c) JS Foundation and other contributors
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.

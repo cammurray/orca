@@ -18,7 +18,7 @@ class ORCA221 : ORCACheck
     {
         $this.Control=221
         $this.Services=[ORCAService]::OATP
-        $this.Area="Advanced Threat Protection Policies"
+        $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Mailbox Intelligence Enabled"
         $this.PassText="Mailbox intelligence is enabled in anti-phishing policies"
         $this.FailRecommendation="Enable mailbox intelligence in anti-phishing policies"
@@ -44,103 +44,55 @@ class ORCA221 : ORCACheck
     GetResults($Config)
     {
         
-        $PolicyExists = $False
-
-        #$CountOfPolicies = ($Config["AntiPhishPolicy"] | Where-Object {$_.Enabled -eq $True}).Count     
-        $CountOfPolicies = ($global:AntiSpamPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
+        <#
+        
+        This check does not need a default fail if no policies exist, as there is always a default AP policy.
+        
+        #>
       
         ForEach($Policy in ($Config["AntiPhishPolicy"] | Where-Object {$_.Enabled -eq $True}))
         {
                   
-            $IsPolicyDisabled = $false
+            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
+
             $EnableMailboxIntelligence = $($Policy.EnableMailboxIntelligence)
 
-            $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
-
-            ForEach($data in ($global:AntiSpamPolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
-            {
-                $IsPolicyDisabled = !$data.IsEnabled
-            }
-
-            if($IsPolicyDisabled)
-            {
-                $IsPolicyDisabled = $true
-                $policyname = "$policyname" +" [Disabled]"
-                $EnableMailboxIntelligence = "N/A"
-            }
-            elseif($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
-            {
-                $IsBuiltIn =$True
-                $policyname = "$policyname" +" [Built-In]"
-            }
-            elseif(($policyname -eq "Default" -or $policyname -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
-            {
-                $IsBuiltIn =$True
-                $policyname = "$policyname" +" [Default]"
-            }
-
-            $PolicyExists = $True
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="EnableMailboxIntelligence"
             $ConfigObject.ConfigData=$EnableMailboxIntelligence
+            $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+            $ConfigObject.ConfigReadonly = $Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             # Determine Mailbox Intelligence is ON
 
             If($EnableMailboxIntelligence -eq $false)
             {
-                if($IsPolicyDisabled)
-                {
-                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                elseif($IsBuiltIn)
-                {
-                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                else
-                   {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")   
-                   }         
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")        
             }
             Else 
             {
-                if($IsPolicyDisabled)
-                {
-                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                elseif($IsBuiltIn)
-                {
-                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                else
-                   {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass") 
-                   }                        
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")                      
             }
             
             $this.AddConfig($ConfigObject)
 
         }
 
-        If($CountOfPolicies -eq 0)
+        If($Config["AnyPolicyState"][[PolicyType]::Antiphish] -eq $False)
         {
-
             $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.Object="All"
+            $ConfigObject.Object="No Enabled Policies"
             $ConfigObject.ConfigItem="EnableMailboxIntelligence"
-            $ConfigObject.ConfigData="False"
-            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")  
-
+            $ConfigObject.ConfigData=""
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
             $this.AddConfig($ConfigObject)
-                 
-        }        
+        }     
+  
 
     }
 

@@ -78,16 +78,8 @@ class ORCA118_4 : ORCACheck
                                 $ConfigObject.Object=$($TransportRule.Name)
                                 $ConfigObject.ConfigItem="From Domain"
                                 $ConfigObject.ConfigData=$($RuleDomain)
-
-                                if($TransportRule.State -eq "Disabled")
-                                {
-                                    $ConfigObject.InfoText = "This rule is marked as disabled, while this rule will not apply, it is being flagged incase of accidental enablement."
-                                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                                }
-                                else 
-                                {
-                                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                                }
+                                $ConfigObject.ConfigDisabled=$($TransportRule.State -eq "Disabled")
+                                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
                                 $this.AddConfig($ConfigObject)
                             }
@@ -103,17 +95,10 @@ class ORCA118_4 : ORCACheck
                                 $ConfigObject = [ORCACheckConfig]::new()
                                 $ConfigObject.Object=$($TransportRule.Name)
                                 $ConfigObject.ConfigItem="From Contains"
+                                $ConfigObject.ConfigDisabled=$($TransportRule.State -eq "Disabled")
                                 $ConfigObject."$($FromAddressContains)"
 
-                                if($TransportRule.State -eq "Disabled")
-                                {
-                                    $ConfigObject.InfoText = "This rule is marked as disabled, while this rule will not apply, it is being flagged incase of accidental enablement."
-                                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                                }
-                                else 
-                                {
-                                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                                }
+                                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
                                 $this.AddConfig($ConfigObject)  
 

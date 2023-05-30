@@ -35,17 +35,45 @@ class ORCA235 : ORCACheck
 
     GetResults($Config)
     {
+
+        # Check pre-requisites for DNS resolution
+        If(!(Get-Command "Resolve-DnsName" -ErrorAction:SilentlyContinue))
+        {
+            # No Resolve-DnsName command
+            ForEach($AcceptedDomain in $Config["AcceptedDomains"])
+            {
+                $ConfigObject = [ORCACheckConfig]::new()
+                $ConfigObject.Object = $($AcceptedDomain.Name)
+                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.ConfigItem = "Pre-requisites not installed"
+                $ConfigObject.ConfigData = "Resolve-DnsName is not found on ORCA computer. Required for DNS checks."
+                $this.AddConfig($ConfigObject)
+            }
+
+            $this.CheckFailed = $true
+            $this.CheckFailureReason = "Resolve-DnsName is not found on ORCA computer and is required for DNS checks."
+            
+        }
+
         # Check DKIM is enabled
         ForEach($AcceptedDomain in $Config["AcceptedDomains"]) 
         {  
             $SplatParameters = @{
                 'ErrorAction' = 'SilentlyContinue'
             }
+
+            # If alternate DNS specified, add Server param
+            if($null -ne $this.ORCAParams.AlternateDNS)
+            {
+                $SplatParameters["Server"] = $this.ORCAParams.AlternateDNS
+            }
+
             $HasMailbox = $false
 
             try
             {
-                $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name)-Type MX -ErrorAction:Stop
+                $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name) -Type MX -ErrorAction:Stop @SplatParameters
+
                 if($null -ne $mailbox -and $mailbox.Count -gt 0)
                 {
                     $HasMailbox = $true

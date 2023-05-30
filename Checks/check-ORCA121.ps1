@@ -42,81 +42,32 @@ class ORCA121 : ORCACheck
        
         ForEach($Policy in $Config["HostedContentFilterPolicy"]) 
         {
-            $IsPolicyDisabled = $false
+            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $SpamAction = $($Policy.SpamAction)
             $PhishSpamAction =$($Policy.PhishSpamAction)
 
             $IsBuiltIn = $false
-            $policyname = $($Policy.Name)
+            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
-            ForEach($data in ($global:HostedContentPolicyStatus | Where-Object {$_.PolicyName -eq $policyname})) 
-            {
-                $IsPolicyDisabled = !$data.IsEnabled
-            }
-
-            if($IsPolicyDisabled)
-            {
-                $IsPolicyDisabled = $true
-                $policyname = "$policyname" +" [Disabled]"
-               
-            }
-            elseif($policyname -match "Built-In" -and $CountOfPolicies -gt 1)
-            {
-                $IsBuiltIn =$True
-                $policyname = "$policyname" +" [Built-In]"
-            }
-            elseif(($policyname -eq "Default" -or $policyname -eq "Office365 AntiPhish Default") -and $CountOfPolicies -gt 1)
-            {
-                $IsBuiltIn =$True
-                $policyname = "$policyname" +" [Default]"
-            }
             # Check requirement of Spam ZAP - MoveToJmf, redirect, delete, quarantine
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="SpamAction"
-           
+            $ConfigObject.ConfigReadonly=$Policy.IsPreset
+            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             If($SpamAction -eq "MoveToJmf" -or $SpamAction -eq "Redirect" -or $SpamAction -eq "Delete" -or $SpamAction -eq "Quarantine") 
             {
-                if($IsPolicyDisabled)
-                    {
-                        $ConfigObject.ConfigData="N/A"
-                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    elseif($IsBuiltIn)
-                    {
-                        $ConfigObject.ConfigData=$SpamAction
-                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    else
-                       {
-                        $ConfigObject.ConfigData=$SpamAction
-                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                       }
+                $ConfigObject.ConfigData=$SpamAction
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             } 
             else 
             {
-                if($IsPolicyDisabled)
-                {
-                    $ConfigObject.ConfigData="N/A"
-                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                elseif($IsBuiltIn)
-                {
-                    $ConfigObject.ConfigData=$SpamAction
-                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                else
-                   {
-                    $ConfigObject.ConfigData=$SpamAction
+                $ConfigObject.ConfigData=$SpamAction
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                   }
             }
             
             $this.AddConfig($ConfigObject)
@@ -127,47 +78,19 @@ class ORCA121 : ORCACheck
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="PhishSpamAction"
-          
+            $ConfigObject.ConfigReadonly=$Policy.IsPreset
+            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             If($PhishSpamAction -eq "MoveToJmf" -or $PhishSpamAction -eq "Redirect" -or $PhishSpamAction -eq "Delete" -or $PhishSpamAction -eq "Quarantine")
             {
-                if($IsPolicyDisabled)
-                    {
-                        $ConfigObject.ConfigData="N/A"
-                        $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is properly set according to this check. It is being flagged incase of accidental enablement."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    elseif($IsBuiltIn)
-                    {
-                        $ConfigObject.ConfigData=$PhishSpamAction
-                        $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                    }
-                    else
-                       {
-                        $ConfigObject.ConfigData=$PhishSpamAction
+                $ConfigObject.ConfigData=$PhishSpamAction
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                       }
             } 
             else 
             {
-                if($IsPolicyDisabled)
-                {
-                    $ConfigObject.ConfigData="N/A"
-                    $ConfigObject.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                elseif($IsBuiltIn)
-                {
-                    $ConfigObject.ConfigData=$PhishSpamAction
-                    $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
-                }
-                else
-                   {
-                    $ConfigObject.ConfigData=$PhishSpamAction
+                $ConfigObject.ConfigData=$PhishSpamAction
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                   }
             }
             
             $this.AddConfig($ConfigObject)
