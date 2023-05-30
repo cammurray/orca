@@ -51,13 +51,14 @@ class html : ORCAOutput
         <meta charset='utf-8'>
         <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
 
-        <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css' crossorigin='anonymous'>
-        <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' integrity='sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T' crossorigin='anonymous'>
+        <script src='https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.7/dist/umd/popper.min.js' integrity='sha384-zYPOMqeu1DAVkHiLqWBUTcbYfZ8osu1Nd6Z89ify25QV9guujx43ITvfi12/QExE' crossorigin='anonymous'></script>
 
+        <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ' crossorigin='anonymous'>
+        <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js' integrity='sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe' crossorigin='anonymous'></script>
 
         <script src='https://code.jquery.com/jquery-3.3.1.slim.min.js' integrity='sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo' crossorigin='anonymous'></script>
-        <script src='https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js' integrity='sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1' crossorigin='anonymous'></script>
-        <script src='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js' integrity='sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM' crossorigin='anonymous'></script>
+        
+        <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css' crossorigin='anonymous'>
         <script src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/js/all.js'></script>
         
         <style>
@@ -201,7 +202,10 @@ class html : ORCAOutput
         <nav class='navbar  fixed-top navbar-custom p-3 border-bottom d-print-block'>
             <div class='container-fluid'>
                 <div class='col-sm' style='text-align:left'>
-                    <div class='row'><div><i class='fas fa-binoculars'></i></div><div class='ml-3'><strong>ORCA</strong></div></div>
+                    <div class='row'>
+                        <div class='col col-md-auto'><i class='fas fa-binoculars'></i></div>
+                        <div class='col'><strong>ORCA</strong></div>
+                    </div>
                 </div>
                 <div class='col-sm' style='text-align:center'>
                     <strong>$($TenantDomain)</strong>
@@ -421,9 +425,9 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
             <td width='20'><i class='$Icon'></i>
             <td><a href='`#$($Area.Name)'>$($Area.Name)</a></td>
             <td align='right'>
-                <span class='badge badge-secondary' style='padding:15px;text-align:center;width:40px;"; if($Info -eq 0) { $output += "opacity: 0.1;" }; $output += "'>$($Info)</span>
-                <span class='badge badge-warning' style='padding:15px;text-align:center;width:40px;"; if($Fail -eq 0) { $output += "opacity: 0.1;" }; $output += "'>$($Fail)</span>
-                <span class='badge badge-success' style='padding:15px;text-align:center;width:40px;"; if($Pass -eq 0) { $output += "opacity: 0.1;" }; $output += "'>$($Pass)</span>
+                <span class='badge text-bg-secondary' style='padding:15px;text-align:center;width:40px;"; if($Info -eq 0) { $output += "opacity: 0.1;" }; $output += "'>$($Info)</span>
+                <span class='badge text-bg-warning' style='padding:15px;text-align:center;width:40px;"; if($Fail -eq 0) { $output += "opacity: 0.1;" }; $output += "'>$($Fail)</span>
+                <span class='badge text-bg-success' style='padding:15px;text-align:center;width:40px;"; if($Pass -eq 0) { $output += "opacity: 0.1;" }; $output += "'>$($Pass)</span>
             </td>
         </tr>
         "
@@ -461,7 +465,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                     If($Check.Result -eq "Pass") 
                     {
                         $CalloutType = "bd-callout-success"
-                        $BadgeType = "badge-success"
+                        $BadgeType = "text-bg-success"
                         $BadgeName = "OK"
                         $Icon = "fas fa-thumbs-up"
                         $Title = $Check.PassText
@@ -469,7 +473,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                     ElseIf($Check.Result -eq "Informational") 
                     {
                         $CalloutType = "bd-callout-secondary"
-                        $BadgeType = "badge-secondary"
+                        $BadgeType = "text-bg-secondary"
                         $BadgeName = "Informational"
                         $Icon = "fas fa-thumbs-up"
                         $Title = $Check.FailRecommendation
@@ -477,11 +481,13 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                     Else 
                     {
                         $CalloutType = "bd-callout-warning"
-                        $BadgeType = "badge-warning"
+                        $BadgeType = "text-bg-warning"
                         $BadgeName = "Improvement"
                         $Icon = "fas fa-thumbs-down"
                         $Title = $Check.FailRecommendation
                     }
+
+#<span class="badge text-bg-primary">Primary</span>
 
                     $Output += "  
                     
@@ -562,7 +568,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     if($Check.ChiValue -ne [ORCACHI]::NotRated)
                                     {
                                         $chiicon = "fas fa-plus"
-                                        $chipill = "badge-success"
+                                        $chipill = "text-bg-success"
                                     }
                                 }
                                 ElseIf($o.Level -eq [ORCAConfigLevel]::Informational) 
@@ -578,7 +584,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     if($Check.ChiValue -ne [ORCACHI]::NotRated)
                                     {
                                         $chiicon = "fas fa-minus"
-                                        $chipill = "badge-danger"
+                                        $chipill = "text-bg-danger"
                                     }
                                 }
 
@@ -614,7 +620,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     if($Policy.Preset)
                                     {
                                         $PolicyPills += "
-                                            <div class='flex-row badge badge-pill badge-info'>
+                                            <div class='flex-row badge badge-pill text-bg-info'>
                                                 <span style='vertical-align: middle;'>Preset ($($Policy.PresetLevel))</span>
                                             </div>"
                                     }
@@ -622,7 +628,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     if($Policy.BuiltIn)
                                     {
                                         $PolicyPills += "
-                                            <div class='flex-row badge badge-pill badge-info'>
+                                            <div class='flex-row badge badge-pill text-bg-info'>
                                                 <span style='vertical-align: middle;'>Built-in Protection Policy</span>
                                             </div>"
                                     }
@@ -637,7 +643,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     if($o.ConfigDisabled -eq $true)
                                     {
                                         $Output += "
-                                                <div class='flex-row badge badge-pill badge-dark>
+                                                <div class='flex-row badge badge-pill text-bg-secondary'>
                                                     <span style='vertical-align: middle;'>Disabled</span>
                                                     <span class='fas fa-times-circle text-muted' style='vertical-align: middle;'></span>
                                                 </div>"
@@ -646,7 +652,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     if($o.ConfigReadonly -eq $true)
                                     {
                                         $Output += "
-                                                <div class='flex-row badge badge-pill badge-light'>
+                                                <div class='flex-row badge badge-pill text-bg-light'>
                                                     <span style='vertical-align: middle;'>Read Only</span>
                                                     <span class='fas fa-lock text-muted' style='vertical-align: middle;'></span>
                                                 </div>"
@@ -667,7 +673,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     if($o.ConfigDisabled -eq $true)
                                     {
                                         $Output += "
-                                                <div class='flex-row badge badge-pill badge-dark'>
+                                                <div class='flex-row badge badge-pill text-bg-secondary'>
                                                     <span style='vertical-align: middle;'>Disabled</span>
                                                     <span class='fas fa-times-circle text-muted' style='vertical-align: middle;'></span>
                                                 </div>"
@@ -676,7 +682,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     if($o.ConfigReadonly -eq $true)
                                     {
                                         $Output += "
-                                                <div class='flex-row badge badge-pill badge-light'>
+                                                <div class='flex-row badge badge-pill text-bg-light'>
                                                     <span style='vertical-align: middle;'>Read Only</span>
                                                     <span class='fas fa-lock text-muted' style='vertical-align: middle;'></span>
                                                 </div>"
@@ -701,7 +707,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                 if($($o.InfoText) -match "This is a Built-In/Default policy")
                                 {
                                     $Output += "
-                                    <div class='flex-row badge badge-pill badge-light'>
+                                    <div class='flex-row badge badge-pill text-bg-light'>
                                         <span style='vertical-align: middle;'>$($LevelText)</span>
                                         <span class='$($oicon)' style='vertical-align: middle;'></span>
                                     "
@@ -712,7 +718,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                 elseif($($o.InfoText) -match "The policy is not enabled and will not apply")
                                 {
                                     $Output += "
-                                    <div class='flex-row badge badge-pill badge-light'>
+                                    <div class='flex-row badge badge-pill text-bg-light'>
                                         <span style='vertical-align: middle;'>$($LevelText)</span>
                                         <span class='$($oicon)' style='vertical-align: middle;'></span>
                                     "
@@ -722,7 +728,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                 elseif($o.Level -eq [ORCAConfigLevel]::Informational)
                                 {
                                     $Output += "
-                                    <div class='flex-row badge badge-pill badge-light'>
+                                    <div class='flex-row badge badge-pill text-bg-light'>
                                         <span style='vertical-align: middle;'>$($LevelText)</span>
                                         <span class='$($oicon)' style='vertical-align: middle;'></span>
                                     "
@@ -732,7 +738,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                 else
                                 {
                                     $Output += "
-                                                <div class='flex-row badge badge-pill badge-light'>
+                                                <div class='flex-row badge badge-pill text-bg-light'>
                                                     <span style='vertical-align: middle;'>$($LevelText)</span>
                                                     <span class='$($oicon)' style='vertical-align: middle;'></span>
                                                 </div>"
