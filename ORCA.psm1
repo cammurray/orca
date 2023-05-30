@@ -396,6 +396,7 @@ Class ORCAOutput
 {
 
     [String]    $Name
+    [Boolean]   $ShowSurvey             =   $true
     [Boolean]   $Completed              =   $False
                 $VersionCheck           =   $null
                 $DefaultOutputDirectory
@@ -454,7 +455,8 @@ Function Get-ORCAOutputs
     (
         $VersionCheck,
         $Modules,
-        $Options
+        $Options,
+        $ShowSurvey
     )
 
     $Outputs = @()
@@ -501,6 +503,7 @@ Function Get-ORCAOutputs
 
                 # Provide versioncheck
                 $Output.VersionCheck = $VersionCheck
+                $Output.ShowSurvey = $ShowSurvey
                 
                 $Outputs += $Output
             }
@@ -696,6 +699,10 @@ Function Get-ORCAReport
          O365USGovGCCHigh
            This will generate MCCA report for Security & Compliance Center PowerShell in a Microsoft GCC High organization.
 
+        .PARAMETER NoSurvey
+            We need your input in to ORCA, but we appreciate that you may not have the time or desire to provide it. We've added this flag in here so that you
+            can suppress survey prompts (please fill out the survey though!).
+
         .PARAMETER Collection
             Internal only.
 
@@ -712,6 +719,7 @@ Function Get-ORCAReport
         [CmdletBinding()]
         [Switch]$NoConnect,
         [Switch]$NoVersionCheck,
+        [Switch]$NoSurvey,
         [String[]]$AlternateDNS,
         [String]$DelegatedOrganization=$null,
         [string][validateset('O365Default', 'O365USGovDoD', 'O365USGovGCCHigh','O365GermanyCloud','O365China')] $ExchangeEnvironmentName = 'O365Default',
@@ -728,6 +736,13 @@ Function Get-ORCAReport
     Else
     {
         $PerformVersionCheck = $True
+    }
+
+    if($NoSurvey)
+    {
+        $ShowSurvey = $False
+    } else {
+        $ShowSurvey = $True
     }
 
     $Connect = $False
@@ -756,7 +771,7 @@ Function Get-ORCAReport
         }
     }
 
-    $Result = Invoke-ORCA -Connect $Connect -PerformVersionCheck $PerformVersionCheck -AlternateDNS $AlternateDNS -Collection $Collection -ExchangeEnvironmentName $ExchangeEnvironmentName -Output @("HTML") -DelegatedOrganization $DelegatedOrganization
+    $Result = Invoke-ORCA -Connect $Connect -PerformVersionCheck $PerformVersionCheck -AlternateDNS $AlternateDNS -Collection $Collection -ExchangeEnvironmentName $ExchangeEnvironmentName -Output @("HTML") -DelegatedOrganization $DelegatedOrganization -ShowSurvey $ShowSurvey
     Write-Host "$(Get-Date) Complete! Output is in $($Result.Result)"
 
     # Pre-requisite checks
@@ -1113,6 +1128,7 @@ Function Invoke-ORCA
         [Boolean]$Connect=$True,
         [Boolean]$PerformVersionCheck=$True,
         [Boolean]$InstallModules=$True,
+        [Boolean]$ShowSurvey=$True,
         [String[]]$AlternateDNS,
         [String]$DelegatedOrganization=$null,
         [string][validateset('O365Default', 'O365USGovDoD', 'O365USGovGCCHigh')] $ExchangeEnvironmentName,
@@ -1135,7 +1151,7 @@ Function Invoke-ORCA
     }
 
     # Get the output modules
-    $OutputModules = Get-ORCAOutputs -VersionCheck $VersionCheck -Modules $Output -Options $OutputOptions
+    $OutputModules = Get-ORCAOutputs -VersionCheck $VersionCheck -Modules $Output -Options $OutputOptions -ShowSurvey $ShowSurvey
 
     # Get the object of ORCA checks
     $Checks = Get-ORCACheckDefs -ORCAParams $ORCAParams
@@ -1207,7 +1223,33 @@ Function Invoke-ORCA
 
     }
 
+    CountORCAStat -Domains $Collection["AcceptedDomains"] -Version $VersionCheck.Version
+
     Return $OutputResults
+
+}
+
+function CountORCAStat
+{
+    Param (
+        $Domains,
+        $Version
+    )
+
+    try {
+        $TenantDomain = ($Domains | Where-Object {$_.InitialDomain -eq $True}).DomainName
+        $mystream = [IO.MemoryStream]::new([byte[]][char[]]$TenantDomain)
+        $Hash = (Get-FileHash -InputStream $mystream -Algorithm MD5).Hash
+        $Obj = New-Object -TypeName PSObject -Property @{
+            id=$Hash
+            Version=$Version
+        }
+        Invoke-RestMethod -Method POST -Uri "https://orcastat.azurewebsites.net/api/stat" -Body (ConvertTo-Json $Obj) | Out-Null
+    }
+    catch {
+        <#Do this if a terminating exception happens#>
+    }
+
 
 }
 
