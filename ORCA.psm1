@@ -1000,10 +1000,6 @@ function Get-AnyPolicyState
 
     foreach($Key in $PolicyStates.Keys)
     {
-        if($PolicyStates[$Key].Type -eq [PolicyType]::Antiphish)
-        {
-            Write-Host "AP Policy"
-        }
 
         if($PolicyStates[$Key].Type -eq [PolicyType]::Antiphish -and $PolicyStates[$Key].Applies)
         {
