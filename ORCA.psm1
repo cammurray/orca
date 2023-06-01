@@ -1238,12 +1238,12 @@ function CountORCAStat
     try {
         $TenantDomain = ($Domains | Where-Object {$_.InitialDomain -eq $True}).DomainName
         $mystream = [IO.MemoryStream]::new([byte[]][char[]]$TenantDomain)
-        $Hash = (Get-FileHash -InputStream $mystream -Algorithm MD5).Hash
+        $Hash = (Get-FileHash -InputStream $mystream -Algorithm SHA256).Hash
         $Obj = New-Object -TypeName PSObject -Property @{
             id=$Hash
             Version=$Version
         }
-        Invoke-RestMethod -Method POST -Uri "https://orcastat.azurewebsites.net/api/stat" -Body (ConvertTo-Json $Obj) | Out-Null
+        Invoke-RestMethod -Method POST -Uri "https://orcastat.azurewebsites.net/stat" -Body (ConvertTo-Json $Obj) -ContentType "application/json" | Out-Null
     }
     catch {
         <#Do this if a terminating exception happens#>
