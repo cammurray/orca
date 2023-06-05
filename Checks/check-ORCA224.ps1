@@ -55,7 +55,7 @@ class ORCA224 : ORCACheck
 
             $ConfigObject = [ORCACheckConfig]::new()
 
-            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.Object=$Config["PolicyStates"][$Policy.Guid.ToString()].Name
             $ConfigObject.ConfigItem="EnableSimilarUsersSafetyTips"
             $ConfigObject.ConfigData=$EnableSimilarUsersSafetyTips
             $ConfigObject.ConfigDisabled = $IsPolicyDisabled

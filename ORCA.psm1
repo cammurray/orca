@@ -973,8 +973,8 @@ Function Get-PolicyStates
     $ReturnPolicies += Get-PolicyStateInt -Policies $AntiphishPolicies -Rules $AntiphishRules -Type ([PolicyType]::Antiphish) -ProtectionPolicyRules $ProtectionPolicyRulesEOP -BuiltInProtectionRule $BuiltInProtectionRule
     $ReturnPolicies += Get-PolicyStateInt -Policies $AntimalwarePolicies -Rules $AntimalwareRules -Type ([PolicyType]::Malware) -ProtectionPolicyRules $ProtectionPolicyRulesEOP
     $ReturnPolicies += Get-PolicyStateInt -Policies $AntispamPolicies -Rules $AntispamRules -Type ([PolicyType]::Spam) -ProtectionPolicyRules $ProtectionPolicyRulesEOP
-    $ReturnPolicies += Get-PolicyStateInt -Policies $SafeLinksPolicies -Rules $SafeLinksRules -Type ([PolicyType]::SafeAttachments) -ProtectionPolicyRules $ProtectionPolicyRulesATP -BuiltInProtectionRule $BuiltInProtectionRule
-    $ReturnPolicies += Get-PolicyStateInt -Policies $SafeAttachmentsPolicies -Rules $SafeAttachmentRules -Type ([PolicyType]::SafeLinks) -ProtectionPolicyRules $ProtectionPolicyRulesATP -BuiltInProtectionRule $BuiltInProtectionRule
+    $ReturnPolicies += Get-PolicyStateInt -Policies $SafeLinksPolicies -Rules $SafeLinksRules -Type ([PolicyType]::SafeLinks) -ProtectionPolicyRules $ProtectionPolicyRulesATP -BuiltInProtectionRule $BuiltInProtectionRule
+    $ReturnPolicies += Get-PolicyStateInt -Policies $SafeAttachmentsPolicies -Rules $SafeAttachmentRules -Type ([PolicyType]::SafeAttachments) -ProtectionPolicyRules $ProtectionPolicyRulesATP -BuiltInProtectionRule $BuiltInProtectionRule
     $ReturnPolicies += Get-PolicyStateInt -Policies $OutboundSpamPolicies -Rules $OutboundSpamRules -Type ([PolicyType]::OutboundSpam) -ProtectionPolicyRules $ProtectionPolicyRulesATP -BuiltInProtectionRule $BuiltInProtectionRule
 
     return $ReturnPolicies
@@ -1235,19 +1235,27 @@ function CountORCAStat
         $Version
     )
 
-    try {
+    Write-Host $Version
+
+    #try {
+        $Command = Get-Command Get-ORCAReport
+        $Channel = $Command.Source
+        if($Channel -eq "ORCA" -and $Command.Version -eq "0.0") { $Channel = "Dev" } else { $Channel = "Main" }
+        if($Channel -eq "ORCAPreview") { $Channel = "Preview"}
+
         $TenantDomain = ($Domains | Where-Object {$_.InitialDomain -eq $True}).DomainName
         $mystream = [IO.MemoryStream]::new([byte[]][char[]]$TenantDomain)
         $Hash = (Get-FileHash -InputStream $mystream -Algorithm SHA256).Hash
         $Obj = New-Object -TypeName PSObject -Property @{
             id=$Hash
-            Version=$Version
+            Version=$Version.ToString
+            Channel=$Channel
         }
         Invoke-RestMethod -Method POST -Uri "https://orcastat.azurewebsites.net/stat" -Body (ConvertTo-Json $Obj) -ContentType "application/json" | Out-Null
-    }
-    catch {
-        <#Do this if a terminating exception happens#>
-    }
+    #}
+    #catch {
+    #    <#Do this if a terminating exception happens#>
+    #}
 
 
 }
