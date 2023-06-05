@@ -1222,7 +1222,7 @@ Function Invoke-ORCA
 
     }
 
-    CountORCAStat -Domains $Collection["AcceptedDomains"] -Version $VersionCheck.Version
+    CountORCAStat -Domains $Collection["AcceptedDomains"] -Version $VersionCheck.Version.ToString()
 
     Return $OutputResults
 
@@ -1232,7 +1232,7 @@ function CountORCAStat
 {
     Param (
         $Domains,
-        $Version
+        [string]$Version
     )
 
     Write-Host $Version
@@ -1248,7 +1248,7 @@ function CountORCAStat
         $Hash = (Get-FileHash -InputStream $mystream -Algorithm SHA256).Hash
         $Obj = New-Object -TypeName PSObject -Property @{
             id=$Hash
-            Version=$Version.ToString
+            Version=$Version
             Channel=$Channel
         }
         Invoke-RestMethod -Method POST -Uri "https://orcastat.azurewebsites.net/stat" -Body (ConvertTo-Json $Obj) -ContentType "application/json" | Out-Null
