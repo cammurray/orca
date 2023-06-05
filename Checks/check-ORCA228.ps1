@@ -54,7 +54,7 @@ class ORCA228 : ORCACheck
 
             $ConfigObject = [ORCACheckConfig]::new()
 
-            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.Object=$Config["PolicyStates"][$Policy.Guid.ToString()].Name
             $ConfigObject.ConfigItem="ExcludedSenders"
             $ConfigObject.ConfigDisabled = $IsPolicyDisabled
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()

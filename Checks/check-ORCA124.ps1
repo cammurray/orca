@@ -58,7 +58,7 @@ class ORCA124 : ORCACheck
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
-            $ConfigObject.Object=$($Policy.Name)
+            $ConfigObject.Object=$Config["PolicyStates"][$Policy.Guid.ToString()].Name
             $ConfigObject.ConfigItem="Action"
             $ConfigObject.ConfigData=$Action
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
