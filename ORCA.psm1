@@ -98,6 +98,16 @@ Function Invoke-ORCAConnections
         {
             Connect-ExchangeOnline -ExchangeEnvironmentName $ExchangeEnvironmentName -WarningAction:SilentlyContinue -DelegatedOrganization $DelegatedOrganization | Out-Null
         }
+
+        Write-Host "$(Get-Date) Connecting to SCC.."
+
+        if($DelegatedOrganization -eq $null)
+        {
+            Connect-IPPSSession -WarningAction:SilentlyContinue | Out-Null
+        } else 
+        {
+            Connect-IPPSSession -WarningAction:SilentlyContinue -DelegatedOrganization $DelegatedOrganization | Out-Null
+        }
         
     }
     Else 
@@ -112,6 +122,7 @@ Function Invoke-ORCAConnections
 
                 # Then connect..
                 Connect-ExchangeOnline -ExchangeEnvironmentName $ExchangeEnvironmentName -WarningAction:SilentlyContinue  | Out-Null
+                Connect-IPPSSession -WarningAction:SilentlyContinue | Out-Null
 
                 $Installed = $True
             }
@@ -614,6 +625,14 @@ Function Get-ORCACollection
         $Collection["ATPProtectionPolicyRule"] = Get-ATPProtectionPolicyRule
         $Collection["ATPBuiltInProtectionRule"] = Get-ATPBuiltInProtectionRule
     }
+
+    if($Collection["Services"] -band [ORCAService]::MDO -and ($null -ne (Get-Command Get-ProtectionAlert)))
+    {
+        Write-Host "$(Get-Date) Getting Protection Alerts"
+        $Collection["ProtectionAlert"] = Get-ProtectionAlert
+    }
+    
+
 
     Write-Host "$(Get-Date) Getting EOP Preset Policy Settings"
     $Collection["EOPProtectionPolicyRule"] = Get-EOPProtectionPolicyRule
