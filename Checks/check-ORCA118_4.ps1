@@ -12,15 +12,15 @@ class ORCA118_4 : ORCACheck
     {
         $this.Control="118-4"
         $this.Area="Transport Rules"
-        $this.Name="Domain Whitelisting"
+        $this.Name="Domain Allow Listing"
         $this.PassText="Your own domains are not being allow listed in an unsafe manner"
         $this.FailRecommendation="Remove allow listing on domains belonging to your organisation"
-        $this.Importance="Emails coming from whitelisted domains bypass several layers of protection within Exchange Online Protection. When allow listing your own domains, an attacker can spoof any account in your organisation that has this domain. This is a significant phishing attack vector."
+        $this.Importance="Emails coming from allow listed domains bypass several layers of protection within Exchange Online Protection. When allow listing your own domains, an attacker can spoof any account in your organisation that has this domain. This is a significant phishing attack vector."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Transport Rule"
         $this.ItemName="Condition"
-        $this.DataType="Whitelisted Address"
+        $this.DataType="Allow Listed Address"
         $this.ChiValue=[ORCACHI]::Critical
         $this.Links= @{
             "Exchange admin center in Exchange Online"="https://outlook.office365.com/ecp/"
