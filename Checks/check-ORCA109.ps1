@@ -19,9 +19,9 @@ class ORCA109 : ORCACheck
         $this.Control="ORCA-109"
         $this.Area="Anti-Spam Policies"
         $this.Name="Allowed Senders"
-        $this.PassText="Senders are not being whitelisted in an unsafe manner"
-        $this.FailRecommendation="Remove whitelisting on senders"
-        $this.Importance="Emails coming from whitelisted senders bypass several layers of protection within Exchange Online Protection. If senders are whitelisted, they are open to being spoofed from malicious actors."
+        $this.PassText="Senders are not being allow listed in an unsafe manner"
+        $this.FailRecommendation="Remove allow listing on senders"
+        $this.Importance="Emails coming from allow listed senders bypass several layers of protection within Exchange Online Protection. If senders are allow listed, they are open to being spoofed from malicious actors."
         $this.ExpandResults=$True
         $this.ItemName="Anti-Spam Policy"
         $this.DataType="Allowed Senders"
@@ -29,7 +29,7 @@ class ORCA109 : ORCACheck
         $this.Links= @{
             "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
             "Use Anti-Spam Policy Sender/Domain Allow lists"="https://aka.ms/orca-antispam-docs-4"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-6"
+            "Recommended settings for EOP and Office 365 Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-6"
         }
     }
 

@@ -1,6 +1,6 @@
 <#
 
-ORCA-228 - Check ATP Anti-Phishing trusted senders  
+ORCA-228 - Check MDO Anti-Phishing trusted senders  
 
 #>
 
@@ -17,11 +17,11 @@ class ORCA228 : ORCACheck
     ORCA228()
     {
         $this.Control=228
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Anti-phishing trusted senders"
         $this.PassText="No trusted senders in Anti-phishing policy"
-        $this.FailRecommendation="Remove whitelisting on senders in Anti-phishing policy"
+        $this.FailRecommendation="Remove allow listing on senders in Anti-phishing policy"
         $this.Importance="Adding senders as trusted in Anti-phishing policy will result in the action for protected domains, Protected users or mailbox intelligence protection will be not applied to messages coming from these senders. If a trusted sender needs to be added based on organizational requirements it should be reviewed regularly and updated as needed."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
@@ -30,7 +30,7 @@ class ORCA228 : ORCACheck
         $this.DataType="Current Value"
         $this.Links= @{
             "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 

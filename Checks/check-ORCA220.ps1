@@ -1,6 +1,6 @@
 <#
 
-Checks ATP Anti-phishing policy Advanced phishing thresholds 
+Checks MDO Anti-phishing policy Advanced phishing thresholds 
 
 #>
 
@@ -17,7 +17,7 @@ class ORCA220 : ORCACheck
     ORCA220()
     {
         $this.Control=220
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Advanced Phishing Threshold Level"
         $this.PassText="Advanced Phish filter Threshold level is adequate."
@@ -30,7 +30,7 @@ class ORCA220 : ORCACheck
         $this.ObjectType="Policy"
         $this.Links= @{
             "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 

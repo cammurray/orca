@@ -20,12 +20,12 @@ class ORCA189 : ORCACheck
     ORCA189()
     {
         $this.Control=189
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
-        $this.Name="Safe Attachments Whitelisting"
+        $this.Name="Safe Attachments Allow listing"
         $this.PassText="Safe Attachments is not bypassed"
         $this.FailRecommendation="Remove mail flow rules which bypass Safe Attachments"
-        $this.Importance="Office 365 ATP Safe Attachments assists scanning for zero day malware by using behavioural analysis and sandboxing, supplementing signature definitions. The protection can be bypassed using mail flow rules which set the X-MS-Exchange-Organization-SkipSafeAttachmentProcessing header for email messages."
+        $this.Importance="Microsoft Defender for Office 365 Safe Attachments assists scanning for zero day malware by using behavioural analysis and sandboxing, supplementing signature definitions. The protection can be bypassed using mail flow rules which set the X-MS-Exchange-Organization-SkipSafeAttachmentProcessing header for email messages."
         $this.ExpandResults=$True
         $this.ObjectType="Transport Rule"
         $this.ItemName="Setting"

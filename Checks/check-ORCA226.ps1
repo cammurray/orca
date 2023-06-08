@@ -17,12 +17,12 @@ class ORCA226 : ORCACheck
     ORCA226()
     {
         $this.Control=226
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Safe Links Policy Rules"
         $this.PassText="Each domain has a Safe Link policy applied to it"
         $this.FailRecommendation="Apply a Safe Links policy to every domain"
-        $this.Importance="Office 365 ATP Safe Links policies are applied using rules. The recipient domain condition is the most effective way of applying the Safe Links policy, ensuring no users are left without protection. If polices are applied using group membership make sure you cover all users through this method. Applying polices this way can be challenging, users may left unprotected if group memberships are not accurate and up to date. It is important not to rely on the 'built-in' Safe Links policy, as this policy only applies the minimum level of protections and should serve as a catch-all."
+        $this.Importance="Microsoft Defender for Office 365 Safe Links policies are applied using rules. The recipient domain condition is the most effective way of applying the Safe Links policy, ensuring no users are left without protection. If polices are applied using group membership make sure you cover all users through this method. Applying polices this way can be challenging, users may left unprotected if group memberships are not accurate and up to date. It is important not to rely on the 'built-in' Safe Links policy, as this policy only applies the minimum level of protections and should serve as a catch-all."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Domain"
@@ -32,7 +32,7 @@ class ORCA226 : ORCACheck
         $this.Links= @{
             "Security & Compliance Center - Safe links"="https://aka.ms/orca-atpp-action-safelinksv2"
             "Order and precedence of email protection"="https://aka.ms/orca-atpp-docs-4"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 

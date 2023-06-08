@@ -1,6 +1,6 @@
 <#
 
-119 - Check ATP anti-phishing policy EnableSimilarDomainsSafetyTips 
+119 - Check MDO anti-phishing policy EnableSimilarDomainsSafetyTips 
 
 #>
 
@@ -17,12 +17,12 @@ class ORCA119 : ORCACheck
     ORCA119()
     {
         $this.Control=119
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Similar Domains Safety Tips"
         $this.PassText="Similar Domains Safety Tips is enabled"
         $this.FailRecommendation="Enable Similar Domains Safety Tips so that users can receive visible indication on incoming messages."
-        $this.Importance="Office 365 ATP can show a warning tip to recipients in messages that might be from an impersonated domain."
+        $this.Importance="Microsoft Defender for Office 365 can show a warning tip to recipients in messages that might be from an impersonated domain."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Antiphishing Policy"
@@ -31,7 +31,7 @@ class ORCA119 : ORCACheck
         $this.ChiValue=[ORCACHI]::Low
         $this.Links= @{
             "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 

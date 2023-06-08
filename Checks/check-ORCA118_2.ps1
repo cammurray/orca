@@ -12,15 +12,15 @@ class ORCA118_2 : ORCACheck
     {
         $this.Control="118-2"
         $this.Area="Transport Rules"
-        $this.Name="Domain Whitelisting"
-        $this.PassText="Domains are not being whitelisted in an unsafe manner"
-        $this.FailRecommendation="Remove whitelisting on domains"
-        $this.Importance="Emails coming from whitelisted domains bypass several layers of protection within Exchange Online Protection. If domains are whitelisted, they are open to being spoofed from malicious actors."
+        $this.Name="Domain Allow Listing"
+        $this.PassText="Domains are not being allow listed in an unsafe manner"
+        $this.FailRecommendation="Remove allow listed domains"
+        $this.Importance="Emails coming from allow listed domains bypass several layers of protection within Exchange Online Protection. If domains are allow listed, they are open to being spoofed from malicious actors."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Transport Rule"
         $this.ItemName="Condition"
-        $this.DataType="Whitelisted Address"
+        $this.DataType="Allow Listed Address"
         $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
             "Exchange admin center in Exchange Online"="https://outlook.office365.com/ecp/"

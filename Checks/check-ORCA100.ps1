@@ -21,7 +21,7 @@ class ORCA100 : ORCACheck
         $this.DataType="Bulk Complaint Level Threshold"
         $this.Links= @{
             "Bulk Complaint Level values"="https://aka.ms/orca-antispam-docs-1"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-6"
+            "Recommended settings for EOP and Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-6"
             "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
         }
     
@@ -51,21 +51,21 @@ class ORCA100 : ORCACheck
             # Standard check - between 4 and 6
             If($BulkThreshold -ge 4 -and $BulkThreshold -le 6)
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Pass)
             }
             Else 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Fail)
             }
 
             # Strict check - is 4
             If($BulkThreshold -eq 4)
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,[ORCAResult]::Pass)
             }
             Else 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,[ORCAResult]::Fail)
             }
 
             # Add config to check

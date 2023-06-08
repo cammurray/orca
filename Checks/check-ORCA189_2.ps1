@@ -20,12 +20,12 @@ class ORCA189_2 : ORCACheck
     ORCA189_2()
     {
         $this.Control="189-2"
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
-        $this.Name="Safe Links Whitelisting"
+        $this.Name="Safe Links Allow Listing"
         $this.PassText="Safe Links is not bypassed"
         $this.FailRecommendation="Remove mail flow rules which bypass Safe Links"
-        $this.Importance="Office 365 ATP Safe Links can help protect against phishing attacks by providing time-of-click verification of web addresses (URLs) in email messages and Office documents. The protection can be bypassed using mail flow rules which set the X-MS-Exchange-Organization-SkipSafeLinksProcessing header for email messages."
+        $this.Importance="Microsoft Defender for Office 365 Safe Links can help protect against phishing attacks by providing time-of-click verification of web addresses (URLs) in email messages and Office documents. The protection can be bypassed using mail flow rules which set the X-MS-Exchange-Organization-SkipSafeLinksProcessing header for email messages."
         $this.ExpandResults=$True
         $this.ObjectType="Transport Rule"
         $this.ItemName="Setting"

@@ -6,7 +6,7 @@ ORCA is a report that you can run in your environment which can highlight known 
 
 ## What's in scope
 * Configuration Health Index
-* Configuration in EOP which can impact ATP
+* Configuration in EOP which can impact MDO
 * SafeLinks configuration
 * SafeAttachments configuration
 * Antiphish and antispoof policies.
@@ -18,17 +18,12 @@ The configuration health index is a weighted value representing your configurati
 
 ## Sounds good! How do I run it?
 
-You will need the Exchange Online Management Shell first.
+You will need the Exchange Online Management module first.
 
-* Exchange Online PowerShell V2 module is availible via the PowerShell gallery:
+* Exchange Online Management module is availible via the PowerShell gallery:
 
- `Install-Module -Name ExchangeOnlineManagement`
-
-**or** 
-
-* Exchange Online PowerShell module http://aka.ms/exopsmodule 
-
-We use these modules to connect to Exchange Online and look at your configuration.
+Install for current user `Install-Module -Name ExchangeOnlineManagement -Scope:CurrentUser`
+Install for all users `Install-Module -Name ExchangeOnlineManagement`
 
 Then, you'll need ORCA. We publish ORCA via the PowerShell gallery to make it easy and accessible for everyone.
 
@@ -107,6 +102,7 @@ Example 2 - output to HTML but don't load the HTML
 
 * DisplayReport, Optional, Boolean - load the report at the conclusion of running ORCA
 * OutputDirectory, Optional, String - path to store the outputted html file, default is an appdata directory created automatically
+* EmbedConfiguration, Optional, Boolean - allows you to embed your configuration in to the HTML file for easy sharing/snapshotting
 
 ### JSON
 
@@ -150,6 +146,24 @@ Example - To output in to MyCosmosAccount database MyCosmosDB, in to a collectio
 * Database, Required, String - The Cosmos DB name
 * Key, Required, String - One of the keys for this Cosmos DB account
 * Collection, Optional, String - The collection to output in to, by default this will be ORCA
+
+# Embedding Configuration in HTML files (Optional)
+
+## Embedding
+
+To embed configuration in to the ORCA HTML output use the EmbedConfiguration switch to Get-ORCAReport, example `Get-ORCAReport -EmbedConfiguration` or add EmbedConfiguration to Invoke ORCA if running manually `Invoke-ORCA -Output HTML -OutputOptions @{HTML=@{EmbedConfiguration=$True}}`
+
+When embedding your configuration to the HTML file, note that the HTML file becomes confidential. It may contain sensitive information at this point, and only share it with trusted parties.
+
+## Reading embedded configuration
+
+If you have a HTML ORCA report (generated after version 2.3) that has embedded configuration, run:
+
+`Get-ORCAReportEmbeddedConfig -File filename.html` to read the configuration in to a hashtable.
+
+Store that in to a PowerShell variable by running `$Config = Get-ORCAReportEmbeddedConfig -File filename.html`
+
+Explore the data available by outputting the $Config variable, or enter a specific bit of config by using the key, e.g for looking at InboundConnectors, $Config['InboundConnector']
 
 # Charting
 

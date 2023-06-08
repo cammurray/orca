@@ -22,7 +22,7 @@ class ORCA101 : ORCACheck
         $this.ChiValue = [ORCACHI]::Low
         $this.Links= @{
             "Set-HostedContentFilterPolicy"="https://aka.ms/orca-antispam-docs-9"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-6"
+            "Recommended settings for EOP and Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-6"
         }
     }
 
@@ -52,11 +52,11 @@ class ORCA101 : ORCACheck
 
             If($MarkAsSpamBulkMail -eq "On")
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Pass)
             }
             Else 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")               
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Fail)               
             }
 
             # Add config to check

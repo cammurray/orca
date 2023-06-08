@@ -19,7 +19,7 @@ class ORCA237 : ORCACheck
     ORCA237()
     {
         $this.Control=237
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Safe Links protections for links in teams messages"
         $this.PassText="Safe Links is enabled for teams messages"
@@ -33,7 +33,7 @@ class ORCA237 : ORCACheck
         $this.DataType="Current Value"
         $this.Links= @{
             "Security & Compliance Center - Safe links"="https://aka.ms/orca-atpp-action-safelinksv2"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 

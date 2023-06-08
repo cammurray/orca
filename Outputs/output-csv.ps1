@@ -10,7 +10,7 @@ class csv : ORCAOutput
         $this.Name="CSV"
     }
 
-    RunOutput($Checks,$Collection)
+    RunOutput($Checks,$Collection,[ORCAConfigLevel]$AssessmentLevel)
     {
 
         # Write to file
@@ -36,9 +36,10 @@ class csv : ORCAOutput
                 Area=$c.Area
                 Name=$c.Name
                 Result=$($c.Result.ToString())
-                ObjectsFailed=$c.FailCount
-                ObjectsPassed=$c.PassCount
-                ObjectsInfo=$c.InfoCount
+                AssessmentLevel=$($AssessmentLevel.ToString())
+                ObjectsFailed=$c.GetCountAtLevelFail($AssessmentLevel)
+                ObjectsPassed=$c.GetCountAtLevelPass($AssessmentLevel)
+                ObjectsInfo=$c.GetCountAtLevelInfo($AssessmentLevel)
             }
 
             ForEach($config in $c.Config)
@@ -49,7 +50,10 @@ class csv : ORCAOutput
                     Name=$c.Name
                     ConfigObject=$config.Object
                     ConfigItem=$config.ConfigItem
+                    ConfigDisabled=$config.ConfigDisabled
+                    ConfigReadonly=$config.ConfigReadonly
                     ConfigData=$config.ConfigData
+                    ConfigPolicyGuid=$config.ConfigPolicyGuid
                     Level=$($config.Level.ToString())
                 }
             }
@@ -62,8 +66,8 @@ class csv : ORCAOutput
         $OverviewFile = "$OutputDir\$ReportFileNameOverview"
         $DetailFile = "$OutputDir\$ReportFileNameDetail"
 
-        $ResultOverview | Select-Object Control,Area,Name,Result,ObjectsFailed,ObjectsPassed,ObjectsInfo,Text | Export-Csv $OverviewFile -NoTypeInformation
-        $ResultDetail | Select-Object Control,Area,Name,ConfigObject,ConfigItem,ConfigData,Level | Export-Csv $DetailFile -NoTypeInformation
+        $ResultOverview | Select-Object Control,Area,Name,AssessmentLevel,Result,ObjectsFailed,ObjectsPassed,ObjectsInfo | Export-Csv $OverviewFile -NoTypeInformation
+        $ResultDetail | Select-Object Control,Area,Name,ConfigObject,ConfigItem,ConfigData,ConfigReadonly,ConfigDisabled,ConfigPolicyGuid,Level | Export-Csv $DetailFile -NoTypeInformation
 
         $this.Completed = $True
         $this.Result = New-Object -TypeName PSObject -Property @{

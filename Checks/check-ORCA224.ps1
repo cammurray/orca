@@ -1,6 +1,6 @@
 <#
 
-224 - Check ATP Phishing Similar Users Safety Tips 
+224 - Check MDO Phishing Similar Users Safety Tips 
 
 #>
 
@@ -17,12 +17,12 @@ class ORCA224 : ORCACheck
     ORCA224()
     {
         $this.Control=224
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Similar Users Safety Tips"
         $this.PassText="Similar Users Safety Tips is enabled"
         $this.FailRecommendation="Enable Similar Users Safety Tips so that users can receive visible indication on incoming messages"
-        $this.Importance="Office 365 ATP can show a warning tip to recipients in messages that might be from an impersonated user."
+        $this.Importance="Microsoft Defender for Office 365 can show a warning tip to recipients in messages that might be from an impersonated user."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Antiphishing Policy"
@@ -31,7 +31,7 @@ class ORCA224 : ORCACheck
         $this.ChiValue=[ORCACHI]::Medium
         $this.Links= @{
             "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 
