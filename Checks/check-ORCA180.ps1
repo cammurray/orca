@@ -11,7 +11,7 @@ class ORCA180 : ORCACheck
     ORCA180()
     {
         $this.Control=180
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Anti-spoofing protection"
         $this.PassText="Anti-phishing policy exists and EnableSpoofIntelligence is true"
@@ -26,7 +26,7 @@ class ORCA180 : ORCACheck
         $this.Links= @{
             "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
             "Anti-spoofing protection in Office 365"="https:/aka.ms/orca-atpp-docs-3"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 

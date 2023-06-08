@@ -1,6 +1,6 @@
 <#
 
-225 Checks to determine if ATP SafeDocs is enabled in the ATP configuration.
+225 Checks to determine if MDO SafeDocs is enabled in the MDO configuration.
 
 #>
 
@@ -17,7 +17,7 @@ class ORCA225 : ORCACheck
     ORCA225()
     {
         $this.Control=225
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Safe Documents for Office clients"
         $this.PassText="Safe Documents is enabled for Office clients"
@@ -32,7 +32,7 @@ class ORCA225 : ORCACheck
         $this.Links= @{
             "Security & Compliance Center - Safe attachments"="https://aka.ms/orca-atpp-action-safeattachment"
             "Safe Documents in Microsoft 365 E5"="https://aka.ms/orca-atpp-docs-1"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 
@@ -49,7 +49,7 @@ class ORCA225 : ORCACheck
         $ConfigObject.Object=$Config["AtpPolicy"].Name
         $ConfigObject.ConfigItem="EnableSafeDocs"
         $ConfigObject.ConfigData=$Config["AtpPolicy"].EnableSafeDocs
-        # Determine if SafeDocs in ATP is enabled or not
+        # Determine if SafeDocs in MDO is enabled or not
         If($Config["AtpPolicy"].EnableSafeDocs -eq $false) 
         {
             $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")   

@@ -157,7 +157,7 @@ enum CheckType
 enum ORCAService
 {
     EOP = 1
-    OATP = 2
+    MDO = 2
 }
 
 enum ORCAConfigLevel
@@ -599,13 +599,13 @@ Function Get-ORCACollection
 
     [ORCAService]$Collection["Services"] = [ORCAService]::EOP
 
-    # Determine if ATP is available by checking for presence of an ATP command
+    # Determine if MDO is available by checking for presence of an MDO command
     if($(Get-command Get-AtpPolicyForO365 -ErrorAction:SilentlyContinue))
     {
-        $Collection["Services"] += [ORCAService]::OATP
+        $Collection["Services"] += [ORCAService]::MDO
     } 
 
-    If(!$Collection["Services"] -band [ORCAService]::OATP)
+    If(!$Collection["Services"] -band [ORCAService]::MDO)
     {
         Write-Host "$(Get-Date) Microsoft Defender for Office 365 is not detected - these checks will be skipped!" -ForegroundColor Red
     }
@@ -620,9 +620,9 @@ Function Get-ORCACollection
     Write-Host "$(Get-Date) Getting Tenant Settings"
     $Collection["AdminAuditLogConfig"] = Get-AdminAuditLogConfig
 
-    If($Collection["Services"] -band [ORCAService]::OATP)
+    If($Collection["Services"] -band [ORCAService]::MDO)
     {
-        Write-Host "$(Get-Date) Getting ATP Preset Policy Settings"
+        Write-Host "$(Get-Date) Getting MDO Preset Policy Settings"
         $Collection["ATPProtectionPolicyRule"] = Get-ATPProtectionPolicyRule
         $Collection["ATPBuiltInProtectionRule"] = Get-ATPBuiltInProtectionRule
     }
@@ -634,7 +634,7 @@ Function Get-ORCACollection
     $Collection["QuarantineTag"] =  Get-QuarantinePolicy
     $Collection["QuarantineTagGlobal"]  = Get-QuarantinePolicy -QuarantinePolicyType GlobalQuarantinePolicy
 
-    If($Collection["Services"] -band [ORCAService]::OATP)
+    If($Collection["Services"] -band [ORCAService]::MDO)
     {
         Write-Host "$(Get-Date) Getting Anti Phish Settings"
         $Collection["AntiPhishPolicy"] = Get-AntiphishPolicy
@@ -648,9 +648,9 @@ Function Get-ORCACollection
     Write-Host "$(Get-Date) Getting Transport Rules"
     $Collection["TransportRules"] = Get-TransportRule
 
-    If($Collection["Services"] -band [ORCAService]::OATP)
+    If($Collection["Services"] -band [ORCAService]::MDO)
     {
-        Write-Host "$(Get-Date) Getting ATP Policies"
+        Write-Host "$(Get-Date) Getting MDO Policies"
         $Collection["SafeAttachmentsPolicy"] = Get-SafeAttachmentPolicy
         $Collection["SafeAttachmentsRules"] = Get-SafeAttachmentRule
         $Collection["SafeLinksPolicy"] = Get-SafeLinksPolicy
@@ -696,7 +696,7 @@ Function Get-ORCACollection
     Add-IsPresetValue -CollectionEntity $Collection["HostedContentFilterPolicy"]
     Add-IsPresetValue -CollectionEntity $Collection["EOPProtectionPolicyRule"]
 
-    If($Collection["Services"] -band [ORCAService]::OATP)
+    If($Collection["Services"] -band [ORCAService]::MDO)
     {
         Add-IsPresetValue -CollectionEntity $Collection["ATPProtectionPolicyRule"]
         Add-IsPresetValue -CollectionEntity $Collection["AntiPhishPolicy"]
@@ -1039,7 +1039,7 @@ Function Get-PolicyStateInt
         if(!$Applies)
         {
 
-            # If Preset, rules to check is the protection policy rules (ATP or EOP protection policy rules), if not, the policy rules.
+            # If Preset, rules to check is the protection policy rules (MDO or EOP protection policy rules), if not, the policy rules.
             if($Preset)
             {
                 $CheckRules = $ProtectionPolicyRules
@@ -1315,8 +1315,8 @@ Function Invoke-ORCA
             $Check.Run($Collection)
         }
 
-        # Run ATP checks only when ATP is present
-        if($check.Services -band [ORCAService]::OATP -and $Collection["Services"] -band [ORCAService]::OATP)
+        # Run MDO checks only when MDO is present
+        if($check.Services -band [ORCAService]::MDO -and $Collection["Services"] -band [ORCAService]::MDO)
         {
             $Check.Run($Collection)
         }

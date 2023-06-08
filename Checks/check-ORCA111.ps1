@@ -11,7 +11,7 @@ class ORCA111 : ORCACheck
     ORCA111()
     {
         $this.Control="ORCA-111"
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Unauthenticated Sender (tagging)"
         $this.PassText="Anti-phishing policy exists and EnableUnauthenticatedSender is true"
@@ -26,7 +26,7 @@ class ORCA111 : ORCACheck
         $this.Links= @{
             "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
             "Unverified Sender"="https://aka.ms/orca-atpp-docs-12"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-6"
+            "Recommended settings for EOP and Office 365 Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-6"
         }
     }
 

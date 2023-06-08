@@ -1,6 +1,6 @@
 <#
 
-233 - Check EF is turned on where MX not set to ATP
+233 - Check EF is turned on where MX not set to MDO
 
 #>
 
@@ -21,7 +21,7 @@ class ORCA233 : ORCACheck
         $this.Name="Domains"
         $this.PassText="Domains are pointed directly at EOP or enhanced filtering is used"
         $this.FailRecommendation="Send mail directly to EOP or configure enhanced filtering"
-        $this.Importance="Exchange Online Protection (EOP) and Microsoft Defender for Office 365 (MDO) works best when the mail exchange (MX) record is pointed directly at the service. <p>In the event another third-party service is being used, a very important signal (the senders IP address) is obfuscated and hidden from EOP & ATP, generating a larger quantity of false positives and false negatives. By configuring Enhanced Filtering with the IP addresses of these services the true senders IP address can be discovered, reducing the false-positive and false-negative impact.</p>"
+        $this.Importance="Exchange Online Protection (EOP) and Microsoft Defender for Office 365 (MDO) works best when the mail exchange (MX) record is pointed directly at the service. <p>In the event another third-party service is being used, a very important signal (the senders IP address) is obfuscated and hidden from EOP & MDO, generating a larger quantity of false positives and false negatives. By configuring Enhanced Filtering with the IP addresses of these services the true senders IP address can be discovered, reducing the false-positive and false-negative impact.</p>"
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Domain"

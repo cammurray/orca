@@ -17,12 +17,12 @@ class ORCA124 : ORCACheck
     ORCA124()
     {
         $this.Control=124
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Safe attachments unknown malware response"
         $this.PassText="Safe attachments unknown malware response set to block messages"
         $this.FailRecommendation="Set Safe attachments unknown malware response to block messages"
-        $this.Importance="When Safe attachments unknown malware response set to block, Office 365 ATP prevents current and future messages with detected malware from proceeding and sends messages to quarantine in Office 365."
+        $this.Importance="When Safe attachments unknown malware response set to block, Microsoft Defender for Office 365 prevents current and future messages with detected malware from proceeding and sends messages to quarantine in Office 365."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Safe Attachments Policy"
@@ -31,7 +31,7 @@ class ORCA124 : ORCACheck
         $this.ChiValue=[ORCACHI]::Medium
         $this.Links= @{
             "Security & Compliance Center - Safe attachments"="https://aka.ms/orca-atpp-action-safeattachment"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 
@@ -65,7 +65,7 @@ class ORCA124 : ORCACheck
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
             
-            # Determine if ATP Safe attachments action is set to block
+            # Determine if MDO Safe attachments action is set to block
             If($Action -ne "Block") 
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")

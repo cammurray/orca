@@ -6,7 +6,7 @@ ORCA is a report that you can run in your environment which can highlight known 
 
 ## What's in scope
 * Configuration Health Index
-* Configuration in EOP which can impact ATP
+* Configuration in EOP which can impact MDO
 * SafeLinks configuration
 * SafeAttachments configuration
 * Antiphish and antispoof policies.

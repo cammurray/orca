@@ -1,6 +1,6 @@
 <#
 
-234 Checks to determine if ATP SafeDocs Allow people to click through Protected View even if Safe Documents identified the file as malicious is disabled.
+234 Checks to determine ifMDOSafeDocs Allow people to click through Protected View even if Safe Documents identified the file as malicious is disabled.
 
 #>
 
@@ -17,7 +17,7 @@ class ORCA234 : ORCACheck
     ORCA234()
     {
         $this.Control=234
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Do not let users click through Safe Documents for Office clients"
         $this.PassText="Click through is disabled for Safe Documents"
@@ -32,7 +32,7 @@ class ORCA234 : ORCACheck
         $this.Links= @{
             "Security & Compliance Center - Safe attachments"="https://aka.ms/orca-atpp-action-safeattachment"
             "Safe Documents in Microsoft 365 E5"="https://aka.ms/orca-atpp-docs-1"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 
@@ -49,7 +49,7 @@ class ORCA234 : ORCACheck
         $ConfigObject.Object=$Config["AtpPolicy"].Name
         $ConfigObject.ConfigItem="AllowSafeDocsOpen"
         $ConfigObject.ConfigData=$Config["AtpPolicy"].AllowSafeDocsOpen
-        # Determine if click through for SafeDocs in ATP is enabled or not
+        # Determine if click through for SafeDocs inMDOis enabled or not
         If($Config["AtpPolicy"].AllowSafeDocsOpen -eq $true) 
         {
             $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")   

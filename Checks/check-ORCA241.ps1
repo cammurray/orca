@@ -11,7 +11,7 @@ class ORCA241 : ORCACheck
     ORCA241()
     {
         $this.Control=241
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="First Contact Safety Tip"
         $this.PassText="Anti-phishing policy exists and EnableFirstContactSafetyTips is true"

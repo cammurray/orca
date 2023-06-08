@@ -1,6 +1,6 @@
 <#
 
-ORCA-229 - Check allowed domains in ATP Anti-phishing policies 
+ORCA-229 - Check allowed domains in MDO Anti-phishing policies 
 
 #>
 
@@ -17,7 +17,7 @@ class ORCA229 : ORCACheck
     ORCA229()
     {
         $this.Control=229
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Anti-phishing trusted domains"
         $this.PassText="No trusted domains in Anti-phishing policy"
@@ -30,7 +30,7 @@ class ORCA229 : ORCACheck
         $this.DataType="Current Value"
         $this.Links= @{
             "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 

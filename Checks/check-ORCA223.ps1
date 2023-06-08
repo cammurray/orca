@@ -11,7 +11,7 @@ class ORCA223 : ORCACheck
     ORCA223()
     {
         $this.Control=223
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="User Impersonation Action"
         $this.PassText="User impersonation action is set to move to Quarantine"
@@ -25,7 +25,7 @@ class ORCA223 : ORCACheck
         $this.ChiValue=[ORCACHI]::Medium
         $this.Links= @{
             "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 

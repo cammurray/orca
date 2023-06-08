@@ -19,7 +19,7 @@ class ORCA239 : ORCACheck
     ORCA239()
     {
         $this.Control=239
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Built-in Protection"
         $this.PassText="No exclusions for the built-in protection policies"
@@ -31,7 +31,7 @@ class ORCA239 : ORCACheck
         $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
             "Security & Compliance Center - Safe links"="https://aka.ms/orca-atpp-action-safelinksv2"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 
@@ -89,7 +89,7 @@ class ORCA239 : ORCACheck
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.ConfigItem="None"
-            $ConfigObject.ConfigData="No exclusions from ATP in-built protections"
+            $ConfigObject.ConfigData="No exclusions from MDO in-built protections"
             $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             
             $this.AddConfig($ConfigObject)
