@@ -553,26 +553,24 @@ Function Get-ORCAOutputs
                 If($Options)
                 {
 
-                    foreach($k in $Options.Keys) { Write-Host "Key $($k)"}
-
-                If($Options[$matches[1]].Keys)
-                {
-                    ForEach($Opt in $Options[$matches[1]].Keys)
+                    If($Options[$matches[1]].Keys)
                     {
-                        # Ensure this property exists before we try set it and get a null ref error
-                        $ModProperties = $($Output | Get-Member | Where-Object {$_.MemberType -eq "Property"}).Name
-    
-                        If($ModProperties -contains $Opt)
+                        ForEach($Opt in $Options[$matches[1]].Keys)
                         {
-                            $Output.$Opt = $Options[$matches[1]][$Opt]
-                        }
-                        else
-                        {
-                            Throw("There is no option $($Opt) on output module $($matches[1])")
+                            # Ensure this property exists before we try set it and get a null ref error
+                            $ModProperties = $($Output | Get-Member | Where-Object {$_.MemberType -eq "Property"}).Name
+        
+                            If($ModProperties -contains $Opt)
+                            {
+                                $Output.$Opt = $Options[$matches[1]][$Opt]
+                            }
+                            else
+                            {
+                                Throw("There is no option $($Opt) on output module $($matches[1])")
+                            }
                         }
                     }
                 }
-            }
 
                 # For default output directory
                 $Output.DefaultOutputDirectory = Get-ORCADirectory
@@ -1381,9 +1379,7 @@ function CountORCAStat
         [string]$Version
     )
 
-    Write-Host $Version
-
-    #try {
+    try {
         $Command = Get-Command Get-ORCAReport
         $Channel = $Command.Source
         if($Channel -eq "ORCA" -and $Command.Version -eq "0.0") { $Channel = "Dev" } else { $Channel = "Main" }
@@ -1398,10 +1394,10 @@ function CountORCAStat
             Channel=$Channel
         }
         Invoke-RestMethod -Method POST -Uri "https://orcastat.azurewebsites.net/stat" -Body (ConvertTo-Json $Obj) -ContentType "application/json" | Out-Null
-    #}
-    #catch {
-    #    <#Do this if a terminating exception happens#>
-    #}
+    }
+    catch { 
+        #Silent 
+    }
 
 
 }
