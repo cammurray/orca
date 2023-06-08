@@ -76,8 +76,16 @@ class html : ORCAOutput
         # Compress the XML to ZIP
         Compress-Archive -Path $TempFileXML -DestinationPath $ZipPath
 
-        # Store in meta object
-        $MetaObject.Config = [convert]::ToBase64String((Get-Content -path $ZipPath -Encoding byte))
+        # Store in meta object, on Core use AsByteStream, on other use -Encoding byte
+        if($global:PSVersionTable.PSEdition -eq "Core")
+        {
+            $MetaObject.Config = [convert]::ToBase64String((Get-Content -path $ZipPath -AsByteStream))
+        }
+        else 
+        {
+            $MetaObject.Config = [convert]::ToBase64String((Get-Content -path $ZipPath -Encoding byte))
+        }
+        
         $MetaObject.EmbeddedConfiguration = $true
 
         # Clean-up paths
