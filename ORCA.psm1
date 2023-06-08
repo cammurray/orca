@@ -619,8 +619,8 @@ Function Get-ORCACollection
     $Collection["EOPProtectionPolicyRule"] = Get-EOPProtectionPolicyRule
 
     Write-Host "$(Get-Date) Getting Quarantine Policy Settings"
-    $Collection["QuarantineTag"] =  Get-QuarantinePolicy
-    $Collection["QuarantineTagGlobal"]  = Get-QuarantinePolicy -QuarantinePolicyType GlobalQuarantinePolicy
+    $Collection["QuarantinePolicy"] =  Get-QuarantinePolicy
+    $Collection["QuarantinePolicyGlobal"]  = Get-QuarantinePolicy -QuarantinePolicyType GlobalQuarantinePolicy
 
     If($Collection["Services"] -band [ORCAService]::MDO)
     {

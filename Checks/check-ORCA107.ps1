@@ -17,14 +17,14 @@ class ORCA107 : ORCACheck
     ORCA107()
     {
         $this.Control="ORCA-107"
-        $this.Area="Anti-Spam Policies"
+        $this.Area="Quarantine Policies"
         $this.Name="End-user Spam notifications"
-        $this.PassText="End-user Spam notification is enabled and the frequency is set to less than or equal to 3 days"
-        $this.FailRecommendation="Enable End-user Spam notification and set the frequency to less than or equal to 3 days"
-        $this.Importance="Enable End-user Spam notifications to let users manage their own spam-quarantined messages (Release, Block sender, Review). End-user spam notifications contain a list of all spam-quarantined messages that the end-user has received during a time period."
+        $this.PassText="End-user spam notification is enabled"
+        $this.FailRecommendation="Enable End-user Spam notifications on a quarantine policy"
+        $this.Importance="Enable End-user Spam notifications to let users manage their own spam-quarantined messages (Release, Block sender, Review). End-user spam notifications contain a list of all spam-quarantined messages that the end-user has received during a time period. Policies that do not apply to a spam policy as either a spam, or bulk action, will appear disabled below."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
-        $this.ObjectType="Anti-Spam Policy"
+        $this.ObjectType="Quarantine Policy"
         $this.ItemName="Setting"
         $this.DataType="Current Value"
         $this.Links= @{
@@ -42,86 +42,83 @@ class ORCA107 : ORCACheck
 
     GetResults($Config)
     {
-        #$CountOfPolicies = ($Config["HostedContentFilterPolicy"] ).Count
-        $CountOfPolicies = ($global:HostedContentPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
-        $globalSetting = $Config["QuarantineTagGlobal"]
-        $frequency = $($globalSetting.EndUserSpamNotificationFrequencyInDays)
-        ForEach($Policy in $Config["HostedContentFilterPolicy"])
+        $GlobalPolicy = $Config["QuarantinePolicyGlobal"]
+
+        ForEach($QuarantinePolicy in $Config["QuarantinePolicy"])
         {
 
-            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
+            $AppliesSpam = $False
+            $AppliesPhish = $False
 
-            $SpamQuarantineTag =  $($Policy.SpamQuarantineTag)
-
-            $IsBuiltIn = $false
-            $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
-
-            <#
-            
-            EnableEndUserSpamNotifications
-            
-            #>
-            
-                # Check objects
-                $ConfigObject = [ORCACheckConfig]::new()
-                $ConfigObject.Object=$policyname
-                $ConfigObject.ConfigDisabled=$IsPolicyDisabled
-                $ConfigObject.ConfigReadonly=$Policy.IsPreset
-                $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
-
-                $QuarantineTag = $SpamQuarantineTag
-                $status = $false 
-                ForEach($Tag in $Config["QuarantineTag"])
+            ForEach($Policy in $Config["HostedContentFilterPolicy"])
+            {
+                if($Config["PolicyStates"][$Policy.Guid.ToString()].Applies -eq $True)
                 {
-                    if($($Tag.Name) -eq $QuarantineTag)
+                    # Check Spam action
+                    if($Policy.SpamAction -eq "Quarantine" -and $Policy.SpamQuarantineTag -eq $QuarantinePolicy.Name)
                     {
-                        $status = $Tag.ESNEnabled
+                        $AppliesSpam = $True
+                    }
 
-                        $ConfigObject.ConfigItem="EnableEndUserSpamNotifications"
-                        
-        
-                        If($status -eq $false )
-                        {
-                            $ConfigObject.ConfigData = $status
-                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                        }
-                        Else 
-                        {
-                            $ConfigObject.ConfigData = $status
-                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                        }
-                
-                        # Add config to check
-                        $this.AddConfig($ConfigObject)
+                    # Check HC Spam Action
+                    if($Policy.HighConfidenceSpamAction -eq "Quarantine" -and $Policy.HighConfidenceSpamQuarantineTag -eq $QuarantinePolicy.Name)
+                    {
+                        $AppliesSpam = $True
+                    }
 
-                        <#           
-                            EndUserSpamNotificationFrequency           
-                        #>
-            
-                        # Check objects
-                        $ConfigObject = [ORCACheckConfig]::new()
-                        $ConfigObject.Object = $policyname
-                        $ConfigObject.ConfigItem = "EndUserSpamNotificationFrequency"
-                        $ConfigObject.ConfigDisabled=$IsPolicyDisabled
-                        $ConfigObject.ConfigReadonly=$Policy.IsPreset
-                        $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
-        
-                    
-                        If($frequency -le 3)
-                        {
-                            $ConfigObject.ConfigData = $frequency
-                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                        }
-                        Else 
-                        {
-                            $ConfigObject.ConfigData = $frequency
-                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                        }
-                        # Add config to check
-                        $this.AddConfig($ConfigObject)
+                    # Check Bulk Action
+                    if($Policy.BulkSpamAction -eq "Quarantine" -and $Policy.BulkQuarantineTag -eq $QuarantinePolicy.Name)
+                    {
+                        $AppliesSpam = $True
+                    }
+
+                    # Check Phish Action
+                    if($Policy.PhishSpamAction -eq "Quarantine" -and $Policy.PhishQuarantineTag -eq $QuarantinePolicy.Name)
+                    {
+                        $AppliesPhish = $True
+                    }
+
+                    # Check HC Phish Action
+                    if($Policy.HighConfidencePhishAction -eq "Quarantine" -and $Policy.HighConfidencePhishQuarantineTag -eq $QuarantinePolicy.Name)
+                    {
+                        $AppliesPhish = $True
                     }
                 }
-        }            
+            }
+            
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$QuarantinePolicy.Name
+            $ConfigObject.ConfigReadonly=($QuarantinePolicy.Name -eq "DefaultFullAccessWithNotificationPolicy" -or $QuarantinePolicy.Name -eq "DefaultFullAccessPolicy" -or $QuarantinePolicy.Name -eq "AdminOnlyAccessPolicy")
+            $ConfigObject.ConfigItem="ESNEnabled"
+            $ConfigObject.ConfigData = $QuarantinePolicy.ESNEnabled
+
+            if($AppliesSpam)
+            {
+                if($QuarantinePolicy.ESNEnabled -eq $True)
+                {
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Pass)
+                } 
+                else 
+                {
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Fail)
+                }
+                
+                $this.AddConfig($ConfigObject)
+            } 
+            else 
+            {
+                # Quarantine policy does not apply to any spam policy
+                if($QuarantinePolicy.ESNEnabled -eq $False)
+                {
+                    $ConfigObject.ConfigDisabled = $True
+                    $ConfigObject.SetResult([ORCAConfigLevel]::All,[ORCAResult]::Informational)
+                    $ConfigObject.InfoText = "This quarantine policy has notifications turned off, however, it is not used in any spam related action. It is being flagged for awareness purposes only."
+                
+                    $this.AddConfig($ConfigObject)
+                }
+            }
+
+        }        
     }
 
 }
