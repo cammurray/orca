@@ -25,10 +25,10 @@ class html : ORCAOutput
     $Tenant = $(($Collection["AcceptedDomains"] | Where-Object {$_.InitialDomain -eq $True}).DomainName -split '\.')[0]
     $ReportDate = $(Get-Date -format 'dd-MMM-yyyy HH:mm')
 
-    # Summary
-    $RecommendationCount = $($Checks | Where-Object {$_.Result -eq [ORCAResult]::Fail}).Count
-    $OKCount = $($Checks | Where-Object {$_.Result -eq [ORCAResult]::Pass}).Count
-    $InfoCount = $($Checks | Where-Object {$_.Result -eq [ORCAResult]::Informational}).Count
+    # Summary Where-Object {$_.Completed -eq $true}
+    $RecommendationCount = $($Checks | Where-Object {$_.Result -eq [ORCAResult]::Fail -and $_.Completed -eq $true}).Count
+    $OKCount = $($Checks | Where-Object {$_.Result -eq [ORCAResult]::Pass -and $_.Completed -eq $true}).Count
+    $InfoCount = $($Checks | Where-Object {$_.Result -eq [ORCAResult]::Informational -and $_.Completed -eq $true}).Count
 
     # Misc
     $ReportTitle = "Microsoft Defender for Office 365 Recommended Configuration Analyzer"
