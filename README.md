@@ -18,17 +18,12 @@ The configuration health index is a weighted value representing your configurati
 
 ## Sounds good! How do I run it?
 
-You will need the Exchange Online Management Shell first.
+You will need the Exchange Online Management module first.
 
-* Exchange Online PowerShell V2 module is availible via the PowerShell gallery:
+* Exchange Online Management module is availible via the PowerShell gallery:
 
- `Install-Module -Name ExchangeOnlineManagement`
-
-**or** 
-
-* Exchange Online PowerShell module http://aka.ms/exopsmodule 
-
-We use these modules to connect to Exchange Online and look at your configuration.
+Install for current user `Install-Module -Name ExchangeOnlineManagement -Scope:CurrentUser`
+Install for all users `Install-Module -Name ExchangeOnlineManagement`
 
 Then, you'll need ORCA. We publish ORCA via the PowerShell gallery to make it easy and accessible for everyone.
 

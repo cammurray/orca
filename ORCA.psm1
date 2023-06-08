@@ -100,18 +100,6 @@ Function Invoke-ORCAConnections
         }
         
     }
-    ElseIf(Get-Command "Connect-EXOPSSession" -ErrorAction:SilentlyContinue)
-    {
-
-        # Cannot use Delegated Organization connecting this way, potentially we should deprecate this way of connecting
-        if($DelegatedOrganization -ne $null)
-        {
-            throw "Cannot use DelegatedOrganization without Exchange Online PowerShell module installed."
-        }
-
-        Write-Host "$(Get-Date) Connecting to Exchange Online.."
-        Connect-EXOPSSession -PSSessionOption $ProxySetting -WarningAction:SilentlyContinue | Out-Null    
-    } 
     Else 
     {
         If($Install)
@@ -136,7 +124,7 @@ Function Invoke-ORCAConnections
         if(!$Installed)
         {
             # Error if not installed
-            Throw "ORCA requires either the Exchange Online PowerShell Module (aka.ms/exopsmodule) loaded or the Exchange Online PowerShell module from the PowerShell Gallery installed."
+            Throw "ORCA requires the ExchangeOnlineManagement PowerShell Gallery module installed. Install by running 'Install-Module ExchangeOnlineManagement -Scope CurrentUser' for the current user only, or 'Install-Module ExchangeOnlineManagement' for all users"
         }
     }
 
