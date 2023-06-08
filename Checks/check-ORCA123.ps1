@@ -1,6 +1,6 @@
 <#
 
-123 - Check ATP Phishing Enable Unusual Characters Safety Tips 
+123 - Check MDO Phishing Enable Unusual Characters Safety Tips 
 
 #>
 
@@ -17,12 +17,12 @@ class ORCA123 : ORCACheck
     ORCA123()
     {
         $this.Control=123
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Unusual Characters Safety Tips"
         $this.PassText="Unusual Characters Safety Tips is enabled"
         $this.FailRecommendation="Enable Unusual Characters Safety Tips so that users can receive visible indication on incoming messages."
-        $this.Importance="Office 365 ATP can show a warning tip to recipients where the sender name or email address contains character sets that aren't usually used together."
+        $this.Importance="Microsoft Defender for Office 365 can show a warning tip to recipients where the sender name or email address contains character sets that aren't usually used together."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Antiphishing Policy"
@@ -31,7 +31,7 @@ class ORCA123 : ORCACheck
         $this.ChiValue=[ORCACHI]::Low
         $this.Links= @{
             "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 

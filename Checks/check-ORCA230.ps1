@@ -17,12 +17,12 @@ class ORCA230 : ORCACheck
     ORCA230()
     {
         $this.Control=230
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Anti-phishing Rules"
         $this.PassText="Each domain has a Anti-phishing policy applied to it, or the default policy is being used"
         $this.FailRecommendation="Check your anti-phishing policies for duplicate rules. Some policies and settings may not be applying."
-        $this.Importance="Office 365 ATP Anti-phishing policies are applied using rules. The default anti-phishing policy applies in the absence of a custom policy. When creating custom policies, there may be duplication of settings and depending on the rules and priority, some policies or settings may not even apply. It's important in this circumstance to check that the desired settings are applied to the right users."
+        $this.Importance="Microsoft Defender for Office 365 Anti-phishing policies are applied using rules. The default anti-phishing policy applies in the absence of a custom policy. When creating custom policies, there may be duplication of settings and depending on the rules and priority, some policies or settings may not even apply. It's important in this circumstance to check that the desired settings are applied to the right users."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Domain"
@@ -32,7 +32,7 @@ class ORCA230 : ORCACheck
             "Security & Compliance Center - Antiphishing policies"="https://aka.ms/orca-atpp-action-antiphishing"
             "Order and precedence of email protection"="https://aka.ms/orca-atpp-docs-4"
             "Setting up antiphishing policies"="https://aka.ms/orca-atpp-docs-2"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 

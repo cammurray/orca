@@ -11,7 +11,7 @@ class ORCA105 : ORCACheck
     ORCA105()
     {
         $this.Control="ORCA-105"
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Safe Links Synchronous URL detonation"
         $this.PassText="Safe Links Synchronous URL detonation is enabled"
@@ -25,8 +25,8 @@ class ORCA105 : ORCACheck
         $this.ChiValue=[ORCACHI]::Medium
         $this.Links= @{
             "Security & Compliance Center - Safe links"="https://aka.ms/orca-atpp-action-safelinksv2"
-            "Set up Office 365 ATP Safe Links policies"="https://aka.ms/orca-atpp-docs-10"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Set up Microsoft Defender for Office 365 Safe Links policies"="https://aka.ms/orca-atpp-docs-10"
+            "Recommended settings for EOP and Office 365 Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 
@@ -38,7 +38,6 @@ class ORCA105 : ORCACheck
 
     GetResults($Config)
     {
-        $Check = "ATP"
 
         $EnabledPolicyExists = $False
 

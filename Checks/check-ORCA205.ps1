@@ -31,7 +31,7 @@ class ORCA205 : ORCACheck
         $this.Links= @{
             "Security & Compliance Center - Anti-malware"="https://aka.ms/orca-mfp-action-antimalware"
             "Configure anti-malware policies"="https://aka.ms/orca-mfp-docs-1"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-6"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-6"
         }
     }
 

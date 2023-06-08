@@ -20,7 +20,7 @@ class ORCA179 : ORCACheck
     ORCA179()
     {
         $this.Control=179
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Intra-organization Safe Links"
         $this.PassText="Safe Links is enabled intra-organization"
@@ -32,7 +32,7 @@ class ORCA179 : ORCACheck
         $this.DataType="Enabled for Internal"
         $this.Links= @{
             "Security & Compliance Center - Safe links"="https://aka.ms/orca-atpp-action-safelinksv2"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 
@@ -65,7 +65,7 @@ class ORCA179 : ORCACheck
                 $ConfigObject.ConfigDisabled = $IsPolicyDisabled
                 $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
-                # Determine if ATP link tracking is on for this safelinks policy
+                # Determine if MDO link tracking is on for this safelinks policy
                 If($EnableForInternalSenders -eq $true) 
                 {
                     $Enabled = $True

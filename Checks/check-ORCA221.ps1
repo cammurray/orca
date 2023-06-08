@@ -1,6 +1,6 @@
 <#
 
-221 - Check ATP Phishing Mailbox Intelligence is enabled 
+221 - Check MDO Phishing Mailbox Intelligence is enabled 
 
 #>
 
@@ -17,7 +17,7 @@ class ORCA221 : ORCACheck
     ORCA221()
     {
         $this.Control=221
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Mailbox Intelligence Enabled"
         $this.PassText="Mailbox intelligence is enabled in anti-phishing policies"
@@ -31,7 +31,7 @@ class ORCA221 : ORCACheck
         $this.ChiValue=[ORCACHI]::Low
         $this.Links= @{
             "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 

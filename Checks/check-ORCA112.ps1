@@ -4,14 +4,14 @@ class ORCA112 : ORCACheck
 {
     <#
     
-        Check if the Anti-spoofing policy action is configured to Move message to the recipients' Junk Email folder as per Standard security settings for Office 365 EOP/ATP
+        Check if the Anti-spoofing policy action is configured to Move message to the recipients' Junk Email folder as per Standard security settings for Office 365 EOP/MDO
     
     #>
 
     ORCA112()
     {
         $this.Control="ORCA-112"
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Anti-spoofing protection action"
         $this.PassText="Anti-spoofing protection action is configured to Move message to the recipients' Junk Email folders in Anti-phishing policy"
@@ -26,7 +26,7 @@ class ORCA112 : ORCACheck
         $this.Links= @{
             "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
             "Configuring the anti-spoofing policy"="https://aka.ms/orca-atpp-docs-5"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-6"
+            "Recommended settings for EOP and Office 365 Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-6"
         }
     
     }

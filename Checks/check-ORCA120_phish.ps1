@@ -23,7 +23,7 @@ class ORCA120_phish : ORCACheck
         $this.Links= @{
             "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
             "Zero-hour auto purge - protection against spam and malware"="https://aka.ms/orca-zha-docs-2"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-6"
+            "Recommended settings for EOP and Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-6"
         }
     }
 

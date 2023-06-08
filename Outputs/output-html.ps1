@@ -335,7 +335,7 @@ class html : ORCAOutput
             "
         }
 
-        If(!($Collection["Services"] -band [ORCAService]::OATP))
+        If(!($Collection["Services"] -band [ORCAService]::MDO))
         {
             $Output += "
             <div class='alert alert-danger pt-2' role='alert'>

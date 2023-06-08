@@ -17,7 +17,7 @@ class ORCA156 : ORCACheck
     ORCA156()
     {
         $this.Control=156
-        $this.Services=[ORCAService]::OATP
+        $this.Services=[ORCAService]::MDO
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Safe Links Tracking"
         $this.PassText="Safe Links Policies are tracking when user clicks on safe links"
@@ -31,7 +31,7 @@ class ORCA156 : ORCACheck
         $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
             "Security & Compliance Center - Safe links"="https://aka.ms/orca-atpp-action-safelinksv2"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-7"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 
@@ -59,7 +59,7 @@ class ORCA156 : ORCACheck
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
-            # Determine if ATP link tracking is on for this safelinks policy
+            # Determine if MDO link tracking is on for this safelinks policy
             If($TrackUserClicks -eq $True)
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")

@@ -29,7 +29,7 @@ class ORCA109 : ORCACheck
         $this.Links= @{
             "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
             "Use Anti-Spam Policy Sender/Domain Allow lists"="https://aka.ms/orca-antispam-docs-4"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-6"
+            "Recommended settings for EOP and Office 365 Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-6"
         }
     }
 

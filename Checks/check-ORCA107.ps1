@@ -30,7 +30,7 @@ class ORCA107 : ORCACheck
         $this.Links= @{
             "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
             "Configure end-user spam notifications in Exchange Online"="https://aka.ms/orca-antispam-docs-2"
-            "Recommended settings for EOP and Office 365 ATP security"="https://aka.ms/orca-atpp-docs-6"
+            "Recommended settings for EOP and Office 365 Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-6"
         }
     }
 
