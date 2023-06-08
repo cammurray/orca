@@ -12,13 +12,13 @@ class ORCA118_1 : ORCACheck
     {
         $this.Control="ORCA-118-1"
         $this.Area="Anti-Spam Policies"
-        $this.Name="Domain Whitelisting"
-        $this.PassText="Domains are not being whitelisted in an unsafe manner"
-        $this.FailRecommendation="Remove whitelisting on domains"
-        $this.Importance="Emails coming from whitelisted domains bypass several layers of protection within Exchange Online Protection. If domains are whitelisted, they are open to being spoofed from malicious actors."
+        $this.Name="Domain Allowlisting"
+        $this.PassText="Domains are not being allow listed in an unsafe manner"
+        $this.FailRecommendation="Remove allow listing on domains"
+        $this.Importance="Emails coming from allow listed domains bypass several layers of protection within Exchange Online Protection. If domains are allow listed, they are open to being spoofed from malicious actors."
         $this.ExpandResults=$True
         $this.ItemName="Anti-Spam Policy"
-        $this.DataType="Whitelisted Domain"
+        $this.DataType="Allowlisted Domain"
         $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
             "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
