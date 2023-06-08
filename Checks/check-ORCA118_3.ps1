@@ -12,10 +12,10 @@ class ORCA118_3 : ORCACheck
     {
         $this.Control="ORCA-118-3"
         $this.Area="Anti-Spam Policies"
-        $this.Name="Domain Whitelisting"
+        $this.Name="Domain Allowlist"
         $this.PassText="Your own domains are not being allow listed in an unsafe manner"
         $this.FailRecommendation="Remove allow listing on domains belonging to your organisation"
-        $this.Importance="Emails coming from whitelisted domains bypass several layers of protection within Exchange Online Protection. When allow listing your own domains, an attacker can spoof any account in your organisation that has this domain. This is a significant phishing attack vector."
+        $this.Importance="Emails coming from allow listed domains bypass several layers of protection within Exchange Online Protection. When allow listing your own domains, an attacker can spoof any account in your organisation that has this domain. This is a significant phishing attack vector."
         $this.ExpandResults=$True
         $this.ItemName="Anti-Spam Policy"
         $this.DataType="Organisation Domain Allow Listed"
