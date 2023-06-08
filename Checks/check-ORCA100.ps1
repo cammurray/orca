@@ -51,21 +51,21 @@ class ORCA100 : ORCACheck
             # Standard check - between 4 and 6
             If($BulkThreshold -ge 4 -and $BulkThreshold -le 6)
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Pass)
             }
             Else 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Fail)
             }
 
             # Strict check - is 4
             If($BulkThreshold -eq 4)
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,[ORCAResult]::Pass)
             }
             Else 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,[ORCAResult]::Fail)
             }
 
             # Add config to check

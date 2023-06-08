@@ -43,7 +43,6 @@ class ORCA139 : ORCACheck
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $SpamAction = $($Policy.SpamAction)
 
-            $IsBuiltIn = $false
             $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
             
             # Check objects
@@ -57,27 +56,27 @@ class ORCA139 : ORCACheck
             # For standard, this should be MoveToJmf
             If($SpamAction -ne "MoveToJmf") 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Fail)
             } 
             else 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Pass)
             }
 
             # For strict, this should be Quarantine
             If($SpamAction -ne "Quarantine") 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,[ORCAResult]::Fail)
             } 
             else 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,[ORCAResult]::Pass)
             }
 
             # For either Delete or Redirect we should raise an informational
             If($SpamAction -eq "Delete" -or $SpamAction -eq "Redirect")
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::All,[ORCAResult]::Informational)
                 $ConfigObject.InfoText = "The $($SpamAction) option may impact the users ability to release emails and may impact user experience."
             }
             

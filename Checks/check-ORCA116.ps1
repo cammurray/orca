@@ -73,27 +73,27 @@ class ORCA116 : ORCACheck
             # For standard, this should be MoveToJmf
             If($MailboxIntelligenceProtectionAction -ne "MoveToJmf")
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")       
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Fail)       
             }
             Else 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")               
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Pass)               
             }
 
             # For strict, this should be Quarantine
             If($MailboxIntelligenceProtectionAction -ne "Quarantine")
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")        
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,[ORCAResult]::Fail)        
             }
             Else 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")                         
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,[ORCAResult]::Pass)                         
             }
 
             # For either Delete or Quarantine we should raise an informational
             If($MailboxIntelligenceProtectionAction -eq "Delete" -or $MailboxIntelligenceProtectionAction -eq "Quarantine")
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::All,[ORCAResult]::Informational)
                 $ConfigObject.InfoText = "The $($MailboxIntelligenceProtectionAction) option may impact the users ability to release emails and may impact user experience."
             }
 
@@ -107,7 +107,7 @@ class ORCA116 : ORCACheck
             $ConfigObject.Object="No Enabled Policies"
             $ConfigObject.ConfigItem="MailboxIntelligenceProtectionAction"
             $ConfigObject.ConfigData=""
-            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Fail)
             $this.AddConfig($ConfigObject)
         }
 

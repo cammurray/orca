@@ -127,7 +127,7 @@ class ORCA233 : ORCACheck
                 else
                 {
                     $ConfigObject.ConfigData="Not Configured"
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                    $ConfigObject.SetResult([ORCAConfigLevel]::All,[ORCAResult]::Informational)
                     $ConfigObject.InfoText = "This domain is not pointed to EOP and all default inbound connectors are not configured for skip listing. Check the enhanced filtering segment for more information."
                 }
             }

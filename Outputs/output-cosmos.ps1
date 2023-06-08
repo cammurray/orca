@@ -14,7 +14,7 @@ class cosmos : ORCAOutput
         $this.Name="Cosmos"
     }
 
-    RunOutput($Checks,$Collection)
+    RunOutput($Checks,$Collection,[ORCAConfigLevel]$AssessmentLevel)
     {
 
         # Make sure that we have CosmosDB module

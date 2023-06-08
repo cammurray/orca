@@ -107,6 +107,7 @@ Example 2 - output to HTML but don't load the HTML
 
 * DisplayReport, Optional, Boolean - load the report at the conclusion of running ORCA
 * OutputDirectory, Optional, String - path to store the outputted html file, default is an appdata directory created automatically
+* EmbedConfiguration, Optional, Boolean - allows you to embed your configuration in to the HTML file for easy sharing/snapshotting
 
 ### JSON
 
@@ -150,6 +151,24 @@ Example - To output in to MyCosmosAccount database MyCosmosDB, in to a collectio
 * Database, Required, String - The Cosmos DB name
 * Key, Required, String - One of the keys for this Cosmos DB account
 * Collection, Optional, String - The collection to output in to, by default this will be ORCA
+
+# Embedding Configuration in HTML files (Optional)
+
+## Embedding
+
+To embed configuration in to the ORCA HTML output use the EmbedConfiguration switch to Get-ORCAReport, example `Get-ORCAReport -EmbedConfiguration` or add EmbedConfiguration to Invoke ORCA if running manually `Invoke-ORCA -Output HTML -OutputOptions @{HTML=@{EmbedConfiguration=$True}}`
+
+When embedding your configuration to the HTML file, note that the HTML file becomes confidential. It may contain sensitive information at this point, and only share it with trusted parties.
+
+## Reading embedded configuration
+
+If you have a HTML ORCA report (generated after version 2.3) that has embedded configuration, run:
+
+`Get-ORCAReportEmbeddedConfig -File filename.html` to read the configuration in to a hashtable.
+
+Store that in to a PowerShell variable by running `$Config = Get-ORCAReportEmbeddedConfig -File filename.html`
+
+Explore the data available by outputting the $Config variable, or enter a specific bit of config by using the key, e.g for looking at InboundConnectors, $Config['InboundConnector']
 
 # Charting
 

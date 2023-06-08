@@ -9,11 +9,11 @@
 
 	.NOTES
 		Cam Murray
-		Senior Program Manager - Microsoft
+		Principal Product Manager - Microsoft
         camurray@microsoft.com
         
         Daniel Mozes
-        Senior Program Manager - Microsoft
+        Senior Product Manager - Microsoft
         damozes@microsoft.com
 
         Output report uses open source components for HTML formatting
@@ -39,12 +39,6 @@
         about_functions_advanced
 
 #>
-[System.Collections.ArrayList] $global:SafeLinkPolicyStatus = [System.Collections.ArrayList] @()
-[System.Collections.ArrayList] $global:SafeAttachmentsPolicyStatus = [System.Collections.ArrayList] @()
-[System.Collections.ArrayList] $global:MalwarePolicyStatus = [System.Collections.ArrayList] @()
-[System.Collections.ArrayList] $global:AntiSpamPolicyStatus = [System.Collections.ArrayList] @()
-[System.Collections.ArrayList] $global:HostedContentPolicyStatus = [System.Collections.ArrayList] @()
-
 
 function Get-ORCADirectory
 {
@@ -169,14 +163,15 @@ enum ORCAService
 enum ORCAConfigLevel
 {
     None = 0
-    Informational = 4
     Standard = 5
     Strict = 10
     TooStrict = 15
+    All = 100
 }
 
 enum ORCAResult
 {
+    None = 0
     Pass = 1
     Informational = 2
     Fail = 3
@@ -219,10 +214,6 @@ Class ORCACheckConfig
         $this.Results = @()
 
         $this.Results += New-Object -TypeName ORCACheckConfigResult -Property @{
-            Level=[ORCAConfigLevel]::Informational
-        }
-
-        $this.Results += New-Object -TypeName ORCACheckConfigResult -Property @{
             Level=[ORCAConfigLevel]::Standard
         }
 
@@ -236,20 +227,84 @@ Class ORCACheckConfig
     }
 
     # Set the result for this mode
-    SetResult([ORCAConfigLevel]$Level,$Result)
+    SetResult([ORCAConfigLevel]$Level,[ORCAResult]$Result)
     {
-        ($this.Results | Where-Object {$_.Level -eq $Level}).Value = $Result
+
+        $InputResult = $Result;
+
+        # Override level if the config is disabled and result is a failure.
+        if($this.ConfigDisabled -eq $true -and $InputResult -eq [ORCAResult]::Fail)
+        {
+            $InputResult = [ORCAResult]::Informational;
+
+            $this.InfoText = "The policy is not enabled and will not apply. "
+
+            if($InputResult -eq [ORCAResult]::Fail)
+            {
+                $this.InfoText += "This configuration level is below the recommended settings, and is being flagged incase of accidental enablement. It is not scored as a result of being disabled."
+            } else {
+                $this.InfoText += "This configuration is set to a recommended level, but is not scored because of the disabled state."
+            }
+        }
+
+        if($Level -eq [ORCAConfigLevel]::All)
+        {
+            # Set all to this
+            $Rebuilt = @()
+            foreach($r in $this.Results)
+            {
+                $r.Value = $InputResult;
+                $Rebuilt += $r
+            }
+            $this.Results = $Rebuilt
+        } elseif($Level -eq [ORCAConfigLevel]::Strict -and $Result -eq [ORCAResult]::Pass)
+        {
+            # Strict results are pass at standard level too
+            ($this.Results | Where-Object {$_.Level -eq [ORCAConfigLevel]::Standard}).Value = [ORCAResult]::Pass
+            ($this.Results | Where-Object {$_.Level -eq [ORCAConfigLevel]::Strict}).Value = [ORCAResult]::Pass
+        } else {
+            ($this.Results | Where-Object {$_.Level -eq $Level}).Value = $InputResult
+        }        
 
         # The level of this configuration should be its strongest result (e.g if its currently standard and we have a strict pass, we should make the level strict)
-        if($Result -eq "Pass" -and ($this.Level -lt $Level -or $this.Level -eq [ORCAConfigLevel]::None))
+        if($InputResult -eq [ORCAResult]::Pass -and ($this.Level -lt $Level -or $this.Level -eq [ORCAConfigLevel]::None))
         {
             $this.Level = $Level
         } 
-        elseif ($Result -eq "Fail" -and ($Level -eq [ORCAConfigLevel]::Informational -and $this.Level -eq [ORCAConfigLevel]::None))
+        elseif ($InputResult -eq [ORCAResult]::Fail -and ($Level -eq [ORCAConfigLevel]::Informational -and $this.Level -eq [ORCAConfigLevel]::None))
         {
             $this.Level = $Level
         }
 
+        $this.ResultStandard = $this.GetLevelResult([ORCAConfigLevel]::Standard)
+        $this.ResultStrict = $this.GetLevelResult([ORCAConfigLevel]::Strict)
+
+    }
+
+    [ORCAResult] GetLevelResult([ORCAConfigLevel]$Level)
+    {
+
+        [ORCAResult]$StrictResult = ($this.Results | Where-Object {$_.Level -eq [ORCAConfigLevel]::Strict}).Value
+        [ORCAResult]$StandardResult = ($this.Results | Where-Object {$_.Level -eq [ORCAConfigLevel]::Standard}).Value
+
+        if($Level -eq [ORCAConfigLevel]::Strict)
+        {
+            return $StrictResult 
+        }
+
+        if($Level -eq [ORCAConfigLevel]::Standard)
+        {
+            # If Strict Level is pass, return that, strict is higher than standard
+            if($StrictResult -eq [ORCAResult]::Pass)
+            {
+                return [ORCAResult]::Pass
+            }
+
+            return $StandardResult
+
+        }
+
+        return [ORCAResult]::None
     }
 
     $Check
@@ -261,13 +316,15 @@ Class ORCACheckConfig
     [string]$ConfigPolicyGuid
     $InfoText
     [array]$Results
+    [ORCAResult]$ResultStandard
+    [ORCAResult]$ResultStrict
     [ORCAConfigLevel]$Level
 }
 
 Class ORCACheckConfigResult
 {
     [ORCAConfigLevel]$Level=[ORCAConfigLevel]::Standard
-    $Value
+    [ORCAResult]$Value=[ORCAResult]::None
 }
 
 Class ORCACheck
@@ -290,7 +347,7 @@ Class ORCACheck
     #>
 
     [Array] $Config=@()
-    [string] $Control
+    [String] $Control
     [String] $Area
     [String] $Name
     [String] $PassText
@@ -307,10 +364,11 @@ Class ORCACheck
     $ORCAParams
     [Boolean] $SkipInReport=$false
 
+    [ORCAConfigLevel] $AssessmentLevel
     [ORCAResult] $Result=[ORCAResult]::Pass
-    [int] $FailCount=0
-    [int] $PassCount=0
-    [int] $InfoCount=0
+    [ORCAResult] $ResultStandard=[ORCAResult]::Pass
+    [ORCAResult] $ResultStrict=[ORCAResult]::Pass
+
     [Boolean] $Completed=$false
 
     [Boolean] $CheckFailed = $false
@@ -319,50 +377,64 @@ Class ORCACheck
     # Overridden by check
     GetResults($Config) { }
 
-    AddConfig([ORCACheckConfig]$Config)
+    [int] GetCountAtLevelFail([ORCAConfigLevel]$Level)
+    {
+        if($this.Config.Count -eq 0) { return 0 }
+        $ResultsAtLevel = $this.Config.GetLevelResult($Level)
+        return @($ResultsAtLevel | Where-Object {$_ -eq [ORCAResult]::Fail}).Count
+    }
+
+    [int] GetCountAtLevelPass([ORCAConfigLevel]$Level)
+    {
+        if($this.Config.Count -eq 0) { return 0 }
+        $ResultsAtLevel = $this.Config.GetLevelResult($Level)
+        return @($ResultsAtLevel | Where-Object {$_ -eq [ORCAResult]::Pass}).Count
+    }
+
+    [int] GetCountAtLevelInfo([ORCAConfigLevel]$Level)
+    {
+        if($this.Config.Count -eq 0) { return 0 }
+        $ResultsAtLevel = $this.Config.GetLevelResult($Level)
+        return @($ResultsAtLevel | Where-Object {$_ -eq [ORCAResult]::Informational}).Count
+    }
+
+    [ORCAResult] GetLevelResult([ORCAConfigLevel]$Level)
     {
 
-        # Manipulate result for disabled
-
-        if($Config.ConfigDisabled -eq $True)
+        if($this.GetCountAtLevelFail($Level) -gt 0)
         {
-            $Config.InfoText = "The policy is not enabled and will not apply. The configuration for this policy is not set properly according to this check. It is being flagged incase of accidental enablement."
-
-            ForEach($c in $Config.Results)
-            {
-                # Downgrade Fails to Informational
-                if($c.Level -ne [ORCAConfigLevel]::Pass)
-                {
-                    $c.Level = [ORCAConfigLevel]::Informational
-                }
-            }
+            return [ORCAResult]::Fail
         }
+
+        if($this.GetCountAtLevelPass($Level) -gt 0)
+        {
+            return [ORCAResult]::Pass
+        }
+
+        if($this.GetCountAtLevelInfo($Level) -gt 0)
+        {
+            return [ORCAResult]::Informational
+        }
+
+        return [ORCAResult]::None
+    }
+
+    AddConfig([ORCACheckConfig]$Config)
+    {
         
         $this.Config += $Config
 
-        $this.FailCount = @($this.Config | Where-Object {$_.Level -eq [ORCAConfigLevel]::None}).Count
-        $this.PassCount = @($this.Config | Where-Object {$_.Level -eq [ORCAConfigLevel]::Standard -or $_.Level -eq [ORCAConfigLevel]::Strict}).Count
-        $this.InfoCount = @($this.Config | Where-Object {$_.Level -eq [ORCAConfigLevel]::Informational}).Count
+        $this.ResultStandard = $this.GetLevelResult([ORCAConfigLevel]::Standard)
+        $this.ResultStrict = $this.GetLevelResult([ORCAConfigLevel]::Strict)
 
-        $InfoCountDefault =  @($this.Config | Where-Object {$_.InfoText -imatch "This is a Built-In/Default policy managed by Microsoft"}).Count
-        $InfoCountDisabled =  @($this.Config | Where-Object {$_.InfoText -imatch "The policy is not enabled and will not apply"}).Count
+        if($this.AssessmentLevel -eq [ORCAConfigLevel]::Standard)
+        {
+            $this.Result = $this.ResultStandard 
+        }
 
-        If($this.FailCount -eq 0 -and $this.InfoCount -eq 0)
+        if($this.AssessmentLevel -eq [ORCAConfigLevel]::Strict)
         {
-            $this.Result = [ORCAResult]::Pass
-        }
-        elseif($this.FailCount -eq 0 -and $this.InfoCount -gt 0)
-        {
-            if(($this.InfoCount -eq ($InfoCountDefault + $InfoCountDisabled)) -and ($this.PassCount -gt 0))
-            {
-                $this.Result = [ORCAResult]::Pass
-            }
-            else
-            {$this.Result = [ORCAResult]::Informational}
-        }
-        else 
-        {
-            $this.Result = [ORCAResult]::Fail    
+            $this.Result = $this.ResultStrict 
         }
 
     }
@@ -403,16 +475,16 @@ Class ORCAOutput
                 $Result
 
     # Function overridden
-    RunOutput($Checks,$Collection)
+    RunOutput($Checks,$Collection,[ORCAConfigLevel]$AssessmentLevel)
     {
 
     }
 
-    Run($Checks,$Collection)
+    Run($Checks,$Collection,[ORCAConfigLevel]$AssessmentLevel)
     {
         Write-Host "$(Get-Date) Output - $($this.Name)"
 
-        $this.RunOutput($Checks,$Collection)
+        $this.RunOutput($Checks,$Collection,$AssessmentLevel)
 
         $this.Completed=$True
     }
@@ -423,7 +495,8 @@ Function Get-ORCACheckDefs
 {
     Param
     (
-        $ORCAParams
+        $ORCAParams,
+        [ORCAConfigLevel]$AssessmentLevel
     )
 
     $Checks = @()
@@ -441,6 +514,7 @@ Function Get-ORCACheckDefs
 
             # Set the ORCAParams
             $Check.ORCAParams = $ORCAParams
+            $Check.AssessmentLevel = $AssessmentLevel
 
             $Checks += $Check
         }
@@ -478,6 +552,8 @@ Function Get-ORCAOutputs
                 # Load any of the options in to the module
                 If($Options)
                 {
+
+                    foreach($k in $Options.Keys) { Write-Host "Key $($k)"}
 
                 If($Options[$matches[1]].Keys)
                 {
@@ -706,6 +782,13 @@ Function Get-ORCAReport
             We need your input in to ORCA, but we appreciate that you may not have the time or desire to provide it. We've added this flag in here so that you
             can suppress survey prompts (please fill out the survey though!).
 
+        .PARAMETER AssessmentLevel
+            (Alpha) Level to assess at. By default this is Standard, but can be set to Strict. It is not recommended at this stage to adjust this as this
+            is still being developed.
+
+        .PARAMETER EmbedConfiguration
+            Embed the configuration in to the HTML file, useful if you need to share your configuration with a partner, or another party.
+
         .PARAMETER Collection
             Internal only.
 
@@ -725,6 +808,8 @@ Function Get-ORCAReport
         [Switch]$NoSurvey,
         [String[]]$AlternateDNS,
         [String]$DelegatedOrganization=$null,
+        [ORCAConfigLevel]$AssessmentLevel=[ORCAConfigLevel]::Standard,
+        [Switch]$EmbedConfiguration,
         [string][validateset('O365Default', 'O365USGovDoD', 'O365USGovGCCHigh','O365GermanyCloud','O365China')] $ExchangeEnvironmentName = 'O365Default',
         $Collection
     )
@@ -774,7 +859,14 @@ Function Get-ORCAReport
         }
     }
 
-    $Result = Invoke-ORCA -Connect $Connect -PerformVersionCheck $PerformVersionCheck -AlternateDNS $AlternateDNS -Collection $Collection -ExchangeEnvironmentName $ExchangeEnvironmentName -Output @("HTML") -DelegatedOrganization $DelegatedOrganization -ShowSurvey $ShowSurvey
+    $OutputOptions = @{}
+
+    if($EmbedConfiguration)
+    {
+        $OutputOptions = @{HTML=@{EmbedConfiguration=$true}}
+    }
+
+    $Result = Invoke-ORCA -Connect $Connect -PerformVersionCheck $PerformVersionCheck -AlternateDNS $AlternateDNS -Collection $Collection -ExchangeEnvironmentName $ExchangeEnvironmentName -Output @("HTML") -DelegatedOrganization $DelegatedOrganization -ShowSurvey $ShowSurvey -OutputOptions $OutputOptions
     Write-Host "$(Get-Date) Complete! Output is in $($Result.Result)"
 
     # Pre-requisite checks
@@ -782,6 +874,55 @@ Function Get-ORCAReport
     {
         Write-Warning "Resolve-DnsName command does not exist on this ORCA computer. On non windows machines, this command may not exist. Commands requiring DNS checks such as DKIM and SPF have failed! Follow instructions specific for your Operating System."
     }
+}
+
+Function Get-ORCAReportEmbeddedConfig
+{
+    <#
+
+    .SYNOPSIS
+        The Office 365 Recommended Configuration Analyzer (ORCA) Get Embedded Configuration
+    
+    .DESCRIPTION
+        Get-ORCAReportEmbeddedConfig reads configuration from a HTML file where configuration has been embedded
+
+    #>
+
+    Param(
+        [CmdletBinding()]
+        [parameter(Mandatory=$true)][String]$File
+    )
+
+    if(!(Test-Path $File))
+    {
+        throw "File '$($File)' is not a valid path"
+    }
+
+    # Get the first line
+    $FirstLines = Get-Content $File -First 2
+
+    if($FirstLines[0] -notlike "<!-- checkjson*")
+    {
+        throw "File '$($File) is not an ORCA report or there is no embedded meta data"
+    }
+
+    # Get the underlying object
+    $DecodedText = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($FirstLines[1]))
+    $Object = ConvertFrom-Json $DecodedText
+
+    # Validate file has embeded configuration
+    if($Object.EmbeddedConfiguration -ne $true -or $null -eq $Object.Config)
+    {
+        throw "File '$($File) is an ORCA report, but has no embedded configuration. It's possible that when generating the -EmbedConfiguration param was not used."
+    }
+
+    # Create temp file to write clixml to, then read it back in, this is a bit of a hack as PowerShell doesnt offer a direct way
+    # to do this serialization?
+    $TempFileXML = New-TemporaryFile
+    $Object.Config | Out-File $TempFileXML
+
+    return Import-Clixml $TempFileXML
+
 }
 
 class PolicyInfo {
@@ -1104,6 +1245,10 @@ Function Invoke-ORCA
 
             Only use this param when connecting to organizations that you have access to.
 
+        .PARAMETER AssessmentLevel
+            (Alpha) Level to assess at. By default this is Standard, but can be set to Strict. It is not recommended at this stage to adjust this as this
+            is still being developed.
+
         .PARAMETER Collection
             Internal only.
 
@@ -1130,7 +1275,8 @@ Function Invoke-ORCA
         [Boolean]$ShowSurvey=$True,
         [String[]]$AlternateDNS,
         [String]$DelegatedOrganization=$null,
-        [string][validateset('O365Default', 'O365USGovDoD', 'O365USGovGCCHigh')] $ExchangeEnvironmentName,
+        [string][validateset('O365Default', 'O365USGovDoD', 'O365USGovGCCHigh')] $ExchangeEnvironmentName="O365Default",
+        [ORCAConfigLevel]$AssessmentLevel=[ORCAConfigLevel]::Standard,
         $Output,
         $OutputOptions,
         $Collection
@@ -1153,7 +1299,7 @@ Function Invoke-ORCA
     $OutputModules = Get-ORCAOutputs -VersionCheck $VersionCheck -Modules $Output -Options $OutputOptions -ShowSurvey $ShowSurvey
 
     # Get the object of ORCA checks
-    $Checks = Get-ORCACheckDefs -ORCAParams $ORCAParams
+    $Checks = Get-ORCACheckDefs -ORCAParams $ORCAParams -AssessmentLevel $AssessmentLevel
 
     # Get the collection in to memory. For testing purposes, we support passing the collection as an object
     If($Null -eq $Collection)
@@ -1199,7 +1345,7 @@ Function Invoke-ORCA
     ForEach($Check in ($Checks))
     {
         $CHITotal += $($Check.Config.Count) * $($Check.ChiValue)
-        $CHISum += $($Check.InfoCount + $Check.PassCount) * $($Check.ChiValue)
+        $CHISum += $($Check.GetCountAtLevelInfo($AssessmentLevel) + $Check.GetCountAtLevelPass($AssessmentLevel)) * $($Check.ChiValue)
     }
 
     $CHI = [Math]::Round($($CHISum / $CHITotal) * 100)
@@ -1213,7 +1359,7 @@ Function Invoke-ORCA
     ForEach($o in $OutputModules)
     {
 
-        $o.Run($Checks,$Collection)
+        $o.Run($Checks,$Collection,$AssessmentLevel)
         $OutputResults += New-Object -TypeName PSObject -Property @{
             Name=$o.name
             Completed=$o.completed
