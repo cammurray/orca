@@ -54,32 +54,30 @@ class ORCA124 : ORCACheck
         ForEach($Policy in $Config["SafeAttachmentsPolicy"]) 
         {
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
-            $Action = $($Policy.Action)
 
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.Object=$Config["PolicyStates"][$Policy.Guid.ToString()].Name
             $ConfigObject.ConfigItem="Action"
-            $ConfigObject.ConfigData=$Action
+            $ConfigObject.ConfigData=$($Policy.Action)
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
             $ConfigObject.ConfigDisabled=$IsPolicyDisabled
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
             
             # Determine if MDO Safe attachments action is set to block
-            If($Action -ne "Block") 
+            If($($Policy.Action) -ne "Block") 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Fail)
             } 
             Else 
             {
-
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Pass)
             }
 
-            If($Action -eq "Replace" -or $Action -eq "DynamicDelivery")
+            If($($Policy.Action) -eq "Replace" -or $($Policy.Action) -eq "DynamicDelivery")
             {
                 $ConfigObject.InfoText = "Attachments with detected malware will be blocked, the body of the email message delivered to the recipient."
-                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::All,[ORCAResult]::Informational)
             }
 
             $this.AddConfig($ConfigObject)
