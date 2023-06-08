@@ -44,7 +44,7 @@ class ORCA235 : ORCACheck
             {
                 $ConfigObject = [ORCACheckConfig]::new()
                 $ConfigObject.Object = $($AcceptedDomain.Name)
-                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::All,[ORCAResult]::Informational)
                 $ConfigObject.ConfigItem = "Pre-requisites not installed"
                 $ConfigObject.ConfigData = "Resolve-DnsName is not found on ORCA computer. Required for DNS checks."
                 $this.AddConfig($ConfigObject)
@@ -54,106 +54,109 @@ class ORCA235 : ORCACheck
             $this.CheckFailureReason = "Resolve-DnsName is not found on ORCA computer and is required for DNS checks."
             
         }
+        else 
+        {
+            # Check SPF
+            ForEach($AcceptedDomain in $Config["AcceptedDomains"]) 
+            {  
+                $SplatParameters = @{
+                    'ErrorAction' = 'SilentlyContinue'
+                }
 
-        # Check DKIM is enabled
-        ForEach($AcceptedDomain in $Config["AcceptedDomains"]) 
-        {  
-            $SplatParameters = @{
-                'ErrorAction' = 'SilentlyContinue'
-            }
-
-            # If alternate DNS specified, add Server param
-            if($null -ne $this.ORCAParams.AlternateDNS)
-            {
-                $SplatParameters["Server"] = $this.ORCAParams.AlternateDNS
-            }
-
-            $HasMailbox = $false
-
-            try
-            {
-                $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name) -Type MX -ErrorAction:Stop @SplatParameters
-
-                if($null -ne $mailbox -and $mailbox.Count -gt 0)
+                # If alternate DNS specified, add Server param
+                if($null -ne $this.ORCAParams.AlternateDNS)
                 {
-                    $HasMailbox = $true
-                }
-            }
-            Catch{}
-            
-            If($HasMailbox) 
-            {   
-                # Check objects
-                $ConfigObject = [ORCACheckConfig]::new()
-                $ConfigObject.Object = $($AcceptedDomain.Name)
-
-                $SPF = Resolve-DnsName -Name $($AcceptedDomain.Name) -Type TXT @SplatParameters | where-object { $_.strings -match "v=spf1" } | Select-Object -ExpandProperty strings -ErrorAction SilentlyContinue
-                if ($SPF -match "redirect") {
-                    $redirect = $SPF.Split(" ")
-                    $RedirectName = $redirect -match "redirect" -replace "redirect="
-                    $SPF = Resolve-DnsName -Name "$RedirectName" -Type TXT @SplatParameters | where-object { $_.strings -match "v=spf1" } | Select-Object -ExpandProperty strings -ErrorAction SilentlyContinue
+                    $SplatParameters["Server"] = $this.ORCAParams.AlternateDNS
                 }
 
-                $SpfAdvisory = "No SPF record"
-                if ( $null -eq $SPF) {
+                $HasMailbox = $false
+
+                try
+                {
+                    $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name) -Type MX -ErrorAction:Stop @SplatParameters
+
+                    if($null -ne $mailbox -and $mailbox.Count -gt 0)
+                    {
+                        $HasMailbox = $true
+                    }
+                }
+                Catch{}
+                
+                If($HasMailbox) 
+                {   
+                    # Check objects
+                    $ConfigObject = [ORCACheckConfig]::new()
+                    $ConfigObject.Object = $($AcceptedDomain.Name)
+
+                    $SPF = Resolve-DnsName -Name $($AcceptedDomain.Name) -Type TXT @SplatParameters | where-object { $_.strings -match "v=spf1" } | Select-Object -ExpandProperty strings -ErrorAction SilentlyContinue
+                    if ($SPF -match "redirect") {
+                        $redirect = $SPF.Split(" ")
+                        $RedirectName = $redirect -match "redirect" -replace "redirect="
+                        $SPF = Resolve-DnsName -Name "$RedirectName" -Type TXT @SplatParameters | where-object { $_.strings -match "v=spf1" } | Select-Object -ExpandProperty strings -ErrorAction SilentlyContinue
+                    }
+
                     $SpfAdvisory = "No SPF record"
-                }
-                if ($SPF -is [array]) {
-                    $SpfAdvisory = "More than one SPF-record"
-                }
-                Else {
-                    switch -Regex ($SPF) {
-                    '~all' {
-                        $SpfAdvisory = "Soft Fail"
+                    if ( $null -eq $SPF) {
+                        $SpfAdvisory = "No SPF record"
                     }
-                    '-all' {
-                        $SpfAdvisory = "Hard Fail"
+                    if ($SPF -is [array]) {
+                        $SpfAdvisory = "More than one SPF-record"
                     }
-                    Default {
-                        $SpfAdvisory = "No qualifier found"
+                    Else {
+                        switch -Regex ($SPF) {
+                        '~all' {
+                            $SpfAdvisory = "Soft Fail"
+                        }
+                        '-all' {
+                            $SpfAdvisory = "Hard Fail"
+                        }
+                        Default {
+                            $SpfAdvisory = "No qualifier found"
+                        }
                     }
-                }
-                }
+                    }
 
-                # Get matching DKIM signing configuration          
-    
-                If($true)
-                {
-                    $ConfigObject.ConfigItem="$($SPF)"
+                    # Get matching DKIM signing configuration          
+        
+                    If($true)
+                    {
+                        $ConfigObject.ConfigItem="$($SPF)"
 
-                    if($SpfAdvisory -eq "Hard Fail")
-                    {
-                        $ConfigObject.ConfigData = "Yes"
-                    }
-                    Elseif( ($SpfAdvisory -eq "Soft Fail") -or ($SpfAdvisory -eq "No qualifier found"))
-                    {
-                        $ConfigObject.ConfigData = "No"
+                        if($SpfAdvisory -eq "Hard Fail")
+                        {
+                            $ConfigObject.ConfigData = "Yes"
+                        }
+                        Elseif( ($SpfAdvisory -eq "Soft Fail") -or ($SpfAdvisory -eq "No qualifier found"))
+                        {
+                            $ConfigObject.ConfigData = "No"
+                        }
+                        Else
+                        {
+                            $ConfigObject.ConfigData = "Not Detected"
+                        }
+
+                        if($SpfAdvisory -eq "Hard Fail")
+                        {
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                        }
+                        Else 
+                        {
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                        }
                     }
                     Else
                     {
+                        $ConfigObject.ConfigItem = "Not Detected"
                         $ConfigObject.ConfigData = "Not Detected"
-                    }
-
-                    if($SpfAdvisory -eq "Hard Fail")
-                    {
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                    }
-                    Else 
-                    {
                         $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
                     }
-                }
-                Else
-                {
-                    $ConfigObject.ConfigItem = "Not Detected"
-                    $ConfigObject.ConfigData = "Not Detected"
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                }
 
-                # Add config to check
-                $this.AddConfig($ConfigObject)
-            }   
-        }           
+                    # Add config to check
+                    $this.AddConfig($ConfigObject)
+                }   
+            }    
+        }
+       
     }
 }
 

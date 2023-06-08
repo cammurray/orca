@@ -10,7 +10,7 @@ class json : ORCAOutput
         $this.Name="JSON"
     }
 
-    RunOutput($Checks,$Collection)
+    RunOutput($Checks,$Collection,[ORCAConfigLevel]$AssessmentLevel)
     {
 
         # Write to file

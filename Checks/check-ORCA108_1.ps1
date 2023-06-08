@@ -44,7 +44,7 @@ class ORCA108_1 : ORCACheck
             {
                 $ConfigObject = [ORCACheckConfig]::new()
                 $ConfigObject.Object = $($AcceptedDomain.Name)
-                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::All,[ORCAResult]::Informational)
                 $ConfigObject.ConfigItem = "Pre-requisites not installed"
                 $ConfigObject.ConfigData = "Resolve-DnsName is not found on ORCA computer. Required for DNS checks."
                 $this.AddConfig($ConfigObject)
@@ -52,111 +52,112 @@ class ORCA108_1 : ORCACheck
 
             $this.CheckFailed = $true
             $this.CheckFailureReason = "Resolve-DnsName is not found on ORCA computer and is required for DNS checks."
-        }
-    
-        # Check DKIM is enabled
-    
-        ForEach($AcceptedDomain in $Config["AcceptedDomains"]) 
+        } 
+        else 
         {
-            $HasMailbox = $false
-            
-            try
+            # Check DKIM is enabled
+    
+            ForEach($AcceptedDomain in $Config["AcceptedDomains"]) 
             {
+                $HasMailbox = $false
                 
-                If($AcceptedDomain.Name -notlike "*.onmicrosoft.com") 
-               { 
-                    $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name) -Type MX -ErrorAction:Stop
-                    if($null -ne $mailbox -and $mailbox.Count -gt 0)
-                    {
-                        $HasMailbox = $true
+                try
+                {
+                    
+                    If($AcceptedDomain.Name -notlike "*.onmicrosoft.com") 
+                { 
+                        $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name) -Type MX -ErrorAction:Stop
+                        if($null -ne $mailbox -and $mailbox.Count -gt 0)
+                        {
+                            $HasMailbox = $true
+                        }
                     }
                 }
-            }
-            Catch{}
-            If($HasMailbox) 
-            {
-    
-                # Get matching DKIM signing configuration
-                $DkimSigningConfig = $Config["DkimSigningConfig"] | Where-Object {$_.Name -eq $AcceptedDomain.Name}
-    
-                If($DkimSigningConfig)
-                {  
-                    if($DkimSigningConfig.Enabled -eq $true)
-                    {
+                Catch{}
+                If($HasMailbox) 
+                {
+        
+                    # Get matching DKIM signing configuration
+                    $DkimSigningConfig = $Config["DkimSigningConfig"] | Where-Object {$_.Name -eq $AcceptedDomain.Name}
+        
+                    If($DkimSigningConfig)
+                    {  
+                        if($DkimSigningConfig.Enabled -eq $true)
+                        {
 
-                        <#
-                        
-                        SELECTOR1
-                        
-                        #>
-                            $ConfigObject = [ORCACheckConfig]::new()
-                            $ConfigObject.ConfigItem=$($DkimSigningConfig.Domain)
-
-                            # Check DKIM Selector Records
-                            $Selector1 = $Null
-                            if($null -ne $this.ORCAParams.AlternateDNS)
-                            {
-                                Try { $Selector1 = Resolve-DnsName -Type CNAME -Name "selector1._domainkey.$($DkimSigningConfig.Domain)" -Server $this.ORCAParams.AlternateDNS -ErrorAction:stop } Catch {}
-                            }
-                            else 
-                            {
-                                Try { $Selector1 = Resolve-DnsName -Type CNAME -Name "selector1._domainkey.$($DkimSigningConfig.Domain)" -ErrorAction:stop } Catch {}
-                            }
+                            <#
                             
-                            If($Selector1.Type -eq "CNAME" -and $Selector1.NameHost -eq $DkimSigningConfig.Selector1CNAME)
-                            {
-                                # DKIM Selector1 Correctly Configured
-                                $ConfigObject.ConfigData="Selector1 CNAME $($DkimSigningConfig.Selector1CNAME)"
-                                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                            } 
-                            else
-                            {
-                                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")   
-                            }
-
-                            # Add selector 1 result
-                            $this.AddConfig($ConfigObject)
-                        
-                        <#
-                        
-                        SELECTOR2
-                        
-                        #>
-                            # Selector 2 Config Object
-                            $ConfigObject = [ORCACheckConfig]::new()
-                            $ConfigObject.ConfigItem=$($DkimSigningConfig.Domain)
-                        
-                            # Check DKIM Selector Records
-                            $Selector2 = $Null
-                            if($null -ne $this.ORCAParams.AlternateDNS)
-                            {
-                                Try { $Selector2 = Resolve-DnsName -Type CNAME -Name "selector2._domainkey.$($DkimSigningConfig.Domain)" -Server $this.ORCAParams.AlternateDNS -ErrorAction:stop } Catch {}
-                            }
-                            else 
-                            {
-                                Try { $Selector2 = Resolve-DnsName -Type CNAME -Name "selector2._domainkey.$($DkimSigningConfig.Domain)" -ErrorAction:stop } Catch {}
-                            }
-
-                            If($Selector2.Type -eq "CNAME" -and $Selector2.NameHost -eq $DkimSigningConfig.Selector2CNAME)
-                            {
-                                # DKIM Selector1 Correctly Configured
-                                $ConfigObject.ConfigData="Selector2 CNAME $($DkimSigningConfig.Selector2CNAME)"
-                                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                            }
-                            else
-                            {
-                                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")  
-                            }    
+                            SELECTOR1
                             
-                            # Add selector 2 result
-                            $this.AddConfig($ConfigObject)
+                            #>
+                                $ConfigObject = [ORCACheckConfig]::new()
+                                $ConfigObject.ConfigItem=$($DkimSigningConfig.Domain)
+
+                                # Check DKIM Selector Records
+                                $Selector1 = $Null
+                                if($null -ne $this.ORCAParams.AlternateDNS)
+                                {
+                                    Try { $Selector1 = Resolve-DnsName -Type CNAME -Name "selector1._domainkey.$($DkimSigningConfig.Domain)" -Server $this.ORCAParams.AlternateDNS -ErrorAction:stop } Catch {}
+                                }
+                                else 
+                                {
+                                    Try { $Selector1 = Resolve-DnsName -Type CNAME -Name "selector1._domainkey.$($DkimSigningConfig.Domain)" -ErrorAction:stop } Catch {}
+                                }
+                                
+                                If($Selector1.Type -eq "CNAME" -and $Selector1.NameHost -eq $DkimSigningConfig.Selector1CNAME)
+                                {
+                                    # DKIM Selector1 Correctly Configured
+                                    $ConfigObject.ConfigData="Selector1 CNAME $($DkimSigningConfig.Selector1CNAME)"
+                                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                                } 
+                                else
+                                {
+                                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")   
+                                }
+
+                                # Add selector 1 result
+                                $this.AddConfig($ConfigObject)
+                            
+                            <#
+                            
+                            SELECTOR2
+                            
+                            #>
+                                # Selector 2 Config Object
+                                $ConfigObject = [ORCACheckConfig]::new()
+                                $ConfigObject.ConfigItem=$($DkimSigningConfig.Domain)
+                            
+                                # Check DKIM Selector Records
+                                $Selector2 = $Null
+                                if($null -ne $this.ORCAParams.AlternateDNS)
+                                {
+                                    Try { $Selector2 = Resolve-DnsName -Type CNAME -Name "selector2._domainkey.$($DkimSigningConfig.Domain)" -Server $this.ORCAParams.AlternateDNS -ErrorAction:stop } Catch {}
+                                }
+                                else 
+                                {
+                                    Try { $Selector2 = Resolve-DnsName -Type CNAME -Name "selector2._domainkey.$($DkimSigningConfig.Domain)" -ErrorAction:stop } Catch {}
+                                }
+
+                                If($Selector2.Type -eq "CNAME" -and $Selector2.NameHost -eq $DkimSigningConfig.Selector2CNAME)
+                                {
+                                    # DKIM Selector1 Correctly Configured
+                                    $ConfigObject.ConfigData="Selector2 CNAME $($DkimSigningConfig.Selector2CNAME)"
+                                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                                }
+                                else
+                                {
+                                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")  
+                                }    
+                                
+                                # Add selector 2 result
+                                $this.AddConfig($ConfigObject)
+                        }
                     }
+        
                 }
-    
-            }
-    
-        }     
-
+        
+            }     
+        }
     }
 
 }

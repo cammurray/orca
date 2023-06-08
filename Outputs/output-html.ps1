@@ -5,13 +5,14 @@ class html : ORCAOutput
 
     $OutputDirectory=$null
     $DisplayReport=$True
+    $EmbedConfiguration=$false
 
     html()
     {
         $this.Name="HTML"
     }
 
-    RunOutput($Checks,$Collection)
+    RunOutput($Checks,$Collection,[ORCAConfigLevel]$AssessmentLevel)
     {
     <#
 
@@ -25,9 +26,9 @@ class html : ORCAOutput
     $ReportDate = $(Get-Date -format 'dd-MMM-yyyy HH:mm')
 
     # Summary
-    $RecommendationCount = $($Checks | Where-Object {$_.Result -eq "Fail"}).Count
-    $OKCount = $($Checks | Where-Object {$_.Result -eq "Pass"}).Count
-    $InfoCount = $($Checks | Where-Object {$_.Result -eq "Informational"}).Count
+    $RecommendationCount = $($Checks | Where-Object {$_.Result -eq [ORCAResult]::Fail}).Count
+    $OKCount = $($Checks | Where-Object {$_.Result -eq [ORCAResult]::Pass}).Count
+    $InfoCount = $($Checks | Where-Object {$_.Result -eq [ORCAResult]::Informational}).Count
 
     # Misc
     $ReportTitle = "Microsoft Defender for Office 365 Recommended Configuration Analyzer"
@@ -50,6 +51,8 @@ class html : ORCAOutput
         TenantDomain=$TenantDomain
         ReportDate=$ReportDate
         Version=$($this.VersionCheck.Version.ToString())
+        Config=$null
+        EmbeddedConfiguration=$this.EmbedConfiguration
         Summary=New-Object -TypeName PSObject -Property @{
             Recommendation=$RecommendationCount
             OK=$OKCount
@@ -58,7 +61,16 @@ class html : ORCAOutput
         Checks=$Checks
     }
 
-    $EncodedText = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(($MetaObject | ConvertTo-Json)))
+    if($this.EmbedConfiguration -eq $true)
+    {
+        # Write in to temp file to use clixml
+        $TempFileXML = New-TemporaryFile
+        $Collection | Export-Clixml -Path $TempFileXML
+        $MetaObject.Config = $(Get-Content $TempFileXML)
+        $MetaObject.EmbeddedConfiguration = $true
+    }
+
+    $EncodedText = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(($MetaObject | ConvertTo-Json -Depth 100)))
     $output = "<!-- checkjson`n"
     $output += $($EncodedText)
     $output += "`nendcheckjson -->"
@@ -279,6 +291,16 @@ class html : ORCAOutput
                 OUTPUT GENERATION / Version Warning
 
         #>
+
+        if($this.EmbedConfiguration)
+        {
+            $Output += "
+            <div class='alert alert-warning pt-2' role='alert'>
+                <p><strong>Embedded Configuration is present</strong></p>
+                <p>This report has embedded configuration in it as ORCA was ran with the -EmbedConfiguration parameter. This allows anyone who holds this report file to view your configuration for the purpose of supporting your organisation, or as a snapshot of your configuration at a point in time. In order to read the configuration in this report, with the ORCA module installed, run Get-ORCAReportEmbeddedConfig -File <path to this .html file>.</p>
+                <p>For those holding this report, treat this report file as confidential, and only send this report to people that you trust reading your configuration.</p>
+            </div>" 
+        }
         
         if($this.VersionCheck.GalleryCheck)
         {
@@ -331,6 +353,9 @@ class html : ORCAOutput
                 <p>Some checks failed to run, check details below for more information</p>
             </div>" 
         }
+
+                        $Output += "</div>
+                </div>"
 
                         $Output += "</div>
                 </div>"
@@ -470,9 +495,9 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
     ForEach($Area in ($Checks | Where-Object {$_.Completed -eq $true} | Group-Object Area))
     {
 
-        $Pass = @($Area.Group | Where-Object {$_.Result -eq "Pass"}).Count
-        $Fail = @($Area.Group | Where-Object {$_.Result -eq "Fail"}).Count
-        $Info = @($Area.Group | Where-Object {$_.Result -eq "Informational"}).Count
+        $Pass = @($Area.Group | Where-Object {$_.Result -eq [ORCAResult]::Pass}).Count
+        $Fail = @($Area.Group | Where-Object {$_.Result -eq [ORCAResult]::Fail}).Count
+        $Info = @($Area.Group | Where-Object {$_.Result -eq [ORCAResult]::Informational}).Count
 
         $Icon = $AreaIcon[$Area.Name]
         If($Null -eq $Icon) { $Icon = $AreaIcon["Default"]}
@@ -519,7 +544,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
             $Output += "        
                 <h5>$($Check.Name)</h5>"
 
-                    If($Check.Result -eq "Pass") 
+                    If($Check.Result -eq [ORCAResult]::Pass) 
                     {
                         $CalloutType = "bd-callout-success"
                         $BadgeType = "text-bg-success"
@@ -527,7 +552,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                         $Icon = "fas fa-thumbs-up"
                         $Title = $Check.PassText
                     } 
-                    ElseIf($Check.Result -eq "Informational") 
+                    ElseIf($Check.Result -eq [ORCAResult]::Informational) 
                     {
                         $CalloutType = "bd-callout-secondary"
                         $BadgeType = "text-bg-secondary"
@@ -615,8 +640,16 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                 $chiicon = ""
                                 $chipill = ""
                                 $chipts = [int]$($Check.ChiValue)
+
+                                # Determine which to use based on AssessmentLevel
+                                [ORCAResult]$AssessedResult = $o.ResultStandard
+
+                                if($AssessmentLevel -eq [ORCAConfigLevel]::Strict)
+                                {
+                                    [ORCAResult]$AssessedResult = $o.ResultStrict
+                                }
                                 
-                                if($o.Level -ne [ORCAConfigLevel]::None -and $o.Level -ne [ORCAConfigLevel]::Informational) 
+                                if($AssessedResult -eq [ORCAResult]::Pass) 
                                 {
                                     $oicon="fas fa-check-circle text-success"
                                     
@@ -628,10 +661,10 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                         $chipill = "text-bg-success"
                                     }
                                 }
-                                ElseIf($o.Level -eq [ORCAConfigLevel]::Informational) 
+                                ElseIf($AssessedResult -eq [ORCAResult]::Informational) 
                                 {
                                     $oicon="fas fa-info-circle text-muted"
-                                    $LevelText = $o.Level.ToString()
+                                    $LevelText = "Informational"
                                 }
                                 Else
                                 {
@@ -678,7 +711,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     {
                                         $PolicyPills += "
                                             <div class='flex-row badge badge-pill text-bg-info'>
-                                                <span style='vertical-align: middle;'>Preset ($($Policy.PresetLevel))</span>
+                                                <span style='vertical-align: middle;'>Preset ($($Policy.PresetLevel.ToString()))</span>
                                             </div>"
                                     }
 

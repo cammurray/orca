@@ -42,7 +42,7 @@ class ORCA108 : ORCACheck
             {
                 $ConfigObject = [ORCACheckConfig]::new()
                 $ConfigObject.Object = $($AcceptedDomain.Name)
-                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::All,[ORCAResult]::Informational)
                 $ConfigObject.ConfigItem = "Pre-requisites not installed"
                 $ConfigObject.ConfigData = "Resolve-DnsName is not found on ORCA computer. Required for DNS checks."
                 $this.AddConfig($ConfigObject)
@@ -51,61 +51,65 @@ class ORCA108 : ORCACheck
             $this.CheckFailed = $true
             $this.CheckFailureReason = "Resolve-DnsName is not found on ORCA computer and is required for DNS checks."
         }
-
-        # Check DKIM is enabled
-    
-        ForEach($AcceptedDomain in $Config["AcceptedDomains"]) 
+        else 
         {
-            $HasMailbox = $false
-            
-            try
+            # Check DKIM is enabled
+        
+            ForEach($AcceptedDomain in $Config["AcceptedDomains"]) 
             {
+                $HasMailbox = $false
                 
-                If($AcceptedDomain.Name -notlike "*.onmicrosoft.com") 
-               { 
-                   $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name) -Type MX -ErrorAction:Stop
-                   if($null -ne $mailbox -and $mailbox.Count -gt 0)
-                    {
-                        $HasMailbox = $true
+                try
+                {
+                    
+                    If($AcceptedDomain.Name -notlike "*.onmicrosoft.com") 
+                { 
+                    $mailbox = Resolve-DnsName -Name $($AcceptedDomain.Name) -Type MX -ErrorAction:Stop
+                    if($null -ne $mailbox -and $mailbox.Count -gt 0)
+                        {
+                            $HasMailbox = $true
+                        }
                     }
                 }
-            }
-            Catch{}
-            If($HasMailbox) 
-            {
-    
-                # Check objects
-                $ConfigObject = [ORCACheckConfig]::new()
-                $ConfigObject.ConfigItem=$($AcceptedDomain.Name)
-
-                # Get matching DKIM signing configuration
-                $DkimSigningConfig = $Config["DkimSigningConfig"] | Where-Object {$_.Name -eq $AcceptedDomain.Name}
-    
-                If($DkimSigningConfig)
+                Catch{}
+                If($HasMailbox) 
                 {
-                    $ConfigObject.ConfigData=$($DkimSigningConfig.Enabled)
+        
+                    # Check objects
+                    $ConfigObject = [ORCACheckConfig]::new()
+                    $ConfigObject.ConfigItem=$($AcceptedDomain.Name)
 
-                    if($DkimSigningConfig.Enabled -eq $true)
+                    # Get matching DKIM signing configuration
+                    $DkimSigningConfig = $Config["DkimSigningConfig"] | Where-Object {$_.Name -eq $AcceptedDomain.Name}
+        
+                    If($DkimSigningConfig)
                     {
-                        $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                        $ConfigObject.ConfigData=$($DkimSigningConfig.Enabled)
+
+                        if($DkimSigningConfig.Enabled -eq $true)
+                        {
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                        }
+                        Else 
+                        {
+                            $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                        }
                     }
-                    Else 
+                    Else
                     {
+                        $ConfigObject.ConfigData="No Configuration"
                         $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
                     }
-                }
-                Else
-                {
-                    $ConfigObject.ConfigData="No Configuration"
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                }
 
-                # Add config to check
-                $this.AddConfig($ConfigObject)
-    
-            }
-    
-        }           
+                    # Add config to check
+                    $this.AddConfig($ConfigObject)
+        
+                }
+        
+            }         
+        }
+
+  
 
     }
 

@@ -56,12 +56,12 @@ class ORCA141 : ORCACheck
             If($BulkSpamAction -ne "MoveToJmf") 
             {
                 $ConfigObject.ConfigData=$($BulkSpamAction)
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Fail)
             } 
             else 
             {
                 $ConfigObject.ConfigData=$($BulkSpamAction)
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Pass)
             }
 
             # For strict Fail if BulkSpamAction is not set to Quarantine
@@ -69,12 +69,12 @@ class ORCA141 : ORCACheck
             If($BulkSpamAction -ne "Quarantine") 
             {
                 $ConfigObject.ConfigData=$($BulkSpamAction)
-                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,[ORCAResult]::Fail)
             } 
             else 
             {
                 $ConfigObject.ConfigData=$($BulkSpamAction)
-                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,[ORCAResult]::Pass)
             }
 
             # For either Delete or Quarantine we should raise an informational
@@ -82,7 +82,7 @@ class ORCA141 : ORCACheck
             If($BulkSpamAction -eq "Delete" -or $BulkSpamAction -eq "Redirect")
             {
                 $ConfigObject.ConfigData=$($BulkSpamAction)
-                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::All,[ORCAResult]::Informational)
                 $ConfigObject.InfoText = "The $($BulkSpamAction) option may impact the users ability to release emails and may impact user experience."
             }
             
