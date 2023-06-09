@@ -641,7 +641,7 @@ Function Get-ORCACollection
     if($SCC -and $Collection["Services"] -band [ORCAService]::MDO)
     {
         Write-Host "$(Get-Date) Getting Protection Alerts"
-        $Collection["ProtectionAlert"] = Get-ProtectionAlert
+        $Collection["ProtectionAlert"] = Get-ProtectionAlert | Where-Object {$_.IsSystemRule}
     }
 
     Write-Host "$(Get-Date) Getting EOP Preset Policy Settings"
