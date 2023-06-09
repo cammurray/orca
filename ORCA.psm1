@@ -963,7 +963,7 @@ Function Get-ORCAReportEmbeddedConfig
     }
 
     # Import config object
-    $ConfigObject = Import-Clixml $TempFileXML
+    $ConfigObject = Import-Clixml $TempFileXML.Fullname
 
     # Clean up
     Remove-Item $TempFile
