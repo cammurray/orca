@@ -797,6 +797,9 @@ Function Get-ORCAReport
             We need your input in to ORCA, but we appreciate that you may not have the time or desire to provide it. We've added this flag in here so that you
             can suppress survey prompts (please fill out the survey though!).
 
+        .PARAMETER NoSCC
+            Disable SCC connection and checks.
+
         .PARAMETER AssessmentLevel
             (Alpha) Level to assess at. By default this is Standard, but can be set to Strict. It is not recommended at this stage to adjust this as this
             is still being developed.
