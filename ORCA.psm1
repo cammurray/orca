@@ -79,6 +79,7 @@ Function Invoke-ORCAConnections
     (
         [String]$ExchangeEnvironmentName,
         [String]$DelegatedOrganization,
+        [Boolean]$SCC,
         [Boolean]$Install
     )
     <#
@@ -99,16 +100,19 @@ Function Invoke-ORCAConnections
             Connect-ExchangeOnline -ExchangeEnvironmentName $ExchangeEnvironmentName -WarningAction:SilentlyContinue -DelegatedOrganization $DelegatedOrganization | Out-Null
         }
 
-        Write-Host "$(Get-Date) Connecting to SCC.."
+        if($SCC)
+        {
+            Write-Host "$(Get-Date) Connecting to SCC.."
 
-        if($DelegatedOrganization -eq $null)
-        {
-            Connect-IPPSSession -WarningAction:SilentlyContinue | Out-Null
-        } else 
-        {
-            Connect-IPPSSession -WarningAction:SilentlyContinue -DelegatedOrganization $DelegatedOrganization | Out-Null
+            if($DelegatedOrganization -eq $null)
+            {
+                Connect-IPPSSession -WarningAction:SilentlyContinue | Out-Null
+            } else 
+            {
+                Connect-IPPSSession -WarningAction:SilentlyContinue -DelegatedOrganization $DelegatedOrganization | Out-Null
+            }
         }
-        
+
     }
     Else 
     {
@@ -122,7 +126,11 @@ Function Invoke-ORCAConnections
 
                 # Then connect..
                 Connect-ExchangeOnline -ExchangeEnvironmentName $ExchangeEnvironmentName -WarningAction:SilentlyContinue  | Out-Null
-                Connect-IPPSSession -WarningAction:SilentlyContinue | Out-Null
+
+                if($SCC)
+                {
+                    Connect-IPPSSession -WarningAction:SilentlyContinue | Out-Null
+                }
 
                 $Installed = $True
             }
@@ -594,6 +602,10 @@ Class PolicyStats
 
 Function Get-ORCACollection
 {
+    Param (
+        [Boolean]$SCC
+    )
+
     $Collection = @{}
 
     [ORCAService]$Collection["Services"] = [ORCAService]::EOP
@@ -626,13 +638,11 @@ Function Get-ORCACollection
         $Collection["ATPBuiltInProtectionRule"] = Get-ATPBuiltInProtectionRule
     }
 
-    if($Collection["Services"] -band [ORCAService]::MDO -and ($null -ne (Get-Command Get-ProtectionAlert)))
+    if($SCC -and $Collection["Services"] -band [ORCAService]::MDO)
     {
         Write-Host "$(Get-Date) Getting Protection Alerts"
-        $Collection["ProtectionAlert"] = Get-ProtectionAlert
+        $Collection["ProtectionAlert"] = Get-ProtectionAlert | Where-Object {$_.IsSystemRule}
     }
-    
-
 
     Write-Host "$(Get-Date) Getting EOP Preset Policy Settings"
     $Collection["EOPProtectionPolicyRule"] = Get-EOPProtectionPolicyRule
@@ -787,6 +797,9 @@ Function Get-ORCAReport
             We need your input in to ORCA, but we appreciate that you may not have the time or desire to provide it. We've added this flag in here so that you
             can suppress survey prompts (please fill out the survey though!).
 
+        .PARAMETER NoSCC
+            Disable SCC connection and checks.
+
         .PARAMETER AssessmentLevel
             (Alpha) Level to assess at. By default this is Standard, but can be set to Strict. It is not recommended at this stage to adjust this as this
             is still being developed.
@@ -809,6 +822,7 @@ Function Get-ORCAReport
     Param(
         [CmdletBinding()]
         [Switch]$NoConnect,
+        [Switch]$NoSCC,
         [Switch]$NoVersionCheck,
         [Switch]$NoSurvey,
         [String[]]$AlternateDNS,
@@ -839,6 +853,14 @@ Function Get-ORCAReport
     }
 
     $Connect = $False
+    $SCC = !$NoScc
+
+    # Mac OS X doesnt support connecting to SCC
+    if($IsMacOS -and $SCC)
+    {
+        Write-Host "$(Get-Date) Overwriting -NoSCC to True on MacOS X due to no support for connecting to SCC. SCC related checks are bypassed."
+        $SCC = $False
+    }
 
     if(!$NoConnect)
     {
@@ -871,7 +893,7 @@ Function Get-ORCAReport
         $OutputOptions = @{HTML=@{EmbedConfiguration=$true}}
     }
 
-    $Result = Invoke-ORCA -Connect $Connect -PerformVersionCheck $PerformVersionCheck -AlternateDNS $AlternateDNS -Collection $Collection -ExchangeEnvironmentName $ExchangeEnvironmentName -Output @("HTML") -DelegatedOrganization $DelegatedOrganization -ShowSurvey $ShowSurvey -OutputOptions $OutputOptions
+    $Result = Invoke-ORCA -Connect $Connect -SCC $SCC -PerformVersionCheck $PerformVersionCheck -AlternateDNS $AlternateDNS -Collection $Collection -ExchangeEnvironmentName $ExchangeEnvironmentName -Output @("HTML") -DelegatedOrganization $DelegatedOrganization -ShowSurvey $ShowSurvey -OutputOptions $OutputOptions
     Write-Host "$(Get-Date) Complete! Output is in $($Result.Result)"
 
     # Pre-requisite checks
@@ -921,12 +943,34 @@ Function Get-ORCAReportEmbeddedConfig
         throw "File '$($File) is an ORCA report, but has no embedded configuration. It's possible that when generating the -EmbedConfiguration param was not used."
     }
 
-    # Create temp file to write clixml to, then read it back in, this is a bit of a hack as PowerShell doesnt offer a direct way
-    # to do this serialization?
-    $TempFileXML = New-TemporaryFile
-    $Object.Config | Out-File $TempFileXML
+    # Create temp file to write zip content to
+    $TempFile = New-TemporaryFile
+    $TempFileZIP = "$($TempFile).zip"
+    $TempFileXMLPath = "$($TempFile)_xml"
 
-    return Import-Clixml $TempFileXML
+    # Export the content to the zip
+    [IO.File]::WriteAllBytes($TempFileZIP, [Convert]::FromBase64String($Object.Config))
+
+    # Expand the archive
+    Expand-Archive -Path $TempFileZIP -DestinationPath $TempFileXMLPath
+
+    # Get the child item
+    $TempFileXML = @(Get-ChildItem -Path $TempFileXMLPath)
+
+    if($TempFileXML.Count -ne 1)
+    {
+        throw "Temp directory extracting zip in to did not have a file in it, or had multiple files."
+    }
+
+    # Import config object
+    $ConfigObject = Import-Clixml $TempFileXML
+
+    # Clean up
+    Remove-Item $TempFile
+    Remove-Item $TempFileZIP
+    Remove-Item $TempFileXMLPath -Recurse
+
+    return $ConfigObject 
 
 }
 
@@ -1278,6 +1322,7 @@ Function Invoke-ORCA
         [Boolean]$PerformVersionCheck=$True,
         [Boolean]$InstallModules=$True,
         [Boolean]$ShowSurvey=$True,
+        [Boolean]$SCC=$True,
         [String[]]$AlternateDNS,
         [String]$DelegatedOrganization=$null,
         [string][validateset('O365Default', 'O365USGovDoD', 'O365USGovGCCHigh')] $ExchangeEnvironmentName="O365Default",
@@ -1290,9 +1335,16 @@ Function Invoke-ORCA
     # Version check
     $VersionCheck = Invoke-ORCAVersionCheck -GalleryCheck $PerformVersionCheck
 
+    # Mac OS X SCC check
+    if($SCC -and $IsMacOS)
+    {
+        $SCC = $false
+        Write-Host "$(Get-Date) Overwriting SCC due on Mac OS X due to no support. SCC related checks will be bypassed"
+    }
+
     If($Connect)
     {
-        Invoke-ORCAConnections  -ExchangeEnvironmentName $ExchangeEnvironmentName -Install $InstallModules -DelegatedOrganization $DelegatedOrganization
+        Invoke-ORCAConnections  -ExchangeEnvironmentName $ExchangeEnvironmentName -Install $InstallModules -DelegatedOrganization $DelegatedOrganization -SCC $SCC
     }
 
     # Build a param object which can be used to pass params to the underlying classes
@@ -1309,7 +1361,7 @@ Function Invoke-ORCA
     # Get the collection in to memory. For testing purposes, we support passing the collection as an object
     If($Null -eq $Collection)
     {
-        $Collection = Get-ORCACollection
+        $Collection = Get-ORCACollection -SCC $SCC
     }
 
     # Perform checks inside classes/modules

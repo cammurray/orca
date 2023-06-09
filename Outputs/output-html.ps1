@@ -65,9 +65,33 @@ class html : ORCAOutput
     {
         # Write in to temp file to use clixml
         $TempFileXML = New-TemporaryFile
+
+        # Create the temp path for zip
+        $ZipTempLoc = New-TemporaryFile
+        $ZipPath = $($ZipTempLoc.ToString()) + ".zip"
+
+        # Export collection to XML file
         $Collection | Export-Clixml -Path $TempFileXML
-        $MetaObject.Config = $(Get-Content $TempFileXML)
+
+        # Compress the XML to ZIP
+        Compress-Archive -Path $TempFileXML -DestinationPath $ZipPath
+
+        # Store in meta object, on Core use AsByteStream, on other use -Encoding byte
+        if($global:PSVersionTable.PSEdition -eq "Core")
+        {
+            $MetaObject.Config = [convert]::ToBase64String((Get-Content -path $ZipPath -AsByteStream))
+        }
+        else 
+        {
+            $MetaObject.Config = [convert]::ToBase64String((Get-Content -path $ZipPath -Encoding byte))
+        }
+        
         $MetaObject.EmbeddedConfiguration = $true
+
+        # Clean-up paths
+        Remove-Item -Path $TempFileXML
+        Remove-Item -Path $ZipTempLoc
+        Remove-Item -Path $ZipPath
     }
 
     $EncodedText = [System.Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes(($MetaObject | ConvertTo-Json -Depth 100)))
