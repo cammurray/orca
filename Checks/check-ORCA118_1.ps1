@@ -43,7 +43,7 @@ class ORCA118_1 : ORCACheck
 
             $IsBuiltIn = $false
             $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
-            $AllowedSenderDomains = $($Policy.AllowedSenderDomains)
+            $AllowedSenderDomains = @($Policy.AllowedSenderDomains)
 
 
             <#
