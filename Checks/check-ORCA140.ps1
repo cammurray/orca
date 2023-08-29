@@ -21,7 +21,7 @@ class ORCA140 : ORCACheck
         $this.DataType="Action"
         $this.ChiValue=[ORCACHI]::Medium
         $this.Links= @{
-            "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
+            "Microsoft 365 Defender Portal - Anti-spam settings"="https://security.microsoft.com/antispam"
             "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-6"
         }  
     }

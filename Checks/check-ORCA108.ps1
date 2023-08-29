@@ -21,7 +21,7 @@ class ORCA108 : ORCACheck
         $this.DataType="Signing Setting"
         $this.ChiValue=[ORCACHI]::Low
         $this.Links= @{
-            "Security & Compliance Center - DKIM"="https://protection.office.com/dkim"
+            "Microsoft 365 Defender Portal - DKIM"="https://security.microsoft.com/authentication?viewid=DKIM"
             "Use DKIM to validate outbound email sent from your custom domain in Office 365"="https://aka.ms/orca-dkim-docs-1"
         }
     }

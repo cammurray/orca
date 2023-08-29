@@ -22,7 +22,7 @@ class ORCA100 : ORCACheck
         $this.Links= @{
             "Bulk Complaint Level values"="https://aka.ms/orca-antispam-docs-1"
             "Recommended settings for EOP and Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-6"
-            "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
+            "Microsoft 365 Defender Portal - Anti-spam settings"="https://security.microsoft.com/antispam"
         }
     
     }

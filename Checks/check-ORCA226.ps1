@@ -30,7 +30,7 @@ class ORCA226 : ORCACheck
         $this.DataType="Priority"
         $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
-            "Security & Compliance Center - Safe links"="https://aka.ms/orca-atpp-action-safelinksv2"
+            "Microsoft 365 Defender Portal - Safe links"="https://security.microsoft.com/safelinksv2"
             "Order and precedence of email protection"="https://aka.ms/orca-atpp-docs-4"
             "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
