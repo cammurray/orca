@@ -20,7 +20,7 @@ The configuration health index is a weighted value representing your configurati
 
 You will need the Exchange Online Management module first.
 
-* Exchange Online Management module is availible via the PowerShell gallery:
+* Exchange Online Management module is available via the PowerShell gallery:
 
 Install for current user `Install-Module -Name ExchangeOnlineManagement -Scope:CurrentUser`
 Install for all users `Install-Module -Name ExchangeOnlineManagement`
@@ -74,7 +74,7 @@ first disconnect you before connecting to the other org.
 
 We now support outputting to different formats (which can be useful for different purposes, such as tracking trending over time).
 
-If the following isn't good enough for your purpose, don't despair, the output is fully modular. You can create your own output type by creating your own "output-name.ps1" file in the outputs directory. You'll need to create a class that extends the "ORCAOutput" class, and you'll need to implement an override for the RunOutput function. Easiest way is just to copy one of the exsting ps1's to make your own (if you need to, that is..)
+If the following isn't good enough for your purpose, don't despair, the output is fully modular. You can create your own output type by creating your own "output-name.ps1" file in the outputs directory. You'll need to create a class that extends the "ORCAOutput" class, and you'll need to implement an override for the RunOutput function. Easiest way is just to copy one of the existing ps1's to make your own (if you need to, that is..)
 
 ## Running specifying an alternative output
 
@@ -90,7 +90,7 @@ Example outputting to JSON
 
 HTML is the output format that you'll get when you run Get-ORCAReport.
 
-Example 1 - this is the equivelant of running Get-ORCAReport:
+Example 1 - this is the equivalent of running Get-ORCAReport:
 
 `Invoke-ORCA -Output HTML`
 
