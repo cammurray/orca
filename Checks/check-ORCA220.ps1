@@ -29,7 +29,7 @@ class ORCA220 : ORCACheck
         $this.ChiValue=[ORCACHI]::Medium
         $this.ObjectType="Policy"
         $this.Links= @{
-            "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
+            "Microsoft 365 Defender Portal - Anti-phishing"="https://security.microsoft.com/antiphishing"
             "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
@@ -61,7 +61,7 @@ class ORCA220 : ORCACheck
 
             # Standard
 
-            If($PhishThresholdLevel -eq 2)  
+            If($PhishThresholdLevel -eq 3)  
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             } 
@@ -72,7 +72,7 @@ class ORCA220 : ORCACheck
 
             # Strict
 
-            If($PhishThresholdLevel -eq 3)
+            If($PhishThresholdLevel -eq 4)
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
             } 

@@ -21,7 +21,7 @@ class ORCA118_3 : ORCACheck
         $this.DataType="Organisation Domain Allow Listed"
         $this.ChiValue=[ORCACHI]::Critical
         $this.Links= @{
-            "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
+            "Microsoft 365 Defender Portal - Anti-spam settings"="https://security.microsoft.com/antispam"
             "Use Anti-Spam Policy Sender/Domain Allow lists"="https://aka.ms/orca-antispam-docs-4"
         }
     
@@ -40,7 +40,7 @@ class ORCA118_3 : ORCACheck
        
         ForEach($Policy in $Config["HostedContentFilterPolicy"]) {
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
-            $AllowedSenderDomains = $($Policy.AllowedSenderDomains)
+            $AllowedSenderDomains = @($Policy.AllowedSenderDomains)
     
             # Fail if AllowedSenderDomains is not null
     

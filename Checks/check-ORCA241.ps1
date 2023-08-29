@@ -25,7 +25,7 @@ class ORCA241 : ORCACheck
         $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
             "First Contact Safety Tip"="https://learn.microsoft.com/en-us/microsoft-365/security/office-365-security/anti-phishing-policies-about?view=o365-worldwide#first-contact-safety-tip"
-            "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
+            "Microsoft 365 Defender Portal - Anti-phishing"="https://security.microsoft.com/antiphishing"
         }
     }
 
