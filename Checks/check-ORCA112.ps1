@@ -24,7 +24,7 @@ class ORCA112 : ORCACheck
         $this.DataType="Current Value"
         $this.ChiValue=[ORCACHI]::Medium
         $this.Links= @{
-            "Security & Compliance Center - Anti-phishing"="https://security.microsoft.com/antiphishing"
+            "Microsoft 365 Defender Portal - Anti-phishing"="https://security.microsoft.com/antiphishing"
             "Configuring the anti-spoofing policy"="https://aka.ms/orca-atpp-docs-5"
             "Recommended settings for EOP and Office 365 Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-6"
         }

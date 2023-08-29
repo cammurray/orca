@@ -29,7 +29,7 @@ class ORCA205 : ORCACheck
         $this.DataType="Current Value"
         $this.ChiValue=[ORCACHI]::Low
         $this.Links= @{
-            "Security & Compliance Center - Anti-malware"="https://aka.ms/orca-mfp-action-antimalware"
+            "Microsoft 365 Defender Portal - Anti-malware"="https://security.microsoft.com/antimalwarev2"
             "Configure anti-malware policies"="https://aka.ms/orca-mfp-docs-1"
             "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-6"
         }

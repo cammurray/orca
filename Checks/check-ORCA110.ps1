@@ -26,7 +26,7 @@ class ORCA110 : ORCACheck
         $this.ItemName="Malware Policy"
         $this.DataType="EnableInternalSenderAdminNotifications"
         $this.Links= @{
-            "Security & Compliance Center - Anti-malware"="https://aka.ms/orca-mfp-action-antimalware"
+            "Microsoft 365 Defender Portal - Anti-malware"="https://security.microsoft.com/antimalwarev2"
             "Recommended settings for EOP and Office 365 Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-6"
         }
     }

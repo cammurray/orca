@@ -24,7 +24,7 @@ class ORCA113 : ORCACheck
         $this.DataType="Current Value"
         $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
-            "Security & Compliance Center - Safe links"="https://security.microsoft.com/safelinksv2"
+            "Microsoft 365 Defender Portal - Safe links"="https://security.microsoft.com/safelinksv2"
             "Microsoft Defender for Office 365 Safe Links policies"="https://aka.ms/orca-atpp-docs-11"
             "Recommended settings for EOP and Office 365 Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-8"
         }

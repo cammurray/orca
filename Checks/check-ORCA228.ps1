@@ -29,7 +29,7 @@ class ORCA228 : ORCACheck
         $this.ItemName="Setting"
         $this.DataType="Current Value"
         $this.Links= @{
-            "Security & Compliance Center - Anti-phishing"="https://security.microsoft.com/antiphishing"
+            "Microsoft 365 Defender Portal - Anti-phishing"="https://security.microsoft.com/antiphishing"
             "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }

@@ -23,7 +23,7 @@ class ORCA121 : ORCACheck
         $this.ItemName="Setting"
         $this.DataType="Action"
         $this.Links= @{
-            "Security & Compliance Center - Anti-spam settings"="https://security.microsoft.com/antispam"
+            "Microsoft 365 Defender Portal - Anti-spam settings"="https://security.microsoft.com/antispam"
             "Zero-hour auto purge - protection against spam and malware"="https://aka.ms/orca-zha-docs-2"
         }
     
