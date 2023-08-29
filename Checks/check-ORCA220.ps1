@@ -61,7 +61,7 @@ class ORCA220 : ORCACheck
 
             # Standard
 
-            If($PhishThresholdLevel -eq 2)  
+            If($PhishThresholdLevel -eq 3)  
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
             } 
@@ -72,7 +72,7 @@ class ORCA220 : ORCACheck
 
             # Strict
 
-            If($PhishThresholdLevel -eq 3)
+            If($PhishThresholdLevel -eq 4)
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
             } 
