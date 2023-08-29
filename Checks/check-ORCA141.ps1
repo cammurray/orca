@@ -20,7 +20,7 @@ class ORCA141 : ORCACheck
         $this.ItemName="Anti-Spam Policy"
         $this.DataType="Action"
         $this.Links= @{
-            "Security & Compliance Center - Anti-spam settings"="https://aka.ms/orca-antispam-action-antispam"
+            "Security & Compliance Center - Anti-spam settings"="https://security.microsoft.com/antispam"
             "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-6"
         }
     }

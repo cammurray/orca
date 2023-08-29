@@ -30,7 +30,7 @@ class ORCA119 : ORCACheck
         $this.DataType="Current Value"
         $this.ChiValue=[ORCACHI]::Low
         $this.Links= @{
-            "Security & Compliance Center - Anti-phishing"="https://aka.ms/orca-atpp-action-antiphishing"
+            "Security & Compliance Center - Anti-phishing"="https://security.microsoft.com/antiphishing"
             "Recommended settings for EOP and Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-7"
         }
     }

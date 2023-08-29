@@ -32,7 +32,7 @@ class ORCA238 : ORCACheck
         $this.ItemName="Setting"
         $this.DataType="Current Value"
         $this.Links= @{
-            "Security & Compliance Center - Safe links"="https://aka.ms/orca-atpp-action-safelinksv2"
+            "Security & Compliance Center - Safe links"="https://security.microsoft.com/safelinksv2"
             "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
