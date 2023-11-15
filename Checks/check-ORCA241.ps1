@@ -15,7 +15,7 @@ class ORCA241 : ORCACheck
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="First Contact Safety Tip"
         $this.PassText="Anti-phishing policy exists and EnableFirstContactSafetyTips is true"
-        $this.FailRecommendation="Enable fist contact safety tips to highlight suspicious messages to users."
+        $this.FailRecommendation="Enable first contact safety tips to highlight suspicious messages to users."
         $this.Importance="Attackers pretend to be other people in order to trick users. By enabling first contact safety tips, users are shown a visual representation on the email that this is the first time that they have received an email from this sender. This can trigger users in to being suspicious of an email if it they believe it is coming from someone they know."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
