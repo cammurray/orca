@@ -21,8 +21,8 @@ class ORCA220 : ORCACheck
         $this.Area="Microsoft Defender for Office 365 Policies"
         $this.Name="Advanced Phishing Threshold Level"
         $this.PassText="Advanced Phish filter Threshold level is adequate."
-        $this.FailRecommendation="Set Advanced Phish filter Threshold to 2 or 3"
-        $this.Importance="The higher the Advanced Phishing Threshold Level, the stricter the mechanisms are that detect phishing attempts against your users, however, too high may be considered too strict."
+        $this.FailRecommendation="Set Advanced Phish filter Threshold to 3 or 4"
+        $this.Importance="The higher the Advanced Phishing Threshold Level, the stricter the mechanisms are that detect phishing attempts against your users."
         $this.ExpandResults=$True
         $this.ItemName="Antiphishing Policy"
         $this.DataType="Advanced Phishing Threshold Level"
