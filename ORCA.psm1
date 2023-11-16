@@ -628,9 +628,6 @@ Function Get-ORCACollection
     $Collection["HostedOutboundSpamFilterPolicy"] = Get-HostedOutboundSpamFilterPolicy
     $Collection["HostedOutboundSpamFilterRule"] = Get-HostedOutboundSpamFilterRule
 
-    Write-Host "$(Get-Date) Getting Tenant Settings"
-    $Collection["AdminAuditLogConfig"] = Get-AdminAuditLogConfig
-
     If($Collection["Services"] -band [ORCAService]::MDO)
     {
         Write-Host "$(Get-Date) Getting MDO Preset Policy Settings"
