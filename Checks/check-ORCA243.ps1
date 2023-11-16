@@ -48,7 +48,7 @@ class ORCA243 : ORCACheck
         }
 
         # Loop domains not pointing at service
-        if($DomainsNotAtService -gt 0)
+        if($DomainsNotAtService.Count -gt 0)
         {
             ForEach($Domain in $DomainsNotAtService)
             {
