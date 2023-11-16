@@ -53,7 +53,7 @@ class ORCA243 : ORCACheck
             ForEach($Domain in $DomainsNotAtService)
             {
                 $ConfigObject = [ORCACheckConfig]::new()
-                $ConfigObject.Object=$Domain
+                $ConfigObject.Object=$($Domain.Domain)
                 $ConfigObject.ConfigItem="Trusted Sealers"
     
                 if($TrustedSealers.Count -ne 0)
