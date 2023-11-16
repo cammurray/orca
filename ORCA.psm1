@@ -703,6 +703,10 @@ Function Get-ORCACollection
         
     }
 
+    # ARC Settings
+    Write-Host "$(Get-Date) Getting ARC Config"
+    $Collection["ARCConfig"] = Get-ArcConfig
+
     # Determine policy states
     Write-Host "$(Get-Date) Determining applied policy states"
 
