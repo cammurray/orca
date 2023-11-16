@@ -38,14 +38,10 @@ class ORCA243 : ORCACheck
     GetResults($Config)
     {
 
-        # 
-        $TrustedSealers = @();
-        $DomainsNotAtService = @($($Config["MXReports"] | Where-Object {$_.PointsToService -eq $False}))
+        $ArcTrustedSealers = $($Config["ARCConfig"]).ArcTrustedSealers;
+        $HasArcSealer = $ArcTrustedSealers.Length -gt 0
 
-        if($Config["ARCConfig"] -ne $null)
-        {
-            $TrustedSealers = @($Config["ARCConfig"].ArcTrustedSealers.Split(","))
-        }
+        $DomainsNotAtService = @($($Config["MXReports"] | Where-Object {$_.PointsToService -eq $False}))
 
         # Loop domains not pointing at service
         if($DomainsNotAtService.Count -gt 0)
@@ -56,9 +52,9 @@ class ORCA243 : ORCACheck
                 $ConfigObject.Object=$($Domain)
                 $ConfigObject.ConfigItem="Default ARC Config"
     
-                if($TrustedSealers.Count -ne 0)
+                if($HasArcSealer -eq $True)
                 {
-                    $ConfigObject.ConfigData=$($TrustedSealers -Join ",")
+                    $ConfigObject.ConfigData=$($ArcTrustedSealers)
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
                 } else {
                     $ConfigObject.ConfigData="No Trusted Sealers"
