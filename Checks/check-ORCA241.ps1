@@ -38,6 +38,24 @@ class ORCA241 : ORCACheck
     GetResults($Config)
     {
 
+        $LegacyTRRule = $false;
+        $LegacyTRRuleName = "";
+
+        # Look for transport rule
+        ForEach($TransportRule in $Config["TransportRules"]) 
+        {
+            if($TransportRule.Mode -eq "Enforce" -and $TransportRule.State -eq "Enabled" -and $TransportRule.SetHeaderName -eq "X-MS-Exchange-EnableFirstContactSafetyTip" -and $TransportRule.SetHeaderValue -eq "enable")
+            {
+                # Must have no exceptions
+                if($TransportRule.Exceptions -eq $null -and $TransportRule.Conditions -eq $null)
+                {
+                    $LegacyTRRule = $true;
+                    $LegacyTRRuleName = $TransportRule.Name
+                }
+            }
+    
+        }
+
         ForEach ($Policy in $Config["AntiPhishPolicy"])
         {
 
@@ -60,7 +78,16 @@ class ORCA241 : ORCACheck
             }
             Else 
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                if($LegacyTRRule -eq $true)
+                {
+                    # Has a legacy transport rule in the tenant
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,[ORCAResult]::Informational)
+                    $ConfigObject.ConfigData="Disabled but enabled using legacy transport rule " + $LegacyTRRuleName
+                    $ConfigObject.InfoText= "Transport Rules are a legacy way of applying this configuration, and we recommend moving to policies";
+                } else {
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                }
+                
             }
             
             # Add config to check
