@@ -40,7 +40,7 @@ class ORCA243 : ORCACheck
 
         # 
         $TrustedSealers = @();
-        $DomainsNotAtService = @($Domain in $($Config["MXReports"] | Where-Object {$_.PointsToService -eq $False}))
+        $DomainsNotAtService = @($($Config["MXReports"] | Where-Object {$_.PointsToService -eq $False}))
 
         if($Config["ARCConfig"] -ne $null)
         {
@@ -50,7 +50,7 @@ class ORCA243 : ORCACheck
         # Loop domains not pointing at service
         if($DomainsNotAtService -gt 0)
         {
-            ForEach($DomainsNotAtService)
+            ForEach($Domain in $DomainsNotAtService)
             {
                 $ConfigObject = [ORCACheckConfig]::new()
                 $ConfigObject.Object=$Domain
