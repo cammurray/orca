@@ -777,7 +777,7 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     $Output += "</td>"
                                         
                                     $Output += "<td>$($ConfigItem)</td>
-                                        <td>$($ConfigData)</td>
+                                        <td style='word-wrap: break-word;min-width: 50px;max-width: 350px;'>$($ConfigData)</td>
                                     "
                                 }
                                 Else 
