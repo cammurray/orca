@@ -50,10 +50,10 @@ class ORCA243 : ORCACheck
         # Loop domains not pointing at service
         if($DomainsNotAtService.Count -gt 0)
         {
-            ForEach($Domain in $DomainsNotAtService)
+            ForEach($Domain in $($DomainsNotAtService | Select -ExpandProperty Domain | Get-Unique))
             {
                 $ConfigObject = [ORCACheckConfig]::new()
-                $ConfigObject.Object=$($Domain.Domain)
+                $ConfigObject.Object=$($Domain)
                 $ConfigObject.ConfigItem="Trusted Sealers"
     
                 if($TrustedSealers.Count -ne 0)
