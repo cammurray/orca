@@ -44,7 +44,7 @@ class ORCA243 : ORCACheck
 
         if($Config["ARCConfig"] -ne $null)
         {
-            $TrustedSealers = $Config["ARCConfig"].ArcTrustedSealers.Split(",")
+            $TrustedSealers = @($Config["ARCConfig"].ArcTrustedSealers.Split(","))
         }
 
         # Loop domains not pointing at service
@@ -58,7 +58,6 @@ class ORCA243 : ORCACheck
     
                 if($TrustedSealers.Count -ne 0)
                 {
-    
                     $ConfigObject.ConfigData=$($TrustedSealers -Join ",")
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
                 } else {
