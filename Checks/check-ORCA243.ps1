@@ -20,8 +20,8 @@ class ORCA243 : ORCACheck
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Domain not pointed at service"
-        $this.ItemName="ARC Sealers"
-        $this.DataType="Domains"
+        $this.ItemName="Policy"
+        $this.DataType="Trusted ARC Sealer"
         $this.ChiValue=[ORCACHI]::High
         $this.Links= @{
             "Improving 'Defense in Depth' with Trusted ARC Sealers for Microsoft Defender for Office 365"="https://techcommunity.microsoft.com/t5/microsoft-defender-for-office/improving-defense-in-depth-with-trusted-arc-sealers-for/ba-p/3440707"
@@ -54,7 +54,7 @@ class ORCA243 : ORCACheck
             {
                 $ConfigObject = [ORCACheckConfig]::new()
                 $ConfigObject.Object=$($Domain)
-                $ConfigObject.ConfigItem="Trusted Sealers"
+                $ConfigObject.ConfigItem="Default ARC Config"
     
                 if($TrustedSealers.Count -ne 0)
                 {
