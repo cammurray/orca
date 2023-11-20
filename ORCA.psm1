@@ -1091,15 +1091,49 @@ Function Get-PolicyStateInt
         if(!$Applies)
         {
 
+            $PolicyRules = @();
+
             # If Preset, rules to check is the protection policy rules (MDO or EOP protection policy rules), if not, the policy rules.
             if($Preset)
             {
-                $CheckRules = $ProtectionPolicyRules
+
+                # When preset - we need to match the rule using 
+                # HostedContentFilterPolicy, AntiPhishPolicy, MalwareFilterPolicy attributes [EOP]
+                # SafeAttachmentPolicy, SafeLinksPolicy [MDO]
+                # instead of the name.
+
+                # The name of a preset policy doesn't always match the id in the rule.
+
+                if($Type -eq [PolicyType]::OutboundSpam)
+                {
+                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.HostedContentFilterPolicy -eq $Policy.Id})
+                }
+
+                if($Type -eq [PolicyType]::Antiphish)
+                {
+                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.AntiPhishPolicy -eq $Policy.Id})
+                }
+
+                if($Type -eq [PolicyType]::Malware)
+                {
+                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.MalwareFilterPolicy -eq $Policy.Id})
+                }
+
+                if($Type -eq [PolicyType]::SafeAttachments)
+                {
+                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.SafeAttachmentPolicy -eq $Policy.Id})
+                }
+
+                if($Type -eq [PolicyType]::SafeLinks)
+                {
+                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.SafeLinksPolicy -eq $Policy.Id})
+                }
+
             } else {
-                $CheckRules = $Rules
+                $PolicyRules = @($Rules | Where-Object {$_.Name -eq $Policy.Name})
             }
 
-            foreach($Rule in $($CheckRules | Where-Object {$_.Name -eq $Policy.Name}))
+            foreach($Rule in $PolicyRules)
             {
                 if($Rule.State -eq "Enabled")
                 {
@@ -1119,6 +1153,8 @@ Function Get-PolicyStateInt
                 }
             }
         }
+
+        Write-Host "Policy $($Policy.Name) applies $($Applies)"
 
         $ReturnPolicies[$Policy.Guid.ToString()] = New-Object -TypeName PolicyInfo -Property @{
             Applies=$Applies
