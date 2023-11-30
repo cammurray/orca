@@ -1195,12 +1195,17 @@ Function Get-PolicyStateInt
         }
     }
 
-    # Disable default in-case of preset code
+    # Disable default and BIP in-case of preset code
     if($TypeHasAppliedPresetPolicy)
     {
         foreach($Key in $ReturnPolicies.Keys)
         {
             if($ReturnPolicies[$Key].Default -eq $True)
+            {
+                $ReturnPolicies[$Key].Applies = $False
+            }
+
+            if($ReturnPolicies[$Key].BuiltIn -eq $True)
             {
                 $ReturnPolicies[$Key].Applies = $False
             }
