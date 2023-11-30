@@ -59,6 +59,7 @@ class ORCA114 : ORCACheck
                     $ConfigObject.ConfigItem=$policyname
                     $ConfigObject.ConfigData=$IPAddr
                     $ConfigObject.ConfigPolicyGuid=$HostedConnectionFilterPolicy.Guid.ToString()
+                    $ConfigObject.ConfigDisabled = !$Config["PolicyStates"][$HostedConnectionFilterPolicy.Guid.ToString()].Applies
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
                     $this.AddConfig($ConfigObject)  
                 }
@@ -71,6 +72,7 @@ class ORCA114 : ORCACheck
                 $ConfigObject.ConfigItem=$policyname
                 $ConfigObject.ConfigData="No IP detected"
                 $ConfigObject.ConfigPolicyGuid=$HostedConnectionFilterPolicy.Guid.ToString()
+                $ConfigObject.ConfigDisabled = !$Config["PolicyStates"][$HostedConnectionFilterPolicy.Guid.ToString()].Applies
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
 
                 $this.AddConfig($ConfigObject) 
