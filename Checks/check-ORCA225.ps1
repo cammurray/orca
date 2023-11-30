@@ -49,6 +49,8 @@ class ORCA225 : ORCACheck
         $ConfigObject.Object=$Config["AtpPolicy"].Name
         $ConfigObject.ConfigItem="EnableSafeDocs"
         $ConfigObject.ConfigData=$Config["AtpPolicy"].EnableSafeDocs
+        $ConfigObject.ConfigDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
+        
         # Determine if SafeDocs in MDO is enabled or not
         If($Config["AtpPolicy"].EnableSafeDocs -eq $false) 
         {
