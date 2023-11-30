@@ -1011,6 +1011,9 @@ Function Get-PolicyStateInt
 
     $ReturnPolicies = @{}
 
+    # Used for marking the default policy at the end as disabled, if there is an applied preset policy
+    $TypeHasAppliedPresetPolicy = $False
+
     foreach($Policy in $Policies)
     {
 
@@ -1103,7 +1106,7 @@ Function Get-PolicyStateInt
                 # instead of the name.
 
                 # The name of a preset policy doesn't always match the id in the rule.
-                
+
                 if($Type -eq [PolicyType]::Spam)
                 {
                     $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.HostedContentFilterPolicy -eq $Policy.Identity})
@@ -1175,7 +1178,11 @@ Function Get-PolicyStateInt
             }
         }
 
-        Write-Host "Policy $($Policy.Name) type $($type) applies $($Applies) preset $($Preset) builtin $($BuiltIn) preset level $($PresetPolicyLevel)"
+        # Mark policy type has perset to true if preset applies, this is used to disable the default policy in the report.
+        if($Preset -eq $true -and $Applies -eq $True)
+        {
+            $TypeHasAppliedPresetPolicy = $True
+        }
 
         $ReturnPolicies[$Policy.Guid.ToString()] = New-Object -TypeName PolicyInfo -Property @{
             Applies=$Applies
@@ -1185,6 +1192,18 @@ Function Get-PolicyStateInt
             Default=$Default
             Name=$Name 
             Type=$Type
+        }
+    }
+
+    # Disable default in-case of preset code
+    if($TypeHasAppliedPresetPolicy)
+    {
+        foreach($Key in $ReturnPolicies.Keys)
+        {
+            if($ReturnPolicies[$Key].Default -eq $True)
+            {
+                $ReturnPolicies[$Key].Applies = $False
+            }
         }
     }
 
@@ -1224,6 +1243,7 @@ Function Get-PolicyStates
     $ReturnPolicies += Get-PolicyStateInt -Policies $SafeLinksPolicies -Rules $SafeLinksRules -Type ([PolicyType]::SafeLinks) -ProtectionPolicyRules $ProtectionPolicyRulesATP -BuiltInProtectionRule $BuiltInProtectionRule
     $ReturnPolicies += Get-PolicyStateInt -Policies $SafeAttachmentsPolicies -Rules $SafeAttachmentRules -Type ([PolicyType]::SafeAttachments) -ProtectionPolicyRules $ProtectionPolicyRulesATP -BuiltInProtectionRule $BuiltInProtectionRule
     $ReturnPolicies += Get-PolicyStateInt -Policies $OutboundSpamPolicies -Rules $OutboundSpamRules -Type ([PolicyType]::OutboundSpam) -ProtectionPolicyRules $ProtectionPolicyRulesATP -BuiltInProtectionRule $BuiltInProtectionRule
+
 
     return $ReturnPolicies
 }
