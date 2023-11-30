@@ -23,7 +23,7 @@ class ORCA244 : ORCACheck
         $this.ChiValue=[ORCACHI]::Medium
         $this.ObjectType="Policy"
         $this.Links= @{
-            "Announcing New DMARC Policy Handling Defaults for Enhanced Email Security"="https://techcommunity.microsoft.com/t5/exchange-team-blog/announcing-new-dmarc-policy-handling-defaults-for-enhanced-email/ba-p/3878883",
+            "Announcing New DMARC Policy Handling Defaults for Enhanced Email Security"="https://techcommunity.microsoft.com/t5/exchange-team-blog/announcing-new-dmarc-policy-handling-defaults-for-enhanced-email/ba-p/3878883"
             "Microsoft 365 Defender Portal - Anti-phishing"="https://security.microsoft.com/antiphishing"
         }
     }
