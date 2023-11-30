@@ -1103,30 +1103,30 @@ Function Get-PolicyStateInt
                 # instead of the name.
 
                 # The name of a preset policy doesn't always match the id in the rule.
-
-                if($Type -eq [PolicyType]::OutboundSpam)
+                
+                if($Type -eq [PolicyType]::Spam)
                 {
-                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.HostedContentFilterPolicy -eq $Policy.Id})
+                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.HostedContentFilterPolicy -eq $Policy.Identity})
                 }
 
                 if($Type -eq [PolicyType]::Antiphish)
                 {
-                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.AntiPhishPolicy -eq $Policy.Id})
+                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.AntiPhishPolicy -eq $Policy.Identity})
                 }
 
                 if($Type -eq [PolicyType]::Malware)
                 {
-                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.MalwareFilterPolicy -eq $Policy.Id})
+                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.MalwareFilterPolicy -eq $Policy.Identity})
                 }
 
                 if($Type -eq [PolicyType]::SafeAttachments)
                 {
-                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.SafeAttachmentPolicy -eq $Policy.Id})
+                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.SafeAttachmentPolicy -eq $Policy.Identity})
                 }
 
                 if($Type -eq [PolicyType]::SafeLinks)
                 {
-                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.SafeLinksPolicy -eq $Policy.Id})
+                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.SafeLinksPolicy -eq $Policy.Identity})
                 }
 
             } else {
@@ -1137,24 +1137,45 @@ Function Get-PolicyStateInt
             {
                 if($Rule.State -eq "Enabled")
                 {
-                    if($Rule.SentTo.Count -gt 0 -or $Rule.SentToMemberOf.Count -gt 0 -or $Rule.RecipientDomainIs.Count -gt 0)
+
+                    # Need to use a different mechanism for detecting application if it's a preset or a custom policy
+                    # custom requires a condition to apply
+                    # preset doesnt require a condition to apply, infact mark it as not applicable if there is a condition
+
+                    if(!$Preset)
                     {
-                        $Applies = $true
+                        if($Rule.SentTo.Count -gt 0 -or $Rule.SentToMemberOf.Count -gt 0 -or $Rule.RecipientDomainIs.Count -gt 0)
+                        {
+                            $Applies = $true
+                        }
+    
+                        # Outbound spam uses From, FromMemberOf and SenderDomainIs conditions
+                        if($Type -eq [PolicyType]::OutboundSpam)
+                        {
+                            if($Rule.From.Count -gt 0 -or $Rule.FromMemberOf.Count -gt 0 -or $Rule.SenderDomainIs.Count -gt 0)
+                            {
+                                $Applies = $true
+                            }
+                        }
                     }
 
-                    # Outbound spam uses From, FromMemberOf and SenderDomainIs conditions
-                    if($Type -eq [PolicyType]::OutboundSpam)
+                    # Need to use a different mechanism for detecting application if it's a preset or a custom policy
+                    # custom requires a condition to apply
+                    # preset doesnt require a condition to apply, infact mark it as not applicable if there is a condition
+
+                    if($Preset)
                     {
-                        if($Rule.From.Count -gt 0 -or $Rule.FromMemberOf.Count -gt 0 -or $Rule.SenderDomainIs.Count -gt 0)
+                        if($Policy.Conditions.Count -eq 0)
                         {
                             $Applies = $true
                         }
                     }
+
                 }
             }
         }
 
-        Write-Host "Policy $($Policy.Name) applies $($Applies)"
+        Write-Host "Policy $($Policy.Name) type $($type) applies $($Applies) preset $($Preset) builtin $($BuiltIn) preset level $($PresetPolicyLevel)"
 
         $ReturnPolicies[$Policy.Guid.ToString()] = New-Object -TypeName PolicyInfo -Property @{
             Applies=$Applies
