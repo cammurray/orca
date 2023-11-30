@@ -1011,6 +1011,9 @@ Function Get-PolicyStateInt
 
     $ReturnPolicies = @{}
 
+    # Used for marking the default policy at the end as disabled, if there is an applied preset policy
+    $TypeHasAppliedPresetPolicy = $False
+
     foreach($Policy in $Policies)
     {
 
@@ -1104,29 +1107,29 @@ Function Get-PolicyStateInt
 
                 # The name of a preset policy doesn't always match the id in the rule.
 
-                if($Type -eq [PolicyType]::OutboundSpam)
+                if($Type -eq [PolicyType]::Spam)
                 {
-                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.HostedContentFilterPolicy -eq $Policy.Id})
+                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.HostedContentFilterPolicy -eq $Policy.Identity})
                 }
 
                 if($Type -eq [PolicyType]::Antiphish)
                 {
-                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.AntiPhishPolicy -eq $Policy.Id})
+                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.AntiPhishPolicy -eq $Policy.Identity})
                 }
 
                 if($Type -eq [PolicyType]::Malware)
                 {
-                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.MalwareFilterPolicy -eq $Policy.Id})
+                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.MalwareFilterPolicy -eq $Policy.Identity})
                 }
 
                 if($Type -eq [PolicyType]::SafeAttachments)
                 {
-                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.SafeAttachmentPolicy -eq $Policy.Id})
+                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.SafeAttachmentPolicy -eq $Policy.Identity})
                 }
 
                 if($Type -eq [PolicyType]::SafeLinks)
                 {
-                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.SafeLinksPolicy -eq $Policy.Id})
+                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.SafeLinksPolicy -eq $Policy.Identity})
                 }
 
             } else {
@@ -1137,24 +1140,49 @@ Function Get-PolicyStateInt
             {
                 if($Rule.State -eq "Enabled")
                 {
-                    if($Rule.SentTo.Count -gt 0 -or $Rule.SentToMemberOf.Count -gt 0 -or $Rule.RecipientDomainIs.Count -gt 0)
+
+                    # Need to use a different mechanism for detecting application if it's a preset or a custom policy
+                    # custom requires a condition to apply
+                    # preset doesnt require a condition to apply, infact mark it as not applicable if there is a condition
+
+                    if(!$Preset)
                     {
-                        $Applies = $true
+                        if($Rule.SentTo.Count -gt 0 -or $Rule.SentToMemberOf.Count -gt 0 -or $Rule.RecipientDomainIs.Count -gt 0)
+                        {
+                            $Applies = $true
+                        }
+    
+                        # Outbound spam uses From, FromMemberOf and SenderDomainIs conditions
+                        if($Type -eq [PolicyType]::OutboundSpam)
+                        {
+                            if($Rule.From.Count -gt 0 -or $Rule.FromMemberOf.Count -gt 0 -or $Rule.SenderDomainIs.Count -gt 0)
+                            {
+                                $Applies = $true
+                            }
+                        }
                     }
 
-                    # Outbound spam uses From, FromMemberOf and SenderDomainIs conditions
-                    if($Type -eq [PolicyType]::OutboundSpam)
+                    # Need to use a different mechanism for detecting application if it's a preset or a custom policy
+                    # custom requires a condition to apply
+                    # preset doesnt require a condition to apply, infact mark it as not applicable if there is a condition
+
+                    if($Preset)
                     {
-                        if($Rule.From.Count -gt 0 -or $Rule.FromMemberOf.Count -gt 0 -or $Rule.SenderDomainIs.Count -gt 0)
+                        if($Policy.Conditions.Count -eq 0)
                         {
                             $Applies = $true
                         }
                     }
+
                 }
             }
         }
 
-        Write-Host "Policy $($Policy.Name) applies $($Applies)"
+        # Mark policy type has perset to true if preset applies, this is used to disable the default policy in the report.
+        if($Preset -eq $true -and $Applies -eq $True)
+        {
+            $TypeHasAppliedPresetPolicy = $True
+        }
 
         $ReturnPolicies[$Policy.Guid.ToString()] = New-Object -TypeName PolicyInfo -Property @{
             Applies=$Applies
@@ -1164,6 +1192,18 @@ Function Get-PolicyStateInt
             Default=$Default
             Name=$Name 
             Type=$Type
+        }
+    }
+
+    # Disable default in-case of preset code
+    if($TypeHasAppliedPresetPolicy)
+    {
+        foreach($Key in $ReturnPolicies.Keys)
+        {
+            if($ReturnPolicies[$Key].Default -eq $True)
+            {
+                $ReturnPolicies[$Key].Applies = $False
+            }
         }
     }
 
@@ -1203,6 +1243,7 @@ Function Get-PolicyStates
     $ReturnPolicies += Get-PolicyStateInt -Policies $SafeLinksPolicies -Rules $SafeLinksRules -Type ([PolicyType]::SafeLinks) -ProtectionPolicyRules $ProtectionPolicyRulesATP -BuiltInProtectionRule $BuiltInProtectionRule
     $ReturnPolicies += Get-PolicyStateInt -Policies $SafeAttachmentsPolicies -Rules $SafeAttachmentRules -Type ([PolicyType]::SafeAttachments) -ProtectionPolicyRules $ProtectionPolicyRulesATP -BuiltInProtectionRule $BuiltInProtectionRule
     $ReturnPolicies += Get-PolicyStateInt -Policies $OutboundSpamPolicies -Rules $OutboundSpamRules -Type ([PolicyType]::OutboundSpam) -ProtectionPolicyRules $ProtectionPolicyRulesATP -BuiltInProtectionRule $BuiltInProtectionRule
+
 
     return $ReturnPolicies
 }
