@@ -55,11 +55,13 @@ class ORCA179 : ORCACheck
                 $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
                 $EnableForInternalSenders = $($Policy.EnableForInternalSenders)
 
+                $PolicyName = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
+
                 $PolicyCount++
 
                 # Check objects
                 $ConfigObject = [ORCACheckConfig]::new()
-                $ConfigObject.ConfigItem=$($Policy.Name)
+                $ConfigObject.ConfigItem=$($PolicyName)
                 $ConfigObject.ConfigData=$EnableForInternalSenders
                 $ConfigObject.ConfigReadonly = $Policy.IsPreset
                 $ConfigObject.ConfigDisabled = $IsPolicyDisabled
