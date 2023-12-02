@@ -41,6 +41,7 @@ class ORCA118_3 : ORCACheck
         ForEach($Policy in $Config["HostedContentFilterPolicy"]) {
             $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $AllowedSenderDomains = @($Policy.AllowedSenderDomains)
+            $PolicyName = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
     
             # Fail if AllowedSenderDomains is not null
     
@@ -54,7 +55,7 @@ class ORCA118_3 : ORCACheck
                     {
                         # Check objects
                         $ConfigObject = [ORCACheckConfig]::new()
-                        $ConfigObject.ConfigItem=$($Policy.Name)
+                        $ConfigObject.ConfigItem=$PolicyName
                         $ConfigObject.ConfigData=$Domain
                         $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
                         $ConfigObject.ConfigDisabled=$IsPolicyDisabled
@@ -71,7 +72,7 @@ class ORCA118_3 : ORCACheck
                 }
             } else {
                 $ConfigObject = [ORCACheckConfig]::new()
-                $ConfigObject.ConfigItem=$($Policy.Name)
+                $ConfigObject.ConfigItem=$PolicyName
                 $ConfigObject.ConfigData="Allowed sender domains empty"
                 $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
                 $ConfigObject.ConfigDisabled=$IsPolicyDisabled
