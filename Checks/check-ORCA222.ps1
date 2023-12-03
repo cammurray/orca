@@ -68,7 +68,8 @@ class ORCA222 : ORCACheck
                 $ConfigObject.Object=$policyname
                 $ConfigObject.ConfigItem="EnableTargetedDomainsProtection"
                 $ConfigObject.ConfigData=$EnableTargetedDomainsProtection
-                $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+                $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+                $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
                 $ConfigObject.ConfigReadonly = $Policy.IsPreset
                 $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
@@ -82,7 +83,8 @@ class ORCA222 : ORCACheck
                 $ConfigObject.Object=$policyname
                 $ConfigObject.ConfigItem="EnableOrganizationDomainsProtection"
                 $ConfigObject.ConfigData=$EnableOrganizationDomainsProtection
-                $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+                $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+                $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
                 $ConfigObject.ConfigReadonly = $Policy.IsPreset
                 $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
@@ -98,7 +100,8 @@ class ORCA222 : ORCACheck
                 $ConfigObject.Object=$policyname
                 $ConfigObject.ConfigItem="EnableTargetedDomainsProtection"
                 $ConfigObject.ConfigData=$EnableTargetedDomainsProtection
-                $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+                $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+                $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
                 $ConfigObject.ConfigReadonly = $Policy.IsPreset
                 $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
@@ -115,7 +118,8 @@ class ORCA222 : ORCACheck
                 $ConfigObject.Object=$policyname
                 $ConfigObject.ConfigItem="EnableOrganizationDomainsProtection"
                 $ConfigObject.ConfigData=$EnableOrganizationDomainsProtection
-                $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+                $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+                $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
                 $ConfigObject.ConfigReadonly = $Policy.IsPreset
                 $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
@@ -131,7 +135,8 @@ class ORCA222 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="TargetedDomainProtectionAction"
             $ConfigObject.ConfigData=$TargetedDomainProtectionAction
-            $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigReadonly = $Policy.IsPreset
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 

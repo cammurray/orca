@@ -56,7 +56,8 @@ class ORCA223 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="EnableTargetedUserProtection"
             $ConfigObject.ConfigData=$EnableTargetedUserProtection
-            $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigReadonly = $IsPreset
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
@@ -78,7 +79,8 @@ class ORCA223 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="TargetedUserProtectionAction"
             $ConfigObject.ConfigData=$TargetedUserProtectionAction
-            $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigReadonly = $IsPreset
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 

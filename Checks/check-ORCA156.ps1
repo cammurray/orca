@@ -56,7 +56,8 @@ class ORCA156 : ORCACheck
             $ConfigObject.ConfigItem="TrackClicks"
             $ConfigObject.ConfigData=$TrackUserClicks
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
-            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             # Determine if MDO link tracking is on for this safelinks policy

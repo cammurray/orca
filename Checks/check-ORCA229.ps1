@@ -66,7 +66,8 @@ class ORCA229 : ORCACheck
                     $ConfigObject.Object=$policyname
                     $ConfigObject.ConfigItem="ExcludedDomains"
                     $ConfigObject.ConfigData=$($Domain)
-                    $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+                    $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+                    $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
                     $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
                     $this.AddConfig($ConfigObject)  
@@ -79,7 +80,8 @@ class ORCA229 : ORCACheck
                 $ConfigObject.Object=$policyname
                 $ConfigObject.ConfigItem="ExcludedDomains"
                 $ConfigObject.ConfigData="No domain detected"
-                $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+                $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+                $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
                 $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
