@@ -56,7 +56,8 @@ class ORCA103 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="RecipientLimitExternalPerHour"
             $ConfigObject.ConfigData=$RecipientLimitExternalPerHour
-            $ConfigObject.ConfigDisabled=!$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
@@ -93,7 +94,8 @@ class ORCA103 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="RecipientLimitInternalPerHour"
             $ConfigObject.ConfigData=$($RecipientLimitInternalPerHour)
-            $ConfigObject.ConfigDisabled=!$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
 
             If($RecipientLimitInternalPerHour -eq 1000)
@@ -127,7 +129,8 @@ class ORCA103 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="RecipientLimitPerDay"
             $ConfigObject.ConfigData=$($RecipientLimitPerDay)
-            $ConfigObject.ConfigDisabled=!$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
 
             If($RecipientLimitPerDay -eq 1000)
@@ -155,7 +158,8 @@ class ORCA103 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="ActionWhenThresholdReached"
             $ConfigObject.ConfigData=$($ActionWhenThresholdReached)
-            $ConfigObject.ConfigDisabled=!$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
 
             If($ActionWhenThresholdReached -like "BlockUser")

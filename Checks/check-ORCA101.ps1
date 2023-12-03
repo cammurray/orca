@@ -38,7 +38,6 @@ class ORCA101 : ORCACheck
         $CountOfPolicies = ($global:HostedContentPolicyStatus| Where-Object {$_.IsEnabled -eq $True}).Count
         ForEach($Policy in $Config["HostedContentFilterPolicy"])
         {
-            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
 
             $MarkAsSpamBulkMail = $($Policy.MarkAsSpamBulkMail)
 
@@ -46,7 +45,8 @@ class ORCA101 : ORCACheck
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.ConfigItem=$Config["PolicyStates"][$Policy.Guid.ToString()].Name
             $ConfigObject.ConfigData=$MarkAsSpamBulkMail
-            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 

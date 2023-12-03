@@ -62,7 +62,8 @@ class ORCA109 : ORCACheck
             }
 
             $ConfigObject.ConfigData = $AllowedSenders
-            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
 
             <#
             

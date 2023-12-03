@@ -490,10 +490,6 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
 
                 </div>
             </div>
-
-            <div class='alert alert-success pt-2' >
-            Like this report? Try similar reporting for Microsoft's Compliance solutions. Download <a href='https://aka.ms/orca-mcca-github' target='_blank'> Microsoft Compliance Config Analyzer (MCCA)</a>
-             </div>
                     
     </div>
   
@@ -543,6 +539,83 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
         </div>
     </div>
     "
+
+    <#
+    
+    Keys
+    
+    #>
+
+    $Output += "
+    <div class='card m-3'>
+        <div class='card-header'>
+            Legend
+        </div>
+        <div class='card-body'>
+            <table class='table table-borderless'>
+
+                <tr>
+                    <td width='100'>
+                        <div class='flex-row badge badge-pill text-bg-dark'>
+                            <span style='vertical-align: middle;'>Disabled</span>
+                            <span class='fas fa-times-circle text-muted' style='vertical-align: middle;'></span>
+                        </div>
+                    </td>
+                    <td>
+                        Disabled configuration or disabled policies won't apply due to explicit disablement of the policy or configuration.
+                    </td>
+                </tr>
+
+                <tr>
+                    <td width='100'>
+                        <div class='flex-row badge badge-pill text-bg-secondary'>
+                            <span style='vertical-align: middle;'>Does not apply</span>
+                            <span class='fas fa-times-circle text-muted' style='vertical-align: middle;'></span>
+                        </div>
+                    </td>
+                    <td>
+                        These policies or configuration do not apply due to policy precedence or exceptions on the policy or configuration. An example is a default policy, where there is a preset policy applying with no exceptions.
+                    </td>
+                </tr>
+
+                <tr>
+                <td width='100'>
+                    <div class='flex-row badge badge-pill text-bg-light'>
+                    <span style='vertical-align: middle;'>Read Only</span>
+                    <span class='fas fa-lock text-muted' style='vertical-align: middle;'></span>
+                    </div>
+                </td>
+                <td>
+                    Read only policies cannot be modified. In instances where read-only policies contain configuration that you do not want, apply a higher ordered policy so these won't apply.
+                </td>
+                </tr>
+
+                <tr>
+                    <td width='100'>
+                        <div class='flex-row badge badge-pill text-bg-info'>
+                            <span style='vertical-align: middle;'>Preset Standard/Strict</span>
+                        </div>
+                    </td>
+                    <td>
+                        Pre-set policies provide settings that are controlled by Microsoft and configured at a specific level of controls (Standard or Strict), most settings are usually read-only.
+                    </td>
+                </tr>
+
+                <tr>
+                    <td width='100'>
+                        <div class='flex-row badge badge-pill text-bg-info'>
+                            <span style='vertical-align: middle;'>Built-in Protection Policy</span>
+                        </div>
+                    </td>
+                    <td>
+                        Built-in policies apply in the absence of other policies, most settings are usually read-only.
+                    </td>
+                </tr>
+            
+                
+            </table>
+        </div>
+    </div>"
 
     <#
 
@@ -757,8 +830,17 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     if($o.ConfigDisabled -eq $true)
                                     {
                                         $Output += "
-                                                <div class='flex-row badge badge-pill text-bg-secondary'>
+                                                <div class='flex-row badge badge-pill text-bg-dark'>
                                                     <span style='vertical-align: middle;'>Disabled</span>
+                                                    <span class='fas fa-times-circle text-muted' style='vertical-align: middle;'></span>
+                                                </div>"
+                                    }
+
+                                    if($o.ConfigWontApply -eq $true)
+                                    {
+                                        $Output += "
+                                                <div class='flex-row badge badge-pill text-bg-secondary'>
+                                                    <span style='vertical-align: middle;'>Does not apply</span>
                                                     <span class='fas fa-times-circle text-muted' style='vertical-align: middle;'></span>
                                                 </div>"
                                     }
@@ -787,8 +869,17 @@ $Output +=        "<div class='col d-flex justify-content-center text-center'>
                                     if($o.ConfigDisabled -eq $true)
                                     {
                                         $Output += "
-                                                <div class='flex-row badge badge-pill text-bg-secondary'>
+                                                <div class='flex-row badge badge-pill text-bg-dark'>
                                                     <span style='vertical-align: middle;'>Disabled</span>
+                                                    <span class='fas fa-times-circle text-muted' style='vertical-align: middle;'></span>
+                                                </div>"
+                                    }
+
+                                    if($o.ConfigWontApply -eq $true)
+                                    {
+                                        $Output += "
+                                                <div class='flex-row badge badge-pill text-bg-secondary'>
+                                                    <span style='vertical-align: middle;'>Does not apply</span>
                                                     <span class='fas fa-times-circle text-muted' style='vertical-align: middle;'></span>
                                                 </div>"
                                     }

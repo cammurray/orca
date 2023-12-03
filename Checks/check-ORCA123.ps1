@@ -59,7 +59,8 @@ class ORCA123 : ORCACheck
             $ConfigObject.ConfigItem="EnableUnusualCharactersSafetyTips"
             $ConfigObject.ConfigData=$EnableUnusualCharactersSafetyTips
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
-            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             If($EnableUnusualCharactersSafetyTips -eq $false)

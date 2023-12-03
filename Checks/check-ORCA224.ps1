@@ -58,7 +58,8 @@ class ORCA224 : ORCACheck
             $ConfigObject.Object=$Config["PolicyStates"][$Policy.Guid.ToString()].Name
             $ConfigObject.ConfigItem="EnableSimilarUsersSafetyTips"
             $ConfigObject.ConfigData=$EnableSimilarUsersSafetyTips
-            $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigReadonly = $Policy.IsPreset
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
