@@ -240,7 +240,7 @@ Class ORCACheckConfig
         $InputResult = $Result;
 
         # Override level if the config is disabled and result is a failure.
-        if(($this.ConfigDisabled -eq $true -or $this.ConfigWontApply -eq $true) -and $InputResult -eq [ORCAResult]::Fail)
+        if(($this.ConfigDisabled -eq $true -or $this.ConfigWontApply -eq $true))
         {
             $InputResult = [ORCAResult]::Informational;
 
