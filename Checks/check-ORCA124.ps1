@@ -53,15 +53,14 @@ class ORCA124 : ORCACheck
        
         ForEach($Policy in $Config["SafeAttachmentsPolicy"]) 
         {
-            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
-
             # Check objects
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.Object=$Config["PolicyStates"][$Policy.Guid.ToString()].Name
             $ConfigObject.ConfigItem="Action"
             $ConfigObject.ConfigData=$($Policy.Action)
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
-            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
             
             # Determine if MDO Safe attachments action is set to block

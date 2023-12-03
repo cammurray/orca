@@ -50,7 +50,8 @@ class ORCA120_phish : ORCACheck
             $ConfigObject.ConfigItem=$policyname
             $ConfigObject.ConfigData=$PhishZapEnabled
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
-            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             if($PhishZapEnabled -eq $true) 

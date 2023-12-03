@@ -48,7 +48,8 @@ class ORCA180 : ORCACheck
             $ConfigObject.ConfigItem="EnableSpoofIntelligence"
             $ConfigObject.ConfigData=$Policy.EnableSpoofIntelligence
             $ConfigObject.ConfigReadonly = $Policy.IsPreset
-            $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             # Fail if Enabled or EnableSpoofIntelligence is not set to true in any policy

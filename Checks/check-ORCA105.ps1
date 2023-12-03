@@ -66,7 +66,8 @@ class ORCA105 : ORCACheck
                 $ConfigObject.Object= $policyname
                 $ConfigObject.ConfigItem="DeliverMessageAfterScan"
                 $ConfigObject.ConfigData=$DeliverMessageAfterScan
-                $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+                $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+                $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
                 $ConfigObject.ConfigReadonly=$Policy.IsPreset
                 $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
@@ -99,7 +100,8 @@ class ORCA105 : ORCACheck
                 $ConfigObject.Object= $policyname
                 $ConfigObject.ConfigItem="ScanUrls"
                 $ConfigObject.ConfigData=$ScanUrls
-                $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+                $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+                $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
                 $ConfigObject.ConfigReadonly=$Policy.IsPreset
                 $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 

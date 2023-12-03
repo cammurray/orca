@@ -50,34 +50,38 @@ class ORCA179 : ORCACheck
       
         ForEach($Policy in $Config["SafeLinksPolicy"]) 
         {
-            if(!$Config["PolicyStates"][$Policy.Guid.ToString()].BuiltIn)
+            $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
+            $EnableForInternalSenders = $($Policy.EnableForInternalSenders)
+
+            $PolicyName = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
+
+            if(!$IsPolicyDisabled)
             {
-                $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
-                $EnableForInternalSenders = $($Policy.EnableForInternalSenders)
-
                 $PolicyCount++
-
-                # Check objects
-                $ConfigObject = [ORCACheckConfig]::new()
-                $ConfigObject.ConfigItem=$($Policy.Name)
-                $ConfigObject.ConfigData=$EnableForInternalSenders
-                $ConfigObject.ConfigReadonly = $Policy.IsPreset
-                $ConfigObject.ConfigDisabled = $IsPolicyDisabled
-                $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
-
-                # Determine if MDO link tracking is on for this safelinks policy
-                If($EnableForInternalSenders -eq $true) 
-                {
-                    $Enabled = $True
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                } 
-                Else 
-                {
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
-                }
-
-                $this.AddConfig($ConfigObject)
             }
+            
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.ConfigItem=$($PolicyName)
+            $ConfigObject.ConfigData=$EnableForInternalSenders
+            $ConfigObject.ConfigReadonly = $Policy.IsPreset
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
+
+            # Determine if MDO link tracking is on for this safelinks policy
+            If($EnableForInternalSenders -eq $true) 
+            {
+                $Enabled = $True
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+            } 
+            Else 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+            }
+
+            $this.AddConfig($ConfigObject)
         }
 
         If($PolicyCount -eq 0)

@@ -54,7 +54,8 @@ class ORCA143 : ORCACheck
             $ConfigObject.ConfigItem="InlineSafetyTipsEnabled"
             $ConfigObject.ConfigData=$InlineSafetyTipsEnabled
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
-            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
             # Fail if InlineSafetyTipsEnabled is not set to true

@@ -62,7 +62,8 @@ class ORCA118_1 : ORCACheck
                     $ConfigObject = [ORCACheckConfig]::new()
                     $ConfigObject.ConfigItem=$policyname
                     $ConfigObject.ConfigData=$($Domain.Domain)
-                    $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+                    $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+                    $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
                     $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
                     $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
@@ -75,7 +76,8 @@ class ORCA118_1 : ORCACheck
                 # Check objects
                 $ConfigObject = [ORCACheckConfig]::new()
                 $ConfigObject.ConfigItem=$policyname
-                $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+                $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+                $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
                 $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
                 
                 $ConfigObject.ConfigData="No domain available"
