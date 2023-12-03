@@ -58,7 +58,8 @@ class ORCA118_3 : ORCACheck
                         $ConfigObject.ConfigItem=$PolicyName
                         $ConfigObject.ConfigData=$Domain
                         $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
-                        $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+                        $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+                        $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
 
                         <#
                         
@@ -75,7 +76,8 @@ class ORCA118_3 : ORCACheck
                 $ConfigObject.ConfigItem=$PolicyName
                 $ConfigObject.ConfigData="Allowed sender domains empty"
                 $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
-                $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+                $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+                $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
 
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
                 $this.AddConfig($ConfigObject) 

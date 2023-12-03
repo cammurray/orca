@@ -59,7 +59,8 @@ class ORCA205 : ORCACheck
                 $ConfigObject = [ORCACheckConfig]::new()
                 $ConfigObject.Object=$policyname
                 $ConfigObject.ConfigItem="FileFilter"
-                $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+                $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+                $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
                 $ConfigObject.ConfigReadonly = $Policy.IsPreset
                 $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
                 $ConfigObject.ConfigData=$("EnableFileFilter Disabled")
@@ -86,7 +87,8 @@ class ORCA205 : ORCACheck
                     $ConfigObject = [ORCACheckConfig]::new()
                     $ConfigObject.Object=$policyname
                     $ConfigObject.ConfigItem="FileFilter"
-                    $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+                    $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+                    $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
                     $ConfigObject.ConfigReadonly = $Policy.IsPreset
                     $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
                     $ConfigObject.ConfigData=$("Enabled with all default file types")
@@ -96,7 +98,8 @@ class ORCA205 : ORCACheck
                     $ConfigObject = [ORCACheckConfig]::new()
                     $ConfigObject.Object=$policyname
                     $ConfigObject.ConfigItem="FileFilter"
-                    $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+                    $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+                    $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
                     $ConfigObject.ConfigReadonly = $Policy.IsPreset
                     $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
                     $ConfigObject.ConfigData=$($MissingFiles -join ",")

@@ -59,7 +59,8 @@ class ORCA124 : ORCACheck
             $ConfigObject.ConfigItem="Action"
             $ConfigObject.ConfigData=$($Policy.Action)
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
-            $ConfigObject.ConfigDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
             
             # Determine if MDO Safe attachments action is set to block

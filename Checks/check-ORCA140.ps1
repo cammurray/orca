@@ -48,7 +48,8 @@ class ORCA140 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem=$policyname
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
-            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
             
             # Fail if HighConfidenceSpamAction is not set to Quarantine

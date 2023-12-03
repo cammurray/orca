@@ -50,7 +50,8 @@ class ORCA139 : ORCACheck
             $ConfigObject.ConfigItem=$policyname
             $ConfigObject.ConfigData=$($SpamAction)
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
-            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
             
             # For standard, this should be MoveToJmf

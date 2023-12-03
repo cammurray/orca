@@ -61,7 +61,8 @@ class ORCA113 : ORCACheck
                 $ConfigObject.Object=$Config["PolicyStates"][$Policy.Guid.ToString()].Name
                 $ConfigObject.ConfigItem="AllowClickThrough"
                 $ConfigObject.ConfigData=$AllowClickThrough
-                $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+                $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+                $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
                 $ConfigObject.ConfigReadonly=$Policy.IsPreset
                 $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 

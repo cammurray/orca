@@ -50,7 +50,8 @@ class ORCA106 : ORCACheck
             $ConfigObject = [ORCACheckConfig]::new()
             $ConfigObject.ConfigItem=$Config["PolicyStates"][$Policy.Guid.ToString()].Name
             $ConfigObject.ConfigData=$QuarantineRetentionPeriod
-            $ConfigObject.ConfigDisabled=$IsPolicyDisabled
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 

@@ -64,7 +64,8 @@ class ORCA221 : ORCACheck
             $ConfigObject.Object=$policyname
             $ConfigObject.ConfigItem="EnableMailboxIntelligence"
             $ConfigObject.ConfigData=$EnableMailboxIntelligence
-            $ConfigObject.ConfigDisabled = $IsPolicyDisabled
+            $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
+            $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
             $ConfigObject.ConfigReadonly = $Policy.IsPreset
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 

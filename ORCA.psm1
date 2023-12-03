@@ -240,7 +240,7 @@ Class ORCACheckConfig
         $InputResult = $Result;
 
         # Override level if the config is disabled and result is a failure.
-        if($this.ConfigDisabled -eq $true -and $InputResult -eq [ORCAResult]::Fail)
+        if(($this.ConfigDisabled -eq $true -or $this.ConfigWontApply -eq $true) -and $InputResult -eq [ORCAResult]::Fail)
         {
             $InputResult = [ORCAResult]::Informational;
 
@@ -319,7 +319,11 @@ Class ORCACheckConfig
     $ConfigItem
     $ConfigData
     $ConfigReadonly
+
+    # Config is disabled
     $ConfigDisabled
+    # Config will apply, has a rule, not overriden by something
+    $ConfigWontApply
     [string]$ConfigPolicyGuid
     $InfoText
     [array]$Results
@@ -976,8 +980,11 @@ Function Get-ORCAReportEmbeddedConfig
 }
 
 class PolicyInfo {
-    # Policy applies to something, is enabled, has a rule
+    # Policy applies to something - has a rule / not overridden by another policy
     [bool] $Applies
+
+    # Policy is disabled
+    [bool] $Disabled
 
     # Preset policy (Standard or Strict)
     [bool] $Preset
@@ -1011,55 +1018,33 @@ Function Get-PolicyStateInt
 
     $ReturnPolicies = @{}
 
-    # Used for marking the default policy at the end as disabled, if there is an applied preset policy
+    # Used for marking the default policy at the end as not applies, if there is an applied preset policy
     $TypeHasAppliedPresetPolicy = $False
 
     foreach($Policy in $Policies)
     {
 
         $Applies = $false
+        $Disabled = $false
         $Default = $false
         $Preset = $false
+        $DoesNotApply = $false
         $PresetPolicyLevel = [PresetPolicyLevel]::None
         $BuiltIn = ($Policy.Identity -eq $BuiltInProtectionRule.SafeAttachmentPolicy -or $Policy.Identity -eq $BuiltInProtectionRule.SafeLinksPolicy)
         $Name = $Policy.Name
 
-        # Determine preset - MDO
-        if($Type -eq [PolicyType]::SafeLinks -or $Type -eq [PolicyType]::SafeAttachments)
+        # Determine preset
+        if($Policy.RecommendedPolicyType -eq "Standard" -or $Policy.RecommendedPolicyType -eq "Strict")
         {
-            $MatchingPolicyRule = @($ProtectionPolicyRules | Where-Object {$_.SafeAttachmentsPolicy -eq $Policy.Identity -or $_.SafeLinksPolicy -eq $Policy.Identity})
-            
-            if($MatchingPolicyRule.Count -gt 0)
-            {
-                $Preset = $True
-                $Name = $MatchingPolicyRule[0].Name
-            }
-        }
+            $Name = "$($Policy.RecommendedPolicyType) Preset Security Policy"
+            $Preset = $True;
 
-        # Determine preset - EOP
-        if($Type -eq [PolicyType]::Antiphish -or $Type -eq [PolicyType]::Spam -or $Type -eq [PolicyType]::Malware)
-        {
-            $MatchingPolicyRule = @($ProtectionPolicyRules | Where-Object {
-                $_.HostedContentFilterPolicy -eq $Policy.Identity -or 
-                $_.AntiPhishPolicy -eq $Policy.Identity -or
-                $_.MalwareFilterPolicy -eq $Policy.Identity
-            })
-            
-            if($MatchingPolicyRule.Count -gt 0)
-            {
-                $Preset = $True
-                $Name = $MatchingPolicyRule[0].Name
-            }
-        }
-
-        # Determine level of preset based on name
-        if($Preset)
-        {
-            if($Name -like "Standard*")
+            if($($Policy.RecommendedPolicyType) -eq "Standard")
             {
                 $PresetPolicyLevel = ([PresetPolicyLevel]::Standard)
             }
-            if($Name -like "Strict*")
+            
+            if($($Policy.RecommendedPolicyType) -eq "Strict")
             {
                 $PresetPolicyLevel = ([PresetPolicyLevel]::Strict)
             }
@@ -1078,6 +1063,7 @@ Function Get-PolicyStateInt
             $Policy.DistinguishedName.StartsWith("CN=Default,CN=Outbound Spam Filter,CN=Transport Settings"))
         {
             $Default = $True
+            $Disabled = $False
             $Applies = $True
         }
 
@@ -1087,6 +1073,7 @@ Function Get-PolicyStateInt
             $Default = $True
             
             # Policy will apply based on Enabled state
+            $Disabled = !$Policy.Enabled
             $Applies = $Policy.Enabled
         }
 
@@ -1186,6 +1173,7 @@ Function Get-PolicyStateInt
 
         $ReturnPolicies[$Policy.Guid.ToString()] = New-Object -TypeName PolicyInfo -Property @{
             Applies=$Applies
+            Disabled=$Disabled
             Preset=$Preset
             PresetLevel=($PresetPolicyLevel)
             BuiltIn=$BuiltIn
