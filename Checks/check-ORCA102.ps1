@@ -15,13 +15,13 @@ class ORCA102 : ORCACheck
         $this.Name="Advanced Spam Filter (ASF)"
         $this.PassText="Advanced Spam filter options are turned off"
         $this.FailRecommendation="Turn off Advanced Spam filter (ASF) options in Anti-Spam filter policies"
-        $this.Importance="Settings in the Advanced Spam Filter (ASF) are known to cause false-positive detections. Please validate your requirement to use these Advanced Spam Filter (ASF) options & ensure that submissions are being performed to train ML models."
+        $this.Importance="Settings in the Advanced Spam Filter (ASF) are known to cause false-positive detections, settings here are marked as informational for your consideration,.MarkAsSpamSpfRecordHardFail option is not recommended and will cause false positives, as failing SPF does not necessarily mean that a message is spoofed in instances where DMARC/DKIM are deployed and aligning. Please validate your requirement to use these Advanced Spam Filter (ASF) options & ensure that submissions are being performed to train ML models."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Policy"
         $this.ItemName="Setting"
         $this.DataType="Current Value"
-        $this.ChiValue=[ORCACHI]::NotRated
+        $this.ChiValue=[ORCACHI]::Low
         $this.Links= @{
             "Microsoft 365 Defender Portal - Anti-spam settings"="https://security.microsoft.com/antispam"
             "Recommended settings for EOP and Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-6"
@@ -325,7 +325,7 @@ class ORCA102 : ORCACheck
                     $ConfigObject.ConfigReadonly=$Policy.IsPreset
                     $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
 
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Informational")
+                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
 
                     $this.AddConfig($ConfigObject)
 
