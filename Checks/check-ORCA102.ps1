@@ -15,7 +15,7 @@ class ORCA102 : ORCACheck
         $this.Name="Advanced Spam Filter (ASF)"
         $this.PassText="Advanced Spam filter options are turned off"
         $this.FailRecommendation="Turn off Advanced Spam filter (ASF) options in Anti-Spam filter policies"
-        $this.Importance="Settings in the Advanced Spam Filter (ASF) are known to cause false-positive detections. Please validate your requirement to use these Advanced Spam Filter (ASF) options & ensure that submissions are being performed to train ML models."
+        $this.Importance="Settings in the Advanced Spam Filter (ASF) are known to cause false-positive detections, settings here are marked as informational for your consideration. Please validate your requirement to use these Advanced Spam Filter (ASF) options & ensure that submissions are being performed to train ML models."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Policy"
@@ -57,13 +57,12 @@ class ORCA102 : ORCACheck
             $MarkAsSpamSensitiveWordList = $($Policy.MarkAsSpamSensitiveWordList) 
             $MarkAsSpamFromAddressAuthFail = $($Policy.MarkAsSpamFromAddressAuthFail) 
             $MarkAsSpamNdrBackscatter = $($Policy.MarkAsSpamNdrBackscatter) 
-            $MarkAsSpamSpfRecordHardFail = $($Policy.MarkAsSpamSpfRecordHardFail) 
            
             $IsBuiltIn = $false
             $policyname = $Config["PolicyStates"][$Policy.Guid.ToString()].Name
 
             # Determine if ASF options are off or not
-            If($IncreaseScoreWithImageLinks -eq "On" -or $IncreaseScoreWithNumericIps -eq "On" -or $IncreaseScoreWithRedirectToOtherPort -eq "On" -or $IncreaseScoreWithBizOrInfoUrls -eq "On" -or $MarkAsSpamEmptyMessages -eq "On" -or $MarkAsSpamJavaScriptInHtml -eq "On" -or $MarkAsSpamFramesInHtml -eq "On" -or $MarkAsSpamObjectTagsInHtml -eq "On" -or $MarkAsSpamEmbedTagsInHtml -eq "On" -or $MarkAsSpamFormTagsInHtml -eq "On" -or $MarkAsSpamWebBugsInHtml -eq "On" -or $MarkAsSpamSensitiveWordList -eq "On" -or $MarkAsSpamFromAddressAuthFail -eq "On" -or $MarkAsSpamNdrBackscatter -eq "On" -or $MarkAsSpamSpfRecordHardFail -eq "On") {
+            If($IncreaseScoreWithImageLinks -eq "On" -or $IncreaseScoreWithNumericIps -eq "On" -or $IncreaseScoreWithRedirectToOtherPort -eq "On" -or $IncreaseScoreWithBizOrInfoUrls -eq "On" -or $MarkAsSpamEmptyMessages -eq "On" -or $MarkAsSpamJavaScriptInHtml -eq "On" -or $MarkAsSpamFramesInHtml -eq "On" -or $MarkAsSpamObjectTagsInHtml -eq "On" -or $MarkAsSpamEmbedTagsInHtml -eq "On" -or $MarkAsSpamFormTagsInHtml -eq "On" -or $MarkAsSpamWebBugsInHtml -eq "On" -or $MarkAsSpamSensitiveWordList -eq "On" -or $MarkAsSpamFromAddressAuthFail -eq "On" -or $MarkAsSpamNdrBackscatter -eq "On") {
                 If($IncreaseScoreWithImageLinks -eq "On") {
 
                     $ConfigObject = [ORCACheckConfig]::new()
@@ -302,24 +301,6 @@ class ORCA102 : ORCACheck
                     $ConfigObject.Object=$policyname
                     $ConfigObject.ConfigItem="MarkAsSpamNdrBackscatter"
                     $ConfigObject.ConfigData=$MarkAsSpamNdrBackscatter
-                    $ConfigObject.ConfigDisabled=$IsPolicyDisabled
-                    $ConfigObject.ConfigWontApply=$ConfigWontApply
-                    $ConfigObject.ConfigReadonly=$Policy.IsPreset
-                    $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
-
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Informational")
-
-                    $this.AddConfig($ConfigObject)
-
-                }
-                If ($MarkAsSpamSpfRecordHardFail -eq "On") 
-                {
-                                                                                                                                                                             
-                    $ConfigObject = [ORCACheckConfig]::new()
-                    
-                    $ConfigObject.Object=$policyname
-                    $ConfigObject.ConfigItem="MarkAsSpamSpfRecordHardFail"
-                    $ConfigObject.ConfigData=$MarkAsSpamSpfRecordHardFail
                     $ConfigObject.ConfigDisabled=$IsPolicyDisabled
                     $ConfigObject.ConfigWontApply=$ConfigWontApply
                     $ConfigObject.ConfigReadonly=$Policy.IsPreset
