@@ -15,7 +15,7 @@ class ORCA102 : ORCACheck
         $this.Name="Advanced Spam Filter (ASF)"
         $this.PassText="Advanced Spam filter options are turned off"
         $this.FailRecommendation="Turn off Advanced Spam filter (ASF) options in Anti-Spam filter policies"
-        $this.Importance="Settings in the Advanced Spam Filter (ASF) are currently being deprecated. It is recommended to disable ASF settings."
+        $this.Importance="Enabling one or more of the ASF settings is an aggressive approach to spam filtering that can often cause false positives. The effectiveness of these settings in reducing spam has severely declined over the years. Use them with caution."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Policy"
