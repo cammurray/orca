@@ -384,7 +384,9 @@ Class ORCACheck
 
     [Boolean] $CheckFailed = $false
     [String] $CheckFailureReason = $null
-    
+
+    [Boolean] $SCC=$false
+
     # Overridden by check
     GetResults($Config) { }
 
