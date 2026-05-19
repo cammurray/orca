@@ -674,6 +674,28 @@ Function Get-ORCACollection
         $Collection["SafeLinksPolicy"] = Get-SafeLinksPolicy
         $Collection["SafeLinksRules"] = Get-SafeLinksRule
         $Collection["AtpPolicy"] = Get-AtpPolicyForO365
+
+        # Tenant-wide MDO settings (e.g. Priority Account Protection toggle).
+        # Get-EmailTenantSettings was introduced in newer ExchangeOnlineManagement
+        # builds and is only meaningful on MDO Plan 2 tenants. Guard the call
+        # so older modules / Plan 1 tenants do not error out, and only keep
+        # the small set of properties checks actually consume.
+        if($(Get-command Get-EmailTenantSettings -ErrorAction:SilentlyContinue))
+        {
+            Try
+            {
+                $Collection["EmailTenantSettings"] = Get-EmailTenantSettings -ErrorAction:Stop | Select-Object Identity,EnablePriorityAccountProtection
+            }
+            Catch
+            {
+                Write-Verbose "$(Get-Date) Failed to get EmailTenantSettings: $_"
+                $Collection["EmailTenantSettings"] = $null
+            }
+        }
+        else
+        {
+            $Collection["EmailTenantSettings"] = $null
+        }
     }
 
     Write-Host "$(Get-Date) Getting Accepted Domains"
