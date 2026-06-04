@@ -1105,42 +1105,34 @@ Function Get-PolicyStateInt
 
             $PolicyRules = @();
 
+            if ($Preset) {
+                $xRuleset = $ProtectionPolicyRules
+            } else {
+                $xRuleset = $Rules
+            }
+
             # If Preset, rules to check is the protection policy rules (MDO or EOP protection policy rules), if not, the policy rules.
-            if($Preset)
+            # We need to match the rule using
+            # HostedContentFilterPolicy, AntiPhishPolicy, MalwareFilterPolicy attributes [EOP]
+            # SafeAttachmentPolicy, SafeLinksPolicy [MDO]
+            # instead of the name.
+            # The name of a policy doesn't always match the id in the rule.
+
+            if($Type -eq [PolicyType]::Spam)
             {
-
-                # When preset - we need to match the rule using 
-                # HostedContentFilterPolicy, AntiPhishPolicy, MalwareFilterPolicy attributes [EOP]
-                # SafeAttachmentPolicy, SafeLinksPolicy [MDO]
-                # instead of the name.
-
-                # The name of a preset policy doesn't always match the id in the rule.
-
-                if($Type -eq [PolicyType]::Spam)
-                {
-                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.HostedContentFilterPolicy -eq $Policy.Identity})
-                }
-
-                if($Type -eq [PolicyType]::Antiphish)
-                {
-                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.AntiPhishPolicy -eq $Policy.Identity})
-                }
-
-                if($Type -eq [PolicyType]::Malware)
-                {
-                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.MalwareFilterPolicy -eq $Policy.Identity})
-                }
-
-                if($Type -eq [PolicyType]::SafeAttachments)
-                {
-                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.SafeAttachmentPolicy -eq $Policy.Identity})
-                }
-
-                if($Type -eq [PolicyType]::SafeLinks)
-                {
-                    $PolicyRules = @($ProtectionPolicyRules | Where-Object {$_.SafeLinksPolicy -eq $Policy.Identity})
-                }
-
+                $PolicyRules = @($xRuleset | Where-Object {$_.HostedContentFilterPolicy -eq $Policy.Identity})
+            } elseif($Type -eq [PolicyType]::Antiphish)
+            {
+                $PolicyRules = @($xRuleset | Where-Object {$_.AntiPhishPolicy -eq $Policy.Identity})
+            }elseif($Type -eq [PolicyType]::Malware)
+            {
+                $PolicyRules = @($xRuleset | Where-Object {$_.MalwareFilterPolicy -eq $Policy.Identity})
+            }elseif($Type -eq [PolicyType]::SafeAttachments)
+            {
+                $PolicyRules = @($xRuleset | Where-Object {$_.SafeAttachmentPolicy -eq $Policy.Identity})
+            }elseif($Type -eq [PolicyType]::SafeLinks)
+            {
+                $PolicyRules = @($xRuleset | Where-Object {$_.SafeLinksPolicy -eq $Policy.Identity})
             } else {
                 $PolicyRules = @($Rules | Where-Object {$_.Name -eq $Policy.Name})
             }
