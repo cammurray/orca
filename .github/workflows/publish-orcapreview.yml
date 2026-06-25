@@ -1,0 +1,54 @@
+name: Publish ORCAPreview to PowerShell Gallery
+
+# Publishes the ORCAPreview module to the PowerShell Gallery on every check-in to
+# the dev branch. The version is the preview base (major.minor) combined with the
+# workflow run number so each publish has a unique, increasing version. Can also be
+# run manually with an explicit version.
+
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Module version to publish (e.g. 2.8.1). Defaults to <base>.<run_number>.'
+        required: false
+
+env:
+  # Major.minor base for the preview channel; bump this when the baseline changes.
+  PREVIEW_VERSION_BASE: '2.8'
+
+jobs:
+  publish:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Determine version
+        id: ver
+        shell: pwsh
+        run: |
+          $v = '${{ github.event.inputs.version }}'
+          if ([string]::IsNullOrWhiteSpace($v)) { $v = '${{ env.PREVIEW_VERSION_BASE }}.${{ github.run_number }}' }
+          $v = $v.TrimStart('v', 'V')
+          if ([string]::IsNullOrWhiteSpace($v)) { throw 'No version could be determined.' }
+          "version=$v" >> $env:GITHUB_OUTPUT
+          Write-Host "Publishing ORCAPreview version $v"
+
+      - name: Build module
+        shell: pwsh
+        run: ./Build.ps1 -Version '${{ steps.ver.outputs.version }}' -OutputDirectory '${{ github.workspace }}/output'
+
+      - name: Publish to PowerShell Gallery
+        shell: pwsh
+        env:
+          PSGALLERY_API_KEY: ${{ secrets.PSGALLERY_API_KEY }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:PSGALLERY_API_KEY)) {
+            throw 'The PSGALLERY_API_KEY secret is not set. Add it under Settings > Secrets and variables > Actions.'
+          }
+          $modulePath = Join-Path '${{ github.workspace }}/output' 'ORCAPreview'
+          Test-ModuleManifest -Path (Join-Path $modulePath 'ORCAPreview.psd1') | Out-Null
+          Publish-Module -Path $modulePath -NuGetApiKey $env:PSGALLERY_API_KEY -Repository PSGallery -Verbose
