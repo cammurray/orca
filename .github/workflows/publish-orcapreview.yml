@@ -1,9 +1,9 @@
 name: Publish ORCAPreview to PowerShell Gallery
 
 # Publishes the ORCAPreview module to the PowerShell Gallery on every check-in to
-# the dev branch. The version is the preview base (major.minor) combined with the
-# workflow run number so each publish has a unique, increasing version. Can also be
-# run manually with an explicit version.
+# the dev branch. The version is derived from the currently published ORCAPreview
+# version with the patch number bumped, so each publish is unique and increasing.
+# Can also be run manually with an explicit version.
 
 on:
   push:
@@ -11,12 +11,12 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Module version to publish (e.g. 2.8.1). Defaults to <base>.<run_number>.'
+        description: 'Module version to publish (e.g. 2.8.3). Defaults to the next patch above the published version.'
         required: false
 
 env:
-  # Major.minor base for the preview channel; bump this when the baseline changes.
-  PREVIEW_VERSION_BASE: '2.8'
+  # Base version used only for the very first publish (when nothing is on the Gallery yet).
+  PREVIEW_VERSION_BASE: '2.8.0'
 
 jobs:
   publish:
@@ -31,7 +31,15 @@ jobs:
         shell: pwsh
         run: |
           $v = '${{ github.event.inputs.version }}'
-          if ([string]::IsNullOrWhiteSpace($v)) { $v = '${{ env.PREVIEW_VERSION_BASE }}.${{ github.run_number }}' }
+          if ([string]::IsNullOrWhiteSpace($v)) {
+            $published = Find-Module ORCAPreview -Repository PSGallery -ErrorAction SilentlyContinue
+            if ($published) {
+              $cur = [version]$published.Version
+              $v = '{0}.{1}.{2}' -f $cur.Major, $cur.Minor, ($cur.Build + 1)
+            } else {
+              $v = '${{ env.PREVIEW_VERSION_BASE }}'
+            }
+          }
           $v = $v.TrimStart('v', 'V')
           if ([string]::IsNullOrWhiteSpace($v)) { throw 'No version could be determined.' }
           "version=$v" >> $env:GITHUB_OUTPUT
