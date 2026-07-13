@@ -11,8 +11,10 @@ class ORCA108 : ORCACheck
     ORCA108()
     {
         $this.Control="108"
-        $this.Area="DKIM"
-        $this.Name="Signing Configuration"
+        # Grouped under 'Email Authentication' alongside SPF (ORCA235)
+        # so the sidebar and report card display both protocols in one section.
+        $this.Area="Email Authentication"
+        $this.Name="DKIM Signing Configuration"
         $this.PassText="DKIM signing is set up for all your custom domains"
         $this.FailRecommendation="Set up DKIM signing to sign your emails"
         $this.Importance="DKIM signing can help protect the authenticity of your messages in transit and can assist with deliverability of your email messages."

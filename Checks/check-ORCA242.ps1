@@ -54,7 +54,10 @@ class ORCA242 : ORCACheck
             "Suspicious email sending patterns detected"
         )
 
-        if($Config.ContainsKey('ProtectionAlert'))
+        # ProtectionAlert may be $null when Get-ProtectionAlert is
+        # unavailable (e.g. app-based auth / no SCC session). Skip
+        # gracefully so the check is informational rather than a crash.
+        if($Config.ContainsKey('ProtectionAlert') -and $null -ne $Config['ProtectionAlert'])
         {
             ForEach ($ImportantAlert in $ImportantAlerts)
             {

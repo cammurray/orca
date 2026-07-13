@@ -26,7 +26,7 @@ class ORCA113 : ORCACheck
         $this.Links= @{
             "Microsoft 365 Defender Portal - Safe links"="https://security.microsoft.com/safelinksv2"
             "Microsoft Defender for Office 365 Safe Links policies"="https://aka.ms/orca-atpp-docs-11"
-            "Recommended settings for EOP and Office 365 Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-8"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-8"
         }
     
     }
@@ -43,42 +43,48 @@ class ORCA113 : ORCACheck
        
         ForEach($Policy in $Config["SafeLinksPolicy"]) 
         {    
-            # Built-in policy is ignored for this check
+            $PolicyState = $Config["PolicyStates"][$Policy.Guid.ToString()]
+            $IsPolicyDisabled = !$PolicyState.Applies
+            $AllowClickThrough = $($Policy.AllowClickThrough)
 
-            if(!$Config["PolicyStates"][$Policy.Guid.ToString()].IsBuiltIn)
+            # Count the policy when it is enabled or when it is the built-in
+            # protection policy. Built-in policy rows are shown for awareness,
+            # but they are read-only and should not surface as recommendations.
+            if(!$IsPolicyDisabled -or $PolicyState.BuiltIn)
             {
-                $IsPolicyDisabled = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
-                $AllowClickThrough = $($Policy.AllowClickThrough)
-
-                # If not disabled, increment policy count
-                if(!$IsPolicyDisabled)
-                {
-                    $PolicyCount++
-                }
-
-                # Check objects
-                $ConfigObject = [ORCACheckConfig]::new()
-                $ConfigObject.Object=$Config["PolicyStates"][$Policy.Guid.ToString()].Name
-                $ConfigObject.ConfigItem="AllowClickThrough"
-                $ConfigObject.ConfigData=$AllowClickThrough
-                $ConfigObject.ConfigDisabled = $Config["PolicyStates"][$Policy.Guid.ToString()].Disabled
-                $ConfigObject.ConfigWontApply = !$Config["PolicyStates"][$Policy.Guid.ToString()].Applies
-                $ConfigObject.ConfigReadonly=$Policy.IsPreset
-                $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
-
-                # Determine if AllowClickThrough is True in safelinks policies
-                If($Policy.AllowClickThrough -eq $false)
-                {
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
-                }
-                Else 
-                {
-                    $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")                 
-                }
-
-                # Add config to check
-                $this.AddConfig($ConfigObject)
+                $PolicyCount++
             }
+
+            # Check objects
+            $ConfigObject = [ORCACheckConfig]::new()
+            $ConfigObject.Object=$PolicyState.Name
+            $ConfigObject.ConfigItem="AllowClickThrough"
+            $ConfigObject.ConfigData=$AllowClickThrough
+            $ConfigObject.ConfigDisabled = $PolicyState.Disabled
+            $ConfigObject.ConfigWontApply = !$PolicyState.Applies
+            $ConfigObject.ConfigReadonly = $PolicyState.BuiltIn -or $Policy.IsPreset
+            $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
+
+            # Built-in Safe Links policies are read-only. Surface them as
+            # informational so admins understand the current state without
+            # treating the row as a fixable recommendation.
+            if($PolicyState.BuiltIn)
+            {
+                $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. It is being shown for informational purposes only."
+                $ConfigObject.SetResult([ORCAConfigLevel]::All,[ORCAResult]::Informational)
+            }
+            # Determine if AllowClickThrough is True in safelinks policies
+            elseif($Policy.AllowClickThrough -eq $false)
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+            }
+            else 
+            {
+                $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")                 
+            }
+
+            # Add config to check
+            $this.AddConfig($ConfigObject)
         }
 
         if($PolicyCount -eq 0)

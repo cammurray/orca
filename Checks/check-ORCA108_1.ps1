@@ -11,8 +11,10 @@ class ORCA108_1 : ORCACheck
     ORCA108_1()
     {
         $this.Control="108-1"
-        $this.Area="DKIM"
-        $this.Name="DNS Records"
+        # Grouped under 'Email Authentication' alongside SPF (ORCA235)
+        # so the sidebar and report card display both protocols in one section.
+        $this.Area="Email Authentication"
+        $this.Name="DKIM DNS Records"
         $this.PassText="DNS Records have been set up to support DKIM"
         $this.FailRecommendation="Set up the required selector DNS records in order to support DKIM"
         $this.Importance="DKIM signing can help protect the authenticity of your messages in transit and can assist with deliverability of your email messages."
