@@ -26,7 +26,7 @@ class ORCA112 : ORCACheck
         $this.Links= @{
             "Microsoft 365 Defender Portal - Anti-phishing"="https://security.microsoft.com/antiphishing"
             "Configuring the anti-spoofing policy"="https://aka.ms/orca-atpp-docs-5"
-            "Recommended settings for EOP and Office 365 Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-6"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-6"
         }
     
     }

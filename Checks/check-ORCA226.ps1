@@ -22,7 +22,7 @@ class ORCA226 : ORCACheck
         $this.Name="Safe Links Policy Rules"
         $this.PassText="Each domain has a Safe Link policy applied to it"
         $this.FailRecommendation="Apply a Safe Links policy to every domain"
-        $this.Importance="Microsoft Defender for Office 365 Safe Links policies are applied using rules. The recipient domain condition is the most effective way of applying the Safe Links policy, ensuring no users are left without protection. If polices are applied using group membership make sure you cover all users through this method. Applying polices this way can be challenging, users may left unprotected if group memberships are not accurate and up to date. It is important not to rely on the 'built-in' Safe Links policy, as this policy only applies the minimum level of protections and should serve as a catch-all."
+        $this.Importance="Microsoft Defender for Office 365 Safe Links policies are applied using rules and evaluated by priority. To ensure coverage, scope policies so intended recipients are included (for example, accepted domains, users, or groups), and verify exceptions and rule priority so recipients are not unintentionally excluded. If policies are applied using group membership, ensure all intended users are covered. This approach can be harder to maintain, and users might be left unprotected if group memberships are incomplete or outdated."
         $this.ExpandResults=$True
         $this.CheckType=[CheckType]::ObjectPropertyValue
         $this.ObjectType="Domain"
@@ -53,12 +53,22 @@ class ORCA226 : ORCACheck
             $Rules = @()
 
             # Go through each Safe Links Policy
+            # Bug fix: Previously only matched rules with an explicit RecipientDomainIs
+            # containing the accepted domain. Rules with NO scoping conditions (no users,
+            # groups, or domains) apply to ALL recipients by default in EOP/MDO, so they
+            # should also count as covering the domain. Without this fix, tenants using
+            # unscoped policies get false "No Policy Applying" failures.
 
             ForEach($Rule in ($Config["SafeLinksRules"] | Sort-Object Priority)) 
             {
                 if($Rule.State -eq "Enabled")
                 {
-                    if($Rule.RecipientDomainIs -contains $AcceptedDomain.Name -and ($Rule.ExceptIfRecipientDomainIs -notcontains $AcceptedDomain.Name) -and ($null -eq $Rule.ExceptIfSentToMemberOf ) -and ($null -eq $Rule.ExceptIfSentTo) )
+                    # No scoping conditions (users, groups, domains) = all recipients
+                    $NoConditions = ($null -eq $Rule.RecipientDomainIs -or $Rule.RecipientDomainIs.Count -eq 0) -and ($null -eq $Rule.SentTo -or $Rule.SentTo.Count -eq 0) -and ($null -eq $Rule.SentToMemberOf -or $Rule.SentToMemberOf.Count -eq 0)
+                    $ExplicitDomainMatch = $Rule.RecipientDomainIs -contains $AcceptedDomain.Name
+                    $NotExcluded = ($Rule.ExceptIfRecipientDomainIs -notcontains $AcceptedDomain.Name) -and ($null -eq $Rule.ExceptIfSentToMemberOf) -and ($null -eq $Rule.ExceptIfSentTo)
+
+                    if(($ExplicitDomainMatch -or $NoConditions) -and $NotExcluded)
                     {
                         # Policy applies to this domain
 
@@ -70,13 +80,19 @@ class ORCA226 : ORCACheck
                     }
                 }
             }
+            # Same empty-scoping fix applies to preset protection policy rules
             ForEach($Rule in ($Config["ATPProtectionPolicyRule"] | Sort-Object Priority)) 
             {
                 if(($Rule.SafeLinksPolicy -ne "") -and ($null -ne $Rule.SafeLinksPolicy ))
                 { 
                    if($Rule.State -eq "Enabled")
                    {
-                        if($Rule.RecipientDomainIs -contains $AcceptedDomain.Name -and ($Rule.ExceptIfRecipientDomainIs -notcontains $AcceptedDomain.Name) -and ($null -eq $Rule.ExceptIfSentToMemberOf ) -and ($null -eq $Rule.ExceptIfSentTo) )
+                        # No scoping conditions (users, groups, domains) = all recipients
+                        $NoConditions = ($null -eq $Rule.RecipientDomainIs -or $Rule.RecipientDomainIs.Count -eq 0) -and ($null -eq $Rule.SentTo -or $Rule.SentTo.Count -eq 0) -and ($null -eq $Rule.SentToMemberOf -or $Rule.SentToMemberOf.Count -eq 0)
+                        $ExplicitDomainMatch = $Rule.RecipientDomainIs -contains $AcceptedDomain.Name
+                        $NotExcluded = ($Rule.ExceptIfRecipientDomainIs -notcontains $AcceptedDomain.Name) -and ($null -eq $Rule.ExceptIfSentToMemberOf) -and ($null -eq $Rule.ExceptIfSentTo)
+
+                        if(($ExplicitDomainMatch -or $NoConditions) -and $NotExcluded)
                         {
                             # Policy applies to this domain
 
@@ -124,7 +140,7 @@ class ORCA226 : ORCACheck
                         if($IsBuiltIn)
                         {
                             $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                            $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                            $ConfigObject.SetResult([ORCAConfigLevel]::All,[ORCAResult]::Informational)
                         }
                         else
                         {
@@ -136,7 +152,7 @@ class ORCA226 : ORCACheck
                         if($IsBuiltIn)
                         {
                             $ConfigObject.InfoText = "This is a Built-In/Default policy managed by Microsoft and therefore cannot be edited. Other policies are set up in this area. It is being flagged only for informational purpose."
-                            $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
+                            $ConfigObject.SetResult([ORCAConfigLevel]::All,[ORCAResult]::Informational)
                         }
                         else
                         {

@@ -11,7 +11,9 @@ class ORCA235 : ORCACheck
     ORCA235()
     {
         $this.Control="235"
-        $this.Area="SPF"
+        # Grouped under 'Email Authentication' alongside DKIM (ORCA108/108_1)
+        # so the sidebar and report card display both protocols in one section.
+        $this.Area="Email Authentication"
         $this.Name="SPF Records"
         $this.PassText="SPF records is set up for all your custom domains"
         $this.FailRecommendation="Set up SPF records to prevent spoofing"

@@ -15,7 +15,7 @@ class ORCA100 : ORCACheck
         $this.Name="Bulk Complaint Level"
         $this.PassText="Bulk Complaint Level threshold is between 4 and 6"
         $this.FailRecommendation="Set the Bulk Complaint Level threshold to be 6"
-        $this.Importance="The differentiation between bulk and spam can sometimes be subjective. The bulk complaint level is based on the number of complaints from the sender. Decreasing the threshold can decrease the amount of perceived spam received, however, too low may be considered too strict."
+            $this.Importance="Differentiation between bulk and spam can be subjective. BCL uses internal and external signals, including recipient complaint patterns and sender behavior, to classify bulk email. Lowering the threshold identifies more messages as bulk and can reduce unwanted bulk in user inboxes, but setting it too low can increase false positives and may be too restrictive."
         $this.ExpandResults=$True
         $this.ItemName="Anti-Spam Policy"
         $this.DataType="Bulk Complaint Level Threshold"

@@ -26,7 +26,7 @@ class ORCA111 : ORCACheck
         $this.Links= @{
             "Microsoft 365 Defender Portal - Anti-phishing"="https://security.microsoft.com/antiphishing"
             "Unverified Sender"="https://aka.ms/orca-atpp-docs-12"
-            "Recommended settings for EOP and Office 365 Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-6"
+            "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-6"
         }
     }
 

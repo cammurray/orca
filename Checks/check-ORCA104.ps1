@@ -56,18 +56,21 @@ class ORCA104 : ORCACheck
             $ConfigObject.ConfigReadonly=$Policy.IsPreset
             $ConfigObject.ConfigPolicyGuid=$Policy.Guid.ToString()
     
+            # Both Standard and Strict recommend Quarantine for High Confidence Phish
             If($HighConfidencePhishAction -eq "Quarantine") 
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Pass")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Pass")
             }
             Else 
             {
                 $ConfigObject.SetResult([ORCAConfigLevel]::Standard,"Fail")
+                $ConfigObject.SetResult([ORCAConfigLevel]::Strict,"Fail")
             }
 
+            # Redirect/Delete can cause user experience issues — add informational note
             If($HighConfidencePhishAction -eq "Redirect" -or $HighConfidencePhishAction -eq "Delete")
             {
-                $ConfigObject.SetResult([ORCAConfigLevel]::Informational,"Fail")
                 $ConfigObject.InfoText = "The $($HighConfidencePhishAction) option may impact the users ability to release emails and may impact user experience. Consider using the Quarantine option for High Confidence Phish."
             }
             

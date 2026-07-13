@@ -26,7 +26,7 @@ class ORCA105 : ORCACheck
         $this.Links= @{
             "Microsoft 365 Defender Portal - Safe links"="https://security.microsoft.com/safelinksv2"
             "Set up Microsoft Defender for Office 365 Safe Links policies"="https://aka.ms/orca-atpp-docs-10"
-            "Recommended settings for EOP and Office 365 Microsoft Defender for Office 365 security"="https://aka.ms/orca-atpp-docs-7"
+              "Recommended settings for EOP and Microsoft Defender for Office 365"="https://aka.ms/orca-atpp-docs-7"
         }
     }
 

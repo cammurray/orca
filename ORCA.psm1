@@ -641,8 +641,21 @@ Function Get-ORCACollection
 
     if($SCC -and $Collection["Services"] -band [ORCAService]::MDO)
     {
-        Write-Host "$(Get-Date) Getting Protection Alerts"
-        $Collection["ProtectionAlert"] = Get-ProtectionAlert | Where-Object {$_.IsSystemRule}
+        # Get-ProtectionAlert requires an interactive SCC session. When
+        # Connect-IPPSSession is established with app-based auth (service
+        # principal / certificate), the cmdlet is unavailable and throws.
+        # Wrap in try/catch so the rest of the collection and all non-alert
+        # checks continue to work.  See GitHub issue #332.
+        Try
+        {
+            Write-Host "$(Get-Date) Getting Protection Alerts"
+            $Collection["ProtectionAlert"] = Get-ProtectionAlert | Where-Object {$_.IsSystemRule}
+        }
+        Catch
+        {
+            Write-Verbose "$(Get-Date) Failed to get Protection Alerts (Get-ProtectionAlert may not be available under app-based auth): $_"
+            $Collection["ProtectionAlert"] = $null
+        }
     }
 
     Write-Host "$(Get-Date) Getting EOP Preset Policy Settings"
@@ -675,6 +688,102 @@ Function Get-ORCACollection
         $Collection["SafeLinksRules"] = Get-SafeLinksRule
         $Collection["AtpPolicy"] = Get-AtpPolicyForO365
 
+        # Teams user-reporting settings are exposed through the MicrosoftTeams
+        # module. Keep only the org-wide settings that ORCA can validate without
+        # resolving per-user policy assignments.
+        if($(Get-command Get-CsTeamsMessagingPolicy -ErrorAction:SilentlyContinue))
+        {
+            Try
+            {
+                $Collection["TeamsMessagingPolicy"] = Get-CsTeamsMessagingPolicy -Identity Global -ErrorAction:Stop | Select-Object Identity,AllowSecurityEndUserReporting
+            }
+            Catch
+            {
+                Write-Verbose "$(Get-Date) Failed to get TeamsMessagingPolicy: $_"
+                $Collection["TeamsMessagingPolicy"] = $null
+            }
+        }
+        else
+        {
+            $Collection["TeamsMessagingPolicy"] = $null
+        }
+
+        if($(Get-command Get-CsTeamsMessagingConfiguration -ErrorAction:SilentlyContinue))
+        {
+            Try
+            {
+                $Collection["TeamsMessagingConfiguration"] = Get-CsTeamsMessagingConfiguration -ErrorAction:Stop | Select-Object Identity,ReportIncorrectSecurityDetections
+            }
+            Catch
+            {
+                Write-Verbose "$(Get-Date) Failed to get TeamsMessagingConfiguration: $_"
+                $Collection["TeamsMessagingConfiguration"] = $null
+            }
+        }
+        else
+        {
+            $Collection["TeamsMessagingConfiguration"] = $null
+        }
+
+        if($(Get-command Get-CsTeamsCallingPolicy -ErrorAction:SilentlyContinue))
+        {
+            Try
+            {
+                $Collection["TeamsCallingPolicy"] = Get-CsTeamsCallingPolicy -Identity Global -ErrorAction:Stop | Select-Object Identity,ReportCall
+            }
+            Catch
+            {
+                Write-Verbose "$(Get-Date) Failed to get TeamsCallingPolicy: $_"
+                $Collection["TeamsCallingPolicy"] = $null
+            }
+        }
+        else
+        {
+            $Collection["TeamsCallingPolicy"] = $null
+        }
+
+        if($(Get-command Get-ReportSubmissionPolicy -ErrorAction:SilentlyContinue))
+        {
+            Try
+            {
+                # Identity + ReportChatMessage* feed ORCA247 (Teams user reporting).
+                # EnableReportToMicrosoft, DisableUserSubmissionOptions, and
+                # DisableQuarantineReportingOption feed ORCA248 (Outlook user
+                # reported settings baseline). Only Booleans/identifiers are
+                # retained - no addresses are collected.
+                $Collection["ReportSubmissionPolicy"] = Get-ReportSubmissionPolicy -ErrorAction:Stop | Select-Object Identity,ReportChatMessageEnabled,ReportChatMessageToCustomizedAddressEnabled,EnableReportToMicrosoft,DisableUserSubmissionOptions,DisableQuarantineReportingOption
+            }
+            Catch
+            {
+                Write-Verbose "$(Get-Date) Failed to get ReportSubmissionPolicy: $_"
+                $Collection["ReportSubmissionPolicy"] = $null
+            }
+        }
+        else
+        {
+            $Collection["ReportSubmissionPolicy"] = $null
+        }
+
+        # Teams protection policy includes the tenant-wide ZAP toggle for
+        # Microsoft Teams. Guard cmdlet availability to support older
+        # ExchangeOnlineManagement builds gracefully.
+        if($(Get-command Get-TeamsProtectionPolicy -ErrorAction:SilentlyContinue))
+        {
+            Try
+            {
+                $Collection["TeamsProtectionPolicy"] = Get-TeamsProtectionPolicy -ErrorAction:Stop | Select-Object Identity,Name,ZapEnabled
+            }
+            Catch
+            {
+                Write-Verbose "$(Get-Date) Failed to get TeamsProtectionPolicy: $_"
+                $Collection["TeamsProtectionPolicy"] = $null
+            }
+        }
+        else
+        {
+            $Collection["TeamsProtectionPolicy"] = $null
+        }
+
         # Tenant-wide MDO settings (e.g. Priority Account Protection toggle).
         # Get-EmailTenantSettings was introduced in newer ExchangeOnlineManagement
         # builds and is only meaningful on MDO Plan 2 tenants. Guard the call
@@ -696,6 +805,21 @@ Function Get-ORCACollection
         {
             $Collection["EmailTenantSettings"] = $null
         }
+    }
+
+    # Tenant-wide Exchange Online organization configuration. Currently
+    # consumed by ORCA249 (Reject Direct Send). Only the identifier and the
+    # specific properties used by checks are retained, per the project's
+    # data-minimization rule.
+    Write-Host "$(Get-Date) Getting Organization Configuration"
+    Try
+    {
+        $Collection["OrganizationConfig"] = Get-OrganizationConfig -ErrorAction:Stop | Select-Object Identity,RejectDirectSend
+    }
+    Catch
+    {
+        Write-Verbose "$(Get-Date) Failed to get OrganizationConfig: $_"
+        $Collection["OrganizationConfig"] = $null
     }
 
     Write-Host "$(Get-Date) Getting Accepted Domains"
@@ -1168,6 +1292,23 @@ Function Get-PolicyStateInt
                             {
                                 $Applies = $true
                             }
+                        }
+
+                        # Exchange Online / EOP / MDO platform rule behaviour:
+                        # when "Include these users, groups and domains" is left blank,
+                        # the resulting rule has NO conditions and applies to ALL users.
+                        # If neither inbound (SentTo / SentToMemberOf / RecipientDomainIs)
+                        # nor outbound (From / FromMemberOf / SenderDomainIs) conditions are
+                        # set, the policy should be treated as applying to the whole organisation.
+                        $HasAnyCondition = ($Rule.SentTo.Count -gt 0)          -or
+                                           ($Rule.SentToMemberOf.Count -gt 0)   -or
+                                           ($Rule.RecipientDomainIs.Count -gt 0) -or
+                                           ($Rule.From.Count -gt 0)              -or
+                                           ($Rule.FromMemberOf.Count -gt 0)      -or
+                                           ($Rule.SenderDomainIs.Count -gt 0)
+                        if(-not $HasAnyCondition)
+                        {
+                            $Applies = $true
                         }
                     }
 
