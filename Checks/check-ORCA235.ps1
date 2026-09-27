@@ -88,11 +88,11 @@ class ORCA235 : ORCACheck
                     $ConfigObject = [ORCACheckConfig]::new()
                     $ConfigObject.Object = $($AcceptedDomain.Name)
 
-                    $SPF = Resolve-DnsName -Name $($AcceptedDomain.Name) -Type TXT @SplatParameters | where-object { $_.strings -match "v=spf1" } | Select-Object -ExpandProperty strings -ErrorAction SilentlyContinue
+                    $SPF = Resolve-DnsName -Name $($AcceptedDomain.Name) -Type TXT @SplatParameters | ForEach-Object { $_.Strings -join "" } | Where-Object { $_ -match '^\s*v=spf1(?:\s|$)' }
                     if ($SPF -match "redirect") {
                         $redirect = $SPF.Split(" ")
                         $RedirectName = $redirect -match "redirect" -replace "redirect="
-                        $SPF = Resolve-DnsName -Name "$RedirectName" -Type TXT @SplatParameters | where-object { $_.strings -match "v=spf1" } | Select-Object -ExpandProperty strings -ErrorAction SilentlyContinue
+                        $SPF = Resolve-DnsName -Name "$RedirectName" -Type TXT @SplatParameters | ForEach-Object { $_.Strings -join "" } | Where-Object { $_ -match '^\s*v=spf1(?:\s|$)' }
                     }
 
                     $SpfAdvisory = "No SPF record"
