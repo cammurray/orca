@@ -89,6 +89,27 @@ class ORCA226 : ORCACheck
                     }
                 }
             }
+
+            # Check for globally applied Preset Security Policies (Standard/Strict) that apply to all domains
+            # These policies don't have RecipientDomainIs conditions and apply tenant-wide
+            $PresetSafeLinksPolicies = $Config["ATPProtectionPolicyRule"] | Where-Object { 
+                $_.State -eq "Enabled" -and 
+                $_.SafeLinksPolicy -ne "" -and 
+                $null -ne $_.SafeLinksPolicy -and
+                $_.RecipientDomainIs.Count -eq 0 -and
+                $_.ExceptIfRecipientDomainIs.Count -eq 0 -and
+                $null -eq $_.ExceptIfSentToMemberOf -and
+                $null -eq $_.ExceptIfSentTo
+            } | Sort-Object Priority
+
+            ForEach($Rule in $PresetSafeLinksPolicies)
+            {
+                # Policy applies globally to all domains (including this one)
+                $Rules += New-Object -TypeName PSObject -Property @{
+                    PolicyName=$($Rule.SafeLinksPolicy)
+                    Priority=$($Rule.Priority)
+                }
+            }
             If($Rules.Count -gt 0)
             {
                 $Count = 0
